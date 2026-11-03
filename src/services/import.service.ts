@@ -50,7 +50,17 @@ export interface BackupPreview {
   tooRecent: boolean;
 }
 
-export function previewBackup(document: BackupDocument): BackupPreview {
+/**
+ * Aperçu d'une sauvegarde.
+ *
+ * `currentSchemaVersion` est optionnel : il sert à signaler qu'un fichier vient
+ * d'une version plus récente de ZENTIQ, et qu'il faut mettre l'application à
+ * jour avant de le restaurer.
+ */
+export function previewBackup(
+  document: BackupDocument,
+  currentSchemaVersion = 1,
+): BackupPreview {
   const counts: Record<string, number> = {};
   let total = 0;
 
@@ -67,7 +77,7 @@ export function previewBackup(document: BackupDocument): BackupPreview {
     appVersion: document.appVersion,
     counts,
     total,
-    tooRecent: document.schemaVersion > (document.schemaVersion ?? 1) ? false : false,
+    tooRecent: document.schemaVersion > currentSchemaVersion,
   };
 }
 
@@ -87,7 +97,7 @@ export async function restoreBackup(
       ok: false,
       imported: {},
       error:
-        'Cette sauvegarde vient d\'une version plus récente de ZENTIQ. Mets l\'application à jour avant de la restaurer.',
+        "Cette sauvegarde vient d'une version plus récente de ZENTIQ. Mets l'application à jour avant de la restaurer.",
     };
   }
 
@@ -114,7 +124,7 @@ export async function restoreBackup(
     }
 
     return { ok: true, imported, error: null };
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       imported,
