@@ -1,3 +1,4 @@
+import type { BaseEntity } from '@/types';
 import { nowIso } from '@/utils/dates';
 import { createId } from '@/utils/id';
 
@@ -8,21 +9,20 @@ import { createId } from '@/utils/id';
  * horodatages dans chaque méthode, sans masquer les requêtes spécifiques :
  * chaque repository reste lisible et expose exactement ce dont le domaine a
  * besoin.
+ *
+ * NOTE DE TYPAGE : les contraintes génériques s'appuient sur `BaseEntity`
+ * (déclaré dans `@/types`), et non sur une interface locale. Une interface
+ * `PersistedEntity` dupliquait les trois mêmes champs ici, ce qui empêchait
+ * TypeScript de reconnaître `Goal`, `Favorite` & co. comme satisfaisant la
+ * contrainte — d'où une cascade d'erreurs `Property 'id' does not exist`.
  */
-
-/** Champs techniques gérés par la couche d'accès aux données. */
-export interface PersistedEntity {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 /**
  * Prépare une entité à l'insertion : identifiant et horodatages.
  * Accepte une entité partielle pour laisser le domaine décider de ses champs.
  */
-export function prepareInsert<T extends PersistedEntity>(
-  input: Omit<T, keyof PersistedEntity> & Partial<PersistedEntity>,
+export function prepareInsert<T extends BaseEntity>(
+  input: Omit<T, keyof BaseEntity> & Partial<BaseEntity>,
 ): T {
   const timestamp = nowIso();
   return {
@@ -37,7 +37,7 @@ export function prepareInsert<T extends PersistedEntity>(
  * Prépare une mise à jour partielle : seuls les champs fournis changent,
  * `updatedAt` est rafraîchi, `id` et `createdAt` sont préservés.
  */
-export function prepareUpdate<T extends PersistedEntity>(
+export function prepareUpdate<T extends BaseEntity>(
   existing: T,
   patch: Partial<Omit<T, 'id' | 'createdAt'>>,
 ): T {
@@ -82,7 +82,9 @@ export async function guard<T>(
 }
 
 /** Trie une liste par date décroissante, puis par clé de jour. */
-export function sortByDateDesc<T extends { date?: string; createdAt: string }>(items: T[]): T[] {
+export function sortByDateDesc<T extends { date?: string; createdAt: string }>(
+  items: T[],
+): T[] {
   return [...items].sort((a, b) => {
     const dateA = a.date ?? a.createdAt;
     const dateB = b.date ?? b.createdAt;
