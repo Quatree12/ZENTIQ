@@ -5,14 +5,11 @@
  * pour qu'une réorganisation interne ne casse pas les imports.
  */
 
-export type {
-  BaseEntity,
-  SyncableEntity,
-  TimestampedEntity,
-  MoodLevel,
-  EntityId,
-  TableName,
-} from './index';
+/* Les types de base (BaseEntity, SyncableEntity, TimestampedEntity, MoodLevel,
+   EntityId, TableName) sont déclarés directement dans ce fichier : ils n'ont
+   pas à être réexportés depuis './index', ce qui créait un import circulaire
+   et faisait perdre id / createdAt / updatedAt à tous les modèles qui en
+   héritent. */
 
 export type { UserProfile, UserSettings } from './user.types';
 export { DEFAULT_SETTINGS_VALUES } from './user.types';
