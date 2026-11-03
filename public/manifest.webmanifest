@@ -2,9 +2,9 @@
   "name": "ZENTIQ — Your mind. Your momentum.",
   "short_name": "ZENTIQ",
   "description": "Application de motivation et de développement personnel. Citations, affirmations, humeur, objectifs et habitudes — hors ligne.",
-  "id": "/",
-  "start_url": "/",
-  "scope": "/",
+  "id": "/ZENTIQ/",
+  "start_url": "/ZENTIQ/",
+  "scope": "/ZENTIQ/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0D1015",
@@ -14,27 +14,27 @@
   "categories": ["lifestyle", "health", "productivity"],
   "icons": [
     {
-      "src": "/icons/icon-192.svg",
+      "src": "/ZENTIQ/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.svg",
+      "src": "/ZENTIQ/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-512.svg",
+      "src": "/ZENTIQ/icons/icon-maskable-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
   "shortcuts": [
-    { "name": "Check-in du jour", "short_name": "Humeur", "url": "/today" },
-    { "name": "Mes objectifs", "short_name": "Objectifs", "url": "/grow" },
-    { "name": "Mon journal", "short_name": "Journal", "url": "/journey" }
+    { "name": "Check-in du jour", "short_name": "Humeur", "url": "/ZENTIQ/today" },
+    { "name": "Mes objectifs", "short_name": "Objectifs", "url": "/ZENTIQ/grow" },
+    { "name": "Mon journal", "short_name": "Journal", "url": "/ZENTIQ/journey" }
   ]
 }
