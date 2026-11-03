@@ -1,0 +1,57 @@
+/* ==========================================================================
+   ZENTIQ — THEMES
+   L'application est DARK-ONLY par décision produit.
+   Ce fichier existe pour deux raisons :
+     1. Déclarer explicitement l'absence de thème clair (aucune bascule cachée).
+     2. Accueillir les futurs thèmes d'accent (phase Personnalisation) sans
+        toucher aux composants : ils ne redéfinissent que des tokens sémantiques.
+   ========================================================================== */
+
+/* Thème par défaut — explicite, pour que `data-theme` reste toujours résolu. */
+:root,
+[data-theme='digital-aura'] {
+  color-scheme: dark;
+  --theme-name: 'digital-aura';
+}
+
+/* --------------------------------------------------------------------------
+   Thèmes d'accent — surcharge UNIQUEMENT des tokens d'accent.
+   Inactifs par défaut ; branchés en phase Personnalisation via
+   `document.documentElement.dataset.accent = '…'`.
+   -------------------------------------------------------------------------- */
+[data-accent='teal'] {
+  --color-accent: var(--zentiq-digital-teal);
+  --color-inspiration: var(--zentiq-lavender-mind);
+}
+
+[data-accent='lavender'] {
+  --color-accent: var(--zentiq-lavender-mind);
+  --color-accent-hover: #b9add6;
+  --color-accent-active: #9686bc;
+  --color-accent-soft: rgb(169 154 203 / 14%);
+  --color-accent-softer: rgb(169 154 203 / 7%);
+  --color-text-on-accent: var(--color-text-on-inspiration);
+  --shadow-accent-glow: var(--shadow-inspiration-glow);
+}
+
+/* --------------------------------------------------------------------------
+   Préférences système
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 1ms;
+    --duration-fast: 1ms;
+    --duration-standard: 1ms;
+    --duration-slow: 1ms;
+  }
+}
+
+/* Contraste renforcé : on remonte les textes faibles vers du texte lisible. */
+@media (prefers-contrast: more) {
+  :root {
+    --color-text-secondary: var(--color-text-primary);
+    --color-text-tertiary: #c2d3d9;
+    --color-text-placeholder: #a9bcc4;
+    --color-border: var(--color-border-strong);
+  }
+}

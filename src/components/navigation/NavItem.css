@@ -1,0 +1,85 @@
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-button);
+  color: var(--color-text-secondary);
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.nav-item:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.nav-item.is-active {
+  background-color: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-text-primary);
+}
+
+.nav-item.is-active .nav-item__icon {
+  color: var(--color-accent);
+}
+
+.nav-item__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-standard);
+}
+
+.nav-item__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nav-item__label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.nav-item__tagline {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   Variante compacte — barre inférieure mobile
+   -------------------------------------------------------------------------- */
+.nav-item--compact {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-item--compact .nav-item__label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.nav-item--compact.is-active {
+  background-color: transparent;
+}
+
+/* Indicateur d'état actif sur la barre mobile */
+.nav-item--compact.is-active .nav-item__label {
+  color: var(--color-accent);
+}

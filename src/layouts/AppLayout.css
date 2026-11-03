@@ -1,0 +1,94 @@
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+}
+
+/* --------------------------------------------------------------------------
+   En-tête mobile
+   -------------------------------------------------------------------------- */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--header-height);
+  padding-inline: var(--space-3);
+  background-color: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+@media (min-width: 900px) {
+  .app-topbar {
+    display: none;
+  }
+}
+
+.app-topbar__name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-widest);
+}
+
+.app-topbar__spacer {
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Zone de contenu
+   -------------------------------------------------------------------------- */
+.app-main {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .app-main {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+.app-content {
+  flex: 1;
+  padding-block: var(--space-6) var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    padding-block: var(--space-8) var(--space-16);
+  }
+}
+
+/* Dégage la barre inférieure mobile (espace sûr iOS inclus) */
+@media (max-width: 899px) {
+  .app-content {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-8));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Bandeau hors ligne
+   -------------------------------------------------------------------------- */
+.app-offline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--page-padding-mobile);
+  background-color: var(--color-warning-soft);
+  border-bottom: 1px solid var(--color-warning);
+  color: var(--color-warning);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 768px) {
+  .app-offline {
+    padding-inline: var(--page-padding-desktop);
+  }
+}
+
+.app-offline p {
+  margin: 0;
+}

@@ -1,0 +1,132 @@
+/* ==========================================================================
+   Grow — styles locaux à l'espace
+   ========================================================================== */
+
+.grow-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.grow-section h2,
+.grow-section h3,
+.grow-section p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Objectifs
+   -------------------------------------------------------------------------- */
+.goal-list,
+.habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.goal-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.goal-item__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.goal-item__next {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--color-accent);
+  background-color: var(--color-accent-softer);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+}
+
+.goal-item__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.goal-item__progress > :first-child {
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Habitudes
+   -------------------------------------------------------------------------- */
+.habit-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.habit-item__main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.habit-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.habit-item__name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* Case à cocher — cible tactile pleine, état lisible sans couleur seule */
+.habit-check {
+  display: grid;
+  place-items: center;
+  width: var(--tap-target-min);
+  height: var(--tap-target-min);
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.habit-check__box {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard);
+}
+
+.habit-check:hover .habit-check__box {
+  border-color: var(--color-accent);
+}
+
+.habit-check.is-done .habit-check__box {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  background-image: linear-gradient(
+      45deg,
+      transparent 44%,
+      var(--color-text-on-accent) 44%,
+      var(--color-text-on-accent) 56%,
+      transparent 56%
+    ),
+    linear-gradient(-45deg, transparent 44%, var(--color-text-on-accent) 44%, var(--color-text-on-accent) 56%, transparent 56%);
+  background-size: 12px 12px, 12px 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}

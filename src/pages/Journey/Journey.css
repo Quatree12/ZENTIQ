@@ -1,0 +1,175 @@
+/* ==========================================================================
+   Journey — styles locaux à l'espace
+   ========================================================================== */
+
+.journey-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.journey-section h2,
+.journey-section h3,
+.journey-section p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Journal
+   -------------------------------------------------------------------------- */
+.journal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.journal-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.journal-item__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.journal-item__date {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-tertiary);
+}
+
+.journal-item__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.journal-item__content {
+  white-space: pre-wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Humeurs
+   -------------------------------------------------------------------------- */
+.mood-week__days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.mood-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.mood-day__dot {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-secondary);
+}
+
+.mood-day__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.mood-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.mood-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mood-entry__date {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Timeline
+   -------------------------------------------------------------------------- */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: var(--space-6);
+  position: relative;
+}
+
+/* Fil vertical continu, discret */
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: 11px;
+  width: 1px;
+  background-color: var(--color-border-subtle);
+}
+
+.timeline__item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.timeline__marker {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 2px);
+  top: var(--space-5);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent);
+}
+
+.timeline__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.timeline__label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.timeline__date {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
