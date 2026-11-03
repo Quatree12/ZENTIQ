@@ -6,6 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 /**
  * Configuration Vite de ZENTIQ.
  *
+ * - `base` : le site est publié sur GitHub Pages à l'adresse
+ *   https://quatree12.github.io/ZENTIQ/, donc dans un sous-dossier. Sans ce
+ *   réglage Vite génère des chemins absolus à la racine du domaine
+ *   (/assets/...) qui renvoient une 404 et laissent la page bloquée sur le
+ *   splash de démarrage.
  * - `@/` pointe vers `src/` : les imports restent stables quand
  *   l'arborescence grandit.
  * - Le plugin PWA génère le service worker et le manifest de précache au
@@ -17,6 +22,8 @@ import { VitePWA } from 'vite-plugin-pwa';
  * compilateur signalait `Cannot find module 'node:url'`.
  */
 export default defineConfig({
+  base: '/ZENTIQ/',
+
   resolve: {
     alias: { '@': resolve(__dirname, 'src') },
   },
@@ -34,8 +41,10 @@ export default defineConfig({
       manifest: false, // on livre un public/manifest.webmanifest écrit à la main
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/offline\.html$/],
+        // Le fallback de navigation doit lui aussi porter le sous-dossier,
+        // sinon les routes profondes tombent hors ligne / en 404.
+        navigateFallback: '/ZENTIQ/index.html',
+        navigateFallbackDenylist: [/^\/ZENTIQ\/offline\.html$/],
         cleanupOutdatedCaches: true,
       },
       devOptions: { enabled: false },
