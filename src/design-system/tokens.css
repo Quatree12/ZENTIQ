@@ -1,0 +1,235 @@
+/* ==========================================================================
+   ZENTIQ — DESIGN TOKENS
+   Direction artistique : DIGITAL AURA × LAVENDER MIND
+   --------------------------------------------------------------------------
+   SEULE source autorisée pour les couleurs, espacements, radius, ombres
+   et transitions. Aucun composant ne doit écrire de hexadécimal littéral.
+
+   Palette officielle (immuable) :
+     Deep Space      #0D1015   fond principal
+     Night Surface   #1C2430   cartes & panneaux
+     Slate Blue      #34445A   bordures & surfaces secondaires
+     Digital Teal    #72C8C1   actions, progression, validation, états actifs
+     Lavender Mind   #A99ACB   inspiration, réflexion, émotions
+     Soft Mist       #E0F0ED   texte principal
+   ========================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------------
+     1. PALETTE BRUTE — valeurs de référence de la direction artistique.
+     Jamais consommées directement par un composant ; les tokens sémantiques
+     ci-dessous les référencent.
+     --------------------------------------------------------------------- */
+  --zentiq-deep-space: #0d1015;
+  --zentiq-night-surface: #1c2430;
+  --zentiq-slate-blue: #34445a;
+  --zentiq-digital-teal: #72c8c1;
+  --zentiq-lavender-mind: #a99acb;
+  --zentiq-soft-mist: #e0f0ed;
+
+  /* ---------------------------------------------------------------------
+     2. SURFACES & FONDS
+     --------------------------------------------------------------------- */
+  --color-bg: var(--zentiq-deep-space);
+  --color-bg-elevated: #131922;
+  --color-surface: var(--zentiq-night-surface);
+  --color-surface-hover: #222c3a;
+  --color-surface-secondary: var(--zentiq-slate-blue);
+  --color-surface-sunken: #0a0d12;
+  --color-overlay: rgb(13 16 21 / 72%);
+
+  /* ---------------------------------------------------------------------
+     3. BORDURES
+     --------------------------------------------------------------------- */
+  --color-border: var(--zentiq-slate-blue);
+  --color-border-subtle: #283343;
+  --color-border-strong: #45566e;
+  --color-border-accent: rgb(114 200 193 / 42%);
+  --color-border-inspiration: rgb(169 154 203 / 38%);
+
+  /* ---------------------------------------------------------------------
+     4. TEXTE
+     Contraste attendu sur --color-surface :
+       primary     >= 13:1   AAA
+       secondary   >= 7.5:1  AAA
+       tertiary    >= 4.9:1  AA
+       placeholder ~ 4.0:1   sous AA strict — texte non essentiel, assumé
+     --------------------------------------------------------------------- */
+  --color-text-primary: var(--zentiq-soft-mist);
+  --color-text-secondary: #a9bcc4;
+  --color-text-tertiary: #7f909c;
+  --color-text-disabled: #5a6673;
+  --color-text-placeholder: #66737f;
+
+  /* Texte posé sur un aplat d'accent : foncé, jamais blanc.
+     Blanc sur Digital Teal ~ 2.2:1 -> échoue AA. */
+  --color-text-on-accent: #0a1518;
+  --color-text-on-inspiration: #12101c;
+
+  /* ---------------------------------------------------------------------
+     5. ACCENTS
+     Digital Teal  -> actions, progression, validation, actif
+     Lavender Mind -> inspiration, réflexion, émotion
+     --------------------------------------------------------------------- */
+  --color-accent: var(--zentiq-digital-teal);
+  --color-accent-hover: #8ad4cd;
+  --color-accent-active: #5db8b1;
+  --color-accent-soft: rgb(114 200 193 / 12%);
+  --color-accent-softer: rgb(114 200 193 / 6%);
+
+  --color-inspiration: var(--zentiq-lavender-mind);
+  --color-inspiration-hover: #b9add6;
+  --color-inspiration-active: #9686bc;
+  --color-inspiration-soft: rgb(169 154 203 / 14%);
+
+  --color-focus-ring: var(--zentiq-digital-teal);
+
+  /* ---------------------------------------------------------------------
+     6. ÉTATS SÉMANTIQUES
+     Calibrés pour rester lisibles sur Deep Space et Night Surface.
+     --------------------------------------------------------------------- */
+  --color-success: #6ec9a4;
+  --color-success-soft: rgb(110 201 164 / 13%);
+  --color-warning: #e0b26a;
+  --color-warning-soft: rgb(224 178 106 / 13%);
+  --color-danger: #e3796f;
+  --color-danger-hover: #ea8e85;
+  --color-danger-soft: rgb(227 121 111 / 13%);
+  --color-info: var(--color-accent);
+  --color-info-soft: var(--color-accent-soft);
+
+  /* ---------------------------------------------------------------------
+     7. HUMEURS — 5 niveaux, utilisés par le mood check-in
+     --------------------------------------------------------------------- */
+  --color-mood-1: #e3796f;
+  --color-mood-2: #e0b26a;
+  --color-mood-3: #a9bcc4;
+  --color-mood-4: #8ad4cd;
+  --color-mood-5: #6ec9a4;
+
+  /* ---------------------------------------------------------------------
+     8. DÉGRADÉS — subtils, jamais criards
+     --------------------------------------------------------------------- */
+  --gradient-accent: linear-gradient(135deg, rgb(114 200 193 / 10%), rgb(169 154 203 / 5%));
+  --gradient-inspiration: linear-gradient(140deg, rgb(169 154 203 / 16%), rgb(114 200 193 / 6%));
+  --gradient-surface: linear-gradient(180deg, rgb(224 240 237 / 3%), transparent);
+  --gradient-hero: linear-gradient(160deg, rgb(114 200 193 / 14%), rgb(169 154 203 / 9%) 55%, transparent);
+
+  /* ---------------------------------------------------------------------
+     9. SPACING — base 4 px
+     --------------------------------------------------------------------- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---------------------------------------------------------------------
+     10. RADIUS
+     --------------------------------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-field: 12px;
+  --radius-button: 14px;
+  --radius-md: 16px;
+  --radius-card: 22px;
+  --radius-lg: 26px;
+  --radius-full: 999px;
+
+  /* ---------------------------------------------------------------------
+     11. TYPOGRAPHIE
+     --------------------------------------------------------------------- */
+  --font-ui: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-data: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-editorial: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem);
+  --text-4xl: clamp(2.1rem, 1.5rem + 2.6vw, 3rem);
+  --text-editorial: clamp(1.5rem, 1.1rem + 1.9vw, 2.35rem);
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-widest: 0.14em;
+
+  /* ---------------------------------------------------------------------
+     12. LAYOUT
+     --------------------------------------------------------------------- */
+  --sidebar-width: 240px;
+  --content-max: 1100px;
+  --page-padding-desktop: 32px;
+  --page-padding-mobile: 20px;
+  --header-height: 64px;
+  --mobile-nav-height: 68px;
+  --tap-target-min: 44px;
+
+  /* ---------------------------------------------------------------------
+     13. OMBRES — discrètes, jamais lourdes
+     --------------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 28%);
+  --shadow-md: 0 4px 14px rgb(0 0 0 / 32%);
+  --shadow-lg: 0 12px 34px rgb(0 0 0 / 42%);
+  --shadow-xl: 0 24px 60px rgb(0 0 0 / 52%);
+  --shadow-accent-glow: 0 0 0 1px rgb(114 200 193 / 22%), 0 6px 22px rgb(114 200 193 / 14%);
+  --shadow-inspiration-glow: 0 0 0 1px rgb(169 154 203 / 22%), 0 6px 22px rgb(169 154 203 / 14%);
+
+  /* ---------------------------------------------------------------------
+     14. TRANSITIONS — 220 ms standard
+     --------------------------------------------------------------------- */
+  --duration-instant: 90ms;
+  --duration-fast: 140ms;
+  --duration-standard: 220ms;
+  --duration-slow: 340ms;
+
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --transition-standard: var(--duration-standard) var(--ease-standard);
+  --transition-fast: var(--duration-fast) var(--ease-standard);
+
+  /* ---------------------------------------------------------------------
+     15. PROFONDEUR D'EMPILEMENT
+     --------------------------------------------------------------------- */
+  --z-base: 1;
+  --z-sidebar: 20;
+  --z-header: 30;
+  --z-drawer: 60;
+  --z-modal: 80;
+  --z-toast: 100;
+  --z-tooltip: 120;
+
+  /* ---------------------------------------------------------------------
+     16. OPACITÉS D'ÉTAT
+     --------------------------------------------------------------------- */
+  --opacity-disabled: 0.45;
+  --opacity-muted: 0.7;
+}

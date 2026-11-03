@@ -1,0 +1,33 @@
+/* ==========================================================================
+   ZENTIQ — DESIGN SYSTEM (point d'entrée unique)
+   Seul fichier CSS importé par main.tsx. L'ordre compte :
+   tokens -> reset -> themes -> typographie -> spacing.
+   ========================================================================== */
+
+@import './tokens.css';
+@import './reset.css';
+@import './themes.css';
+@import './typography.css';
+@import './spacing.css';
+
+/* Classes de base partagées par plusieurs familles de composants.
+   Les styles spécifiques vivent dans le .css de chaque composant. */
+
+/* Socle commun des surfaces élevées */
+.surface-base {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+/* Anneau de focus sur un conteneur non interactif mais focusable */
+.focus-ring-inset:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Masqué visuellement, présent pour les technologies d'assistance */
+.focusable-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
