@@ -1,5 +1,4 @@
-import type { Transaction } from 'dexie';
-import type { ZentiqSchema } from './schema';
+import type Dexie from 'dexie';
 
 /**
  * Migrations Dexie.
@@ -11,7 +10,7 @@ import type { ZentiqSchema } from './schema';
  * sans transformer de données.
  */
 
-export type MigrationFn = (tx: Transaction) => Promise<void>;
+export type MigrationFn = (tx: import('dexie').Transaction) => Promise<void>;
 
 export interface Migration {
   /** Version cible de Dexie. */
@@ -48,8 +47,13 @@ export const migrations: Migration[] = [];
  * `db.version(n).stores(...)` est appelé pour chaque entrée ; Dexie se charge
  * de n'exécuter que celles qui manquent, puis d'appeler les `upgrade`
  * nécessaires dans l'ordre.
+ *
+ * NOTE DE TYPAGE : le paramètre est typé `Dexie` (la classe), et non
+ * `ZentiqSchema` (l'interface décrivant les tables). C'est `version()` qui est
+ * appelée ici, or cette méthode appartient à la classe Dexie — l'interface des
+ * tables ne la déclare pas.
  */
-export function applyMigrations(db: ZentiqSchema): void {
+export function applyMigrations(db: Dexie): void {
   for (const migration of migrations) {
     let version = db.version(migration.version).stores(migration.stores);
     if (migration.upgrade) {
