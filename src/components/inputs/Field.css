@@ -1,0 +1,108 @@
+/* ==========================================================================
+   Champs — états : default, focus, filled, disabled, invalid
+   ========================================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.field__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.field__required {
+  margin-left: var(--space-1);
+  color: var(--color-accent);
+}
+
+.field__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+.field__error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  font-weight: var(--weight-medium);
+}
+
+.field__counter {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   Contrôles
+   -------------------------------------------------------------------------- */
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-height: var(--tap-target-min);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+  color: var(--color-text-primary);
+  font-family: var(--font-data);
+  font-size: var(--text-base);
+  transition:
+    border-color var(--transition-standard),
+    background-color var(--transition-standard),
+    box-shadow var(--transition-standard);
+}
+
+.textarea {
+  min-height: 140px;
+  line-height: var(--leading-relaxed);
+  padding: var(--space-4);
+  font-family: var(--font-ui);
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.input:hover:not(:disabled),
+.textarea:hover:not(:disabled),
+.select:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  outline: none;
+}
+
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+/* L'erreur est portée par une bordure ET par un texte : jamais la couleur seule */
+.input--invalid {
+  border-color: var(--color-danger);
+}
+
+.input--invalid:focus-visible {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
+}

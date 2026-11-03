@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Button — états : default, hover, active, focus, disabled, loading
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target-min);
+  padding-inline: var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-button);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard),
+    box-shadow var(--transition-standard),
+    transform var(--transition-fast);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.btn__label {
+  white-space: nowrap;
+}
+
+.btn__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn__spinner {
+  animation: btn-spin 0.9s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tailles
+   -------------------------------------------------------------------------- */
+.btn--sm {
+  min-height: 36px;
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-field);
+}
+
+.btn--md {
+  min-height: var(--tap-target-min);
+}
+
+.btn--lg {
+  min-height: 52px;
+  padding-inline: var(--space-6);
+  font-size: var(--text-md);
+  border-radius: var(--radius-button);
+}
+
+.btn--full {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Variantes
+   -------------------------------------------------------------------------- */
+
+/* Primaire — action principale, progression, validation */
+.btn--primary {
+  background-color: var(--color-accent);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+.btn--primary:active:not(:disabled) {
+  background-color: var(--color-accent-active);
+}
+
+/* Secondaire — surface élevée, bordure fine */
+.btn--secondary {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+}
+
+.btn--secondary:active:not(:disabled) {
+  background-color: var(--color-surface-secondary);
+}
+
+/* Tertiaire — action discrète, sans fond au repos */
+.btn--tertiary {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  padding-inline: var(--space-3);
+}
+
+.btn--tertiary:hover:not(:disabled) {
+  background-color: var(--color-accent-softer);
+  color: var(--color-text-primary);
+}
+
+.btn--tertiary:active:not(:disabled) {
+  background-color: var(--color-accent-soft);
+}
+
+/* Danger — destruction, toujours derrière une confirmation */
+.btn--danger {
+  background-color: transparent;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background-color: var(--color-danger-soft);
+  border-color: var(--color-danger-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Loading — la largeur du libellé est préservée pour éviter le saut
+   -------------------------------------------------------------------------- */
+.btn--loading .btn__label {
+  opacity: var(--opacity-muted);
+}
