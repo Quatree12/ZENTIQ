@@ -1,0 +1,104 @@
+/* ==========================================================================
+   MoodCheckIn — styles locaux
+   ==========================================================================
+   Le composant importe ce fichier directement (ses styles lui appartiennent),
+   plutôt que de les mêler à ceux de la page. L'échelle d'humeur est le cœur
+   de ce fichier : cinq options lisibles, chacune portée par une couleur ET par
+   une position, jamais par la couleur seule.
+   ========================================================================== */
+
+.mood-checkin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.mood-checkin__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mood-checkin h2,
+.mood-checkin p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Échelle d'humeur — cinq options
+   -------------------------------------------------------------------------- */
+.mood-scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target-min);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.mood-option:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+.mood-option.is-selected {
+  background-color: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-text-primary);
+}
+
+/* Pastille colorée — la teinte encode le niveau, l'anneau confirme la sélection */
+.mood-option__dot {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-secondary);
+  transition: box-shadow var(--transition-standard);
+}
+
+.mood-option[data-mood='1'] .mood-option__dot { background-color: var(--color-mood-1); }
+.mood-option[data-mood='2'] .mood-option__dot { background-color: var(--color-mood-2); }
+.mood-option[data-mood='3'] .mood-option__dot { background-color: var(--color-mood-3); }
+.mood-option[data-mood='4'] .mood-option__dot { background-color: var(--color-mood-4); }
+.mood-option[data-mood='5'] .mood-option__dot { background-color: var(--color-mood-5); }
+
+.mood-option.is-selected .mood-option__dot {
+  box-shadow: 0 0 0 3px var(--color-bg), 0 0 0 5px currentColor;
+}
+
+.mood-option__label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  text-align: center;
+  line-height: var(--leading-snug);
+}
+
+/* --------------------------------------------------------------------------
+   Actions
+   -------------------------------------------------------------------------- */
+.mood-checkin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
