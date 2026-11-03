@@ -4,6 +4,11 @@
  * Cinq espaces, une seule coquille (`AppLayout`). Chaque espace est chargé à la
  * demande : l'écran d'accueil ne paie pas le coût des quatre autres.
  *
+ * Le site est publié dans un sous-dossier sur GitHub Pages
+ * (https://quatree12.github.io/ZENTIQ/). `basename` reprend la valeur de `base`
+ * exposée par Vite pour que le routeur ignore ce préfixe : sans lui, l'URL
+ * `/ZENTIQ/` ne correspond à aucune route et tombe sur l'écran « introuvable ».
+ *
  * La route racine redirige vers `Today`. Toute route inconnue affiche un état
  * « introuvable » qui propose de revenir à l'accueil — jamais une page vide.
  */
@@ -27,6 +32,12 @@ const InspirePage = lazy(() => import('@/pages/Inspire/InspirePage'));
 const GrowPage = lazy(() => import('@/pages/Grow/GrowPage'));
 const JourneyPage = lazy(() => import('@/pages/Journey/JourneyPage'));
 const MePage = lazy(() => import('@/pages/Me/MePage'));
+
+/**
+ * Préfixe de déploiement — vaut `'/'` en local et `'/ZENTIQ/'` au build.
+ * On le lit depuis Vite plutôt que de le coder en dur une seconde fois.
+ */
+const BASENAME = import.meta.env.BASE_URL;
 
 /** Mémorise la dernière route consultée, pour la retrouver à la réouverture. */
 export function RouteMemory() {
@@ -59,7 +70,9 @@ function NotFoundPage() {
         action={{
           label: 'Revenir à Today',
           onClick: () => {
-            window.location.assign(HOME_PATH);
+            // `assign` brut visait la racine du domaine et sortait de l'app :
+            // on repasse par le préfixe de déploiement.
+            window.location.assign(`${BASENAME}${HOME_PATH.replace(/^\//, '')}`);
           },
         }}
       />
@@ -118,4 +131,4 @@ const routes: RouteObject[] = [
   },
 ];
 
-export const router = createBrowserRouter(routes);
+export const router = createBrowserRouter(routes, { basename: BASENAME });
