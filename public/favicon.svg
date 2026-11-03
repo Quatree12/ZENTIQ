@@ -1,18 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ZENTIQ">
-  <defs>
-    <linearGradient id="aura" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#72C8C1" />
-      <stop offset="1" stop-color="#A99ACB" />
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="#0D1015" />
-  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#34445A" stroke-width="2" />
-  <path
-    d="M20 20h24L28 44h16"
-    fill="none"
-    stroke="url(#aura)"
-    stroke-width="5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title"><title id="title">ZENTIQ</title><defs><linearGradient id="zentiq-aura-favicon" gradientUnits="userSpaceOnUse" x1="54" y1="48" x2="202" y2="186"><stop offset="0" stop-color="#72C8C1"/><stop offset="1" stop-color="#A99ACB"/></linearGradient></defs><g transform="translate(9.306 -4.307) scale(0.31282)"><g fill="none" stroke="url(#zentiq-aura-favicon)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M62 78h132L62 178h132"/><path d="M128 78V54"/></g></g></svg>
