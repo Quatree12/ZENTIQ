@@ -33,7 +33,7 @@ ne l'est pas.
 | State | Zustand |
 | Stockage local | IndexedDB via Dexie 4 |
 | Styles | CSS natif + variables CSS |
-| Icônes | Lucide |
+| Icones | Lucide |
 | Offline / install | Service Worker + Web App Manifest |
 
 Aucune dépendance superflue. Pas de framework CSS, pas de librairie de composants :
@@ -64,7 +64,7 @@ ZENTIQ/
 ├── src/
 │   ├── app/                bootstrap, router, providers, config
 │   ├── design-system/      tokens, typographie, spacing, reset, index
-│   ├── components/         design system de composants (buttons, cards, …)
+│   ├── components/         design system de composants (buttons, cards, ...)
 │   ├── layouts/            AppLayout, Sidebar, MobileDrawer, PageHeader
 │   ├── pages/              Today / Inspire / Grow / Journey / Me
 │   ├── database/           Dexie + schéma + migrations + repositories
