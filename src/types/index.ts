@@ -1,15 +1,69 @@
 /**
- * Ré-exports des modèles.
+ * Modèles de base et ré-exports.
  *
  * Les composants importent depuis '@/types' — jamais depuis un fichier profond —
  * pour qu'une réorganisation interne ne casse pas les imports.
  */
 
-/* Les types de base (BaseEntity, SyncableEntity, TimestampedEntity, MoodLevel,
-   EntityId, TableName) sont déclarés directement dans ce fichier : ils n'ont
-   pas à être réexportés depuis './index', ce qui créait un import circulaire
-   et faisait perdre id / createdAt / updatedAt à tous les modèles qui en
-   héritent. */
+/* --------------------------------------------------------------------------
+   Types de base — déclarés ICI et exportés directement.
+   --------------------------------------------------------------------------
+   Ces types étaient auparavant « réexportés » depuis './index', c'est-à-dire
+   depuis ce fichier lui-même : un import circulaire qui empêchait TypeScript de
+   résoudre BaseEntity, et faisait perdre id / createdAt / updatedAt à tous les
+   modèles qui en héritent (Goal, Habit, Favorite…).
+   -------------------------------------------------------------------------- */
+
+/** Champs communs à toutes les entités persistées. */
+export interface BaseEntity {
+  /** Identifiant unique, généré côté client (uuid v4). */
+  id: string;
+  /** Date de création, ISO 8601. */
+  createdAt: string;
+  /** Date de dernière modification, ISO 8601. */
+  updatedAt: string;
+}
+
+/**
+ * Champs optionnels de synchronisation.
+ *
+ * RÉSERVE : aucune synchronisation cloud n'est implémentée à ce stade. Ces
+ * champs existent uniquement pour éviter une migration cassante le jour où une
+ * synchronisation optionnelle serait ajoutée. Ils restent `undefined`.
+ */
+export interface SyncableEntity {
+  syncState?: 'local' | 'pending' | 'synced';
+  remoteId?: string;
+  syncedAt?: string;
+}
+
+/** Alias : une entité horodatée est une entité de base. */
+export type TimestampedEntity = BaseEntity;
+
+/** Niveaux d'humeur — échelle courte (1..5), non culpabilisante. */
+export type MoodLevel = 1 | 2 | 3 | 4 | 5;
+
+export type EntityId = string;
+
+/** Union des tables exportables, utilisée par les services d'export/import. */
+export type TableName =
+  | 'profile'
+  | 'settings'
+  | 'moods'
+  | 'goals'
+  | 'habits'
+  | 'habitCompletions'
+  | 'challenges'
+  | 'journal'
+  | 'quotes'
+  | 'affirmations'
+  | 'music'
+  | 'favorites'
+  | 'meta';
+
+/* --------------------------------------------------------------------------
+   Modèles du domaine
+   -------------------------------------------------------------------------- */
 
 export type { UserProfile, UserSettings } from './user.types';
 export { DEFAULT_SETTINGS_VALUES } from './user.types';
