@@ -1,6 +1,7 @@
 /**
  * Hooks métier du domaine humeur.
  */
+import { useCallback } from 'react';
 import { useMoodStore } from '@/stores/mood.store';
 import type { MoodEntry, MoodLevel } from '@/types';
 
@@ -17,11 +18,27 @@ export interface UseMoodResult {
 
 /**
  * Accès à l'humeur du jour et à l'historique.
- * Charge les données au premier montage si elles ne sont pas déjà en mémoire.
+ *
+ * NOTE IMPORTANTE : `refresh` est mémorisée via `useCallback`. Sans cela, la
+ * fonction était recréée à chaque rendu, et tout `useEffect(…, [refresh])`
+ * se relançait en boucle — le composant appelait `refresh()`, ce qui provoquait
+ * un rendu, ce qui recréait `refresh`, et ainsi de suite. C'est ce qui bloquait
+ * l'écran Today sur un indicateur de chargement permanent.
  */
 export function useMood(): UseMoodResult {
-  const { todayEntry, entries, average, loading, saving, error, saveToday, load, loadToday } =
-    useMoodStore();
+  const todayEntry = useMoodStore((state) => state.todayEntry);
+  const entries = useMoodStore((state) => state.entries);
+  const average = useMoodStore((state) => state.average);
+  const loading = useMoodStore((state) => state.loading);
+  const saving = useMoodStore((state) => state.saving);
+  const error = useMoodStore((state) => state.error);
+  const saveToday = useMoodStore((state) => state.saveToday);
+  const load = useMoodStore((state) => state.load);
+  const loadToday = useMoodStore((state) => state.loadToday);
+
+  const refresh = useCallback(async () => {
+    await Promise.all([loadToday(), load()]);
+  }, [loadToday, load]);
 
   return {
     todayEntry,
@@ -31,8 +48,6 @@ export function useMood(): UseMoodResult {
     saving,
     error,
     saveToday,
-    refresh: async () => {
-      await Promise.all([loadToday(), load()]);
-    },
+    refresh,
   };
 }
