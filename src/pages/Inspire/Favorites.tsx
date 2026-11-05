@@ -1,41 +1,134 @@
+import { useMemo } from 'react';
+import { Heart, Music } from 'lucide-react';
 import { Card } from '@/components/cards';
 import { Badge } from '@/components/badges';
+import { IconButton } from '@/components/buttons';
 import { EmptyState } from '@/components/feedback';
+import { useToast } from '@/components/feedback/Toast';
+import { useFavorites } from '@/hooks/useProfile';
+import { AFFIRMATIONS, MUSIC, QUOTES } from '@/content/library';
+import { INSPIRATION_CATEGORY_LABELS } from '@/types';
 import './Inspire.css';
 
+const TYPE_LABELS = {
+  quote: 'Citation',
+  affirmation: 'Affirmation',
+  music: 'Musique',
+} as const;
+
+type FavoriteKind = keyof typeof TYPE_LABELS;
+
+interface ResolvedFavorite {
+  id: string;
+  kind: FavoriteKind;
+  title: string;
+  subtitle: string;
+  category?: string;
+}
+
 /**
- * Favoris.
+ * Favoris — section de l'espace Inspire.
  *
- * La table `favorites`, le repository et le store sont en place et
- * fonctionnels (ajout idempotent, mise à jour optimiste, nettoyage des
- * orphelins). En revanche, il n'y a rien à mettre en favori tant que la banque
- * de contenu n'est pas livrée. Cette section le dit franchement.
+ * Croise la table `favorites` avec la banque éditoriale : seuls les items
+ * réellement enregistrés sont affichés, dans l'ordre où ils ont été marqués.
  */
 export function Favorites() {
+  const { favoriteKeys, toggleFavorite, refresh } = useFavorites();
+  const { notify } = useToast();
+
+  // Résolution des clés `type:id` vers le contenu réel de la banque.
+  const items = useMemo<ResolvedFavorite[]>(() => {
+    const byKey = new Map<string, ResolvedFavorite>();
+
+    for (const quote of QUOTES) {
+      byKey.set('quote:' + quote.id, {
+        id: quote.id,
+        kind: 'quote',
+        title: quote.text,
+        subtitle: quote.author,
+        category: INSPIRATION_CATEGORY_LABELS[quote.category],
+      });
+    }
+    for (const item of AFFIRMATIONS) {
+      byKey.set('affirmation:' + item.id, {
+        id: item.id,
+        kind: 'affirmation',
+        title: item.text,
+        subtitle: 'Affirmation',
+        category: INSPIRATION_CATEGORY_LABELS[item.category],
+      });
+    }
+    for (const track of MUSIC) {
+      byKey.set('music:' + track.id, {
+        id: track.id,
+        kind: 'music',
+        title: track.title,
+        subtitle: track.artist,
+      });
+    }
+
+    return favoriteKeys
+      .map((key) => byKey.get(key))
+      .filter((item): item is ResolvedFavorite => item !== undefined);
+  }, [favoriteKeys]);
+
+  const handleRemove = async (kind: FavoriteKind, id: string, title: string) => {
+    await toggleFavorite(kind, id);
+    await refresh();
+    notify('Retiré des favoris.', { tone: 'info', detail: title });
+  };
+
   return (
     <section className="content-library" aria-labelledby="library-favorites">
       <header className="content-library__header">
         <p className="overline">Favoris</p>
         <h2 className="heading-sm" id="library-favorites">
-          Aucun élément
+          {items.length === 0
+            ? 'Aucun élément'
+            : items.length + ' élément' + (items.length > 1 ? 's' : '')}
         </h2>
       </header>
 
-      <Card compact>
-        <div className="row-wrap">
-          <Badge>Stockage prêt</Badge>
-          <Badge tone="teal">Contenu en attente</Badge>
-        </div>
-        <p className="body-base spacer-top-sm">
-          Le mécanisme de favori est opérationnel : table dédiée, ajout idempotent et retour
-          immédiat à l'écran. Il ne manque que du contenu à marquer.
-        </p>
-      </Card>
-
-      <EmptyState
-        title="Aucun favori"
-        description="Quand la banque de citations, d'affirmations et de musique sera livrée, tu pourras garder ici ce qui te parle."
-      />
+      {items.length === 0 ? (
+        <EmptyState
+          title="Aucun favori pour l'instant"
+          description="Touche le cœur sur une citation, une affirmation ou un titre pour le retrouver ici."
+        />
+      ) : (
+        <ul className="inspire-list">
+          {items.map((item) => (
+            <li key={item.kind + ':' + item.id}>
+              <Card compact className="inspire-item">
+                <div className="row-between">
+                  <div className="music-item__head">
+                    {item.kind === 'music' && (
+                      <span className="music-item__icon" aria-hidden="true">
+                        <Music size={16} />
+                      </span>
+                    )}
+                    <div className="music-item__titles">
+                      <p className="inspire-item__text">{item.title}</p>
+                      <p className="body-sm">{item.subtitle}</p>
+                    </div>
+                  </div>
+                  <IconButton
+                    label="Retirer des favoris"
+                    accent="lavender"
+                    active
+                    onClick={() => void handleRemove(item.kind, item.id, item.title)}
+                  >
+                    <Heart size={16} />
+                  </IconButton>
+                </div>
+                <div className="row-wrap">
+                  <Badge tone="lavender">{TYPE_LABELS[item.kind]}</Badge>
+                  {item.category && <Badge>{item.category}</Badge>}
+                </div>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
