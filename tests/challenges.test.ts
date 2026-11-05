@@ -8,9 +8,13 @@
  * C'est le second niveau qui verifie les invariants les plus importants :
  * idempotence d'une coche, compteur derive, derivation de la date de fin, et
  * persistance reelle.
+ *
+ * NOTE : `fake-indexeddb/auto` est importe en tout premier, AVANT tout module
+ * qui touche a Dexie. Sans cela, `db.ts` s'initialiserait sans IndexedDB et
+ * tous les tests de persistance echoueraient.
  */
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   computeChallengeProgress,
   describePace,
@@ -19,7 +23,7 @@ import {
 } from '@/utils/challenge-stats';
 import { computeEndDate } from '@/database/repositories';
 import type { Challenge, ChallengeDay } from '@/types';
-import { lastNDays, shiftDays, todayKey } from '@/utils/dates';
+import { shiftDays, todayKey } from '@/utils/dates';
 
 /* --------------------------------------------------------------------------
    Fabriques
@@ -72,7 +76,7 @@ describe('computeChallengeProgress', () => {
       challenge({ durationDays: 7, days: days(7, 3) }),
     );
     expect(progress.completedDays).toBe(3);
-    expect(progress.percent).toBe(43); // 3/7 -> 42.857 -> 43
+    expect(progress.percent).toBe(43);
     expect(progress.remainingDays).toBe(4);
   });
 
@@ -107,13 +111,11 @@ describe('computeChallengeProgress', () => {
   });
 
   it('ne propose aucune etape hors de la fenetre du challenge', () => {
-    // Challenge commence et termine il y a longtemps.
     const past = computeChallengeProgress(
       challenge({ startDate: shiftDays(todayKey(), -30), durationDays: 3 }),
     );
     expect(past.todayStepNumber).toBeNull();
 
-    // Challenge qui commence dans le futur.
     const future = computeChallengeProgress(
       challenge({ startDate: shiftDays(todayKey(), 5) }),
     );
@@ -159,7 +161,6 @@ describe('viewChallengeDays', () => {
     const start = shiftDays(today, -2);
     const view = viewChallengeDays(challenge({ startDate: start, durationDays: 5 }), today);
 
-    // Jour 1 : passe et non coche -> encore actionnable.
     expect(view[0]?.isPast).toBe(true);
     expect(view[0]?.isActionable).toBe(true);
   });
@@ -210,8 +211,8 @@ describe('summarizeChallenges', () => {
 
   it('ne moyenne la progression que sur les challenges en cours', () => {
     const summary = summarizeChallenges([
-      challenge({ id: 'a', status: 'active', days: days(10, 5) }), // 50 %
-      challenge({ id: 'b', status: 'active', days: days(10, 10) }), // 100 % (mais actif)
+      challenge({ id: 'a', status: 'active', days: days(10, 5) }),
+      challenge({ id: 'b', status: 'active', days: days(10, 10) }),
     ]);
     expect(summary.averageProgress).toBe(75);
   });
@@ -253,7 +254,6 @@ describe('describePace', () => {
 
 describe('computeEndDate', () => {
   it('inclut le jour de depart dans la duree', () => {
-    // Un « 7 jours » qui commence le 1er finit le 7, pas le 8.
     expect(computeEndDate('2026-03-01', 7)).toBe('2026-03-07');
   });
 
@@ -320,7 +320,6 @@ describe('challengesRepository', () => {
     const first = await challengesRepository.completeDay(created.id, 1);
     expect(first?.daysCompleted).toBe(1);
 
-    // Deuxieme appel identique : la journee ne doit PAS etre comptee deux fois.
     const second = await challengesRepository.completeDay(created.id, 1);
     expect(second?.daysCompleted).toBe(1);
 
@@ -424,7 +423,7 @@ describe('challengesRepository', () => {
     const { challengesRepository } = await import('@/database/repositories');
 
     const created = await challengesRepository.create({
-      title: 'Ephémère',
+      title: 'Ephemere',
       durationDays: 3,
       startDate: todayKey(),
     });
