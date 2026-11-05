@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '@/database/db';
-import { goalsRepository, habitsRepository, journalRepository, moodsRepository } from '@/database/repositories';
+import {
+  goalsRepository,
+  habitsRepository,
+  journalRepository,
+  moodsRepository,
+} from '@/database/repositories';
 import {
   computeGoalStats,
   computeHabitStat,
@@ -12,6 +17,7 @@ import {
   type MoodStats,
   type StatPeriod,
 } from '@/utils/journey-stats';
+import type { Challenge, Goal, HabitCompletion, Habit, MoodEntry } from '@/types';
 
 /**
  * Chargement des statistiques de Journey.
@@ -68,10 +74,10 @@ export function useJourneyStats(): UseJourneyStatsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [moodEntries, setMoodEntries] = useState<Awaited<ReturnType<typeof moodsRepository.listAll>>>([]);
-  const [habits, setHabits] = useState<Awaited<ReturnType<typeof habitsRepository.listAll>>>([]);
-  const [completions, setCompletions] = useState<Awaited<ReturnType<typeof habitsRepository.completionsForDate>>>([]);
-  const [goalList, setGoalList] = useState<Awaited<ReturnType<typeof goalsRepository.listAll>>>([]);
+  const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [completions, setCompletions] = useState<HabitCompletion[]>([]);
+  const [goalList, setGoalList] = useState<Goal[]>([]);
   const [journalCount, setJournalCount] = useState(0);
   const [challengesActive, setChallengesActive] = useState(0);
 
@@ -96,9 +102,9 @@ export function useJourneyStats(): UseJourneyStatsResult {
       setCompletions(completionsAll);
       setGoalList(goalData);
       setJournalCount(journalTotal);
-      setChallengesActive(challenges.filter((c) => c.status === 'active').length);
+      setChallengesActive(challenges.filter((c: Challenge) => c.status === 'active').length);
     } catch (caught) {
-      setError(messageOf(caught, 'Tes statistiques n\'ont pas pu etre calculees.'));
+      setError(messageOf(caught, "Tes statistiques n'ont pas pu etre calculees."));
     } finally {
       setLoading(false);
     }
@@ -136,10 +142,7 @@ export function useJourneyStats(): UseJourneyStatsResult {
   );
 
   const hasAnyData =
-    moodEntries.length > 0 ||
-    habits.length > 0 ||
-    goalList.length > 0 ||
-    journalCount > 0;
+    moodEntries.length > 0 || habits.length > 0 || goalList.length > 0 || journalCount > 0;
 
   return {
     loading,
