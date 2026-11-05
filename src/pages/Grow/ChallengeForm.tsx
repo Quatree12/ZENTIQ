@@ -3,21 +3,6 @@
  *
  * Les cinq durees proposees sont celles du brief (3, 7, 14, 21, 30).
  *
- * PHASE 4.1.7 — CORRECTIF DU SELECTEUR DE DUREE SUR MOBILE
- * --------------------------------------------------------
- * Les boutons de duree existaient et etaient bien de type="button", donc ils
- * ne soumettaient pas le formulaire. Le probleme constate sur iPhone etait
- * ailleurs : le CLAVIER ouvert occupait la moitie basse de l'ecran, et la zone
- * des durees se trouvait dessous. Le toucher partait au clavier.
- *
- * Trois protections ajoutees :
- *   1. `onPointerDown` traite la selection AVANT tout blur du clavier.
- *      Sur Safari iOS, `onClick` arrive apres le blur et peut etre perdu.
- *   2. Les boutons portent une cible tactile explicite (48 px) et
- *      `touch-action: manipulation`, qui supprime le delai de 300 ms.
- *   3. Le conteneur defile jusqu'au bouton touche, pour qu'il reste visible
- *      une fois le clavier referme.
- *
  * JALONS — trois propositions, jamais imposees
  * --------------------------------------------
  * Les jalons proposes sont CALCULES sur la duree choisie : un jalon « la
@@ -25,8 +10,16 @@
  * jour 15. L'utilisateur peut decocher ceux qu'il ne veut pas ; un challenge
  * sans jalon reste parfaitement valide.
  *
- * Les jalons ne sont pas des recompenses : chacun se franchit quand ses etapes
- * sont reellement faites, et la date est relevee sur les etapes elles-memes.
+ * CHAMP « SEANCES VISEES » — CORRECTIF DE SAISIE
+ * ----------------------------------------------
+ * Le champ etait pilote par un nombre, et borner a chaque frappe rendait la
+ * saisie impossible : vider le champ produit la chaine vide, `Number('')` vaut
+ * 0, et le `Math.max(1, 0)` du onChange reposait aussitot « 1 ». On ne pouvait
+ * donc jamais effacer pour retaper, ni composer un nombre chiffre par chiffre.
+ *
+ * Le champ est desormais en TEXTE LIBRE pendant la frappe — seul le chiffre a
+ * une signification, tout autre caractere est ignore — et les bornes (1 a 7)
+ * sont appliquees a la SORTIE du champ, pas a chaque touche.
  */
 import { useId, useMemo, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
@@ -58,12 +51,15 @@ const STEP_SUGGESTIONS: Record<number, string[]> = {
 /** Rythmes proposes, dans l'ordre du plus simple au plus souple. */
 const RHYTHMS: ChallengeRhythm[] = ['once', 'recurring', 'milestones'];
 
+/** Bornes du nombre de seances visees par semaine. */
+const MIN_PER_WEEK = 1;
+const MAX_PER_WEEK = 7;
+
 /**
  * Jalons suggeres pour une duree donnee.
  *
  * Trois jalons : un premier tiers, la moitie du chemin, et la derniere ligne
- * droite. Les numeros sont calcules, arrondis a l'entier, et bornes a la duree —
- * un jalon au-dela du dernier jour ne serait jamais franchi.
+ * droite. Les numeros sont calcules, arrondis a l'entier, et bornes a la duree.
  */
 function suggestMilestones(duration: number): Array<{ title: string; throughDay: number }> {
   if (duration < 3) return [];
@@ -91,11 +87,15 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
   const [duration, setDuration] = useState<number>(7);
   const [startDate, setStartDate] = useState(todayKey());
   const [rhythm, setRhythm] = useState<ChallengeRhythm>('once');
-  const [targetPerPeriod, setTargetPerPeriod] = useState<number>(3);
+  /**
+   * Saisie BRUTE du nombre de seances, gardee en texte.
+   * Le champ peut donc etre vide pendant la frappe : c'est ce qui rend la
+   * saisie possible. La conversion et les bornes se font a la sortie du champ.
+   */
+  const [perWeekInput, setPerWeekInput] = useState('3');
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
 
-  // Jalons proposes pour la duree courante, et ceux que l'utilisateur garde.
   const suggested = useMemo(() => suggestMilestones(duration), [duration]);
   const [keptMilestones, setKeptMilestones] = useState<number[]>([0, 1, 2]);
 
@@ -104,23 +104,26 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
     maxLength(title, 80, 'Le nom'),
   );
 
+  /** Nombre de seances effectif, borne. Utilise a la soumission. */
+  const perWeek = clampPerWeek(perWeekInput);
+
   /**
-   * Selection d'une duree.
-   *
-   * Appelee depuis `onPointerDown` : on referme d'abord le clavier, puis on
-   * laisse le navigateur traiter le tap. Le blur explicite evite que le focus
-   * reste dans le champ de saisie et rouvre le clavier.
+   * Applique les bornes quand l'utilisateur quitte le champ.
+   * On reecrit la valeur affichee pour qu'elle corresponde a ce qui sera
+   * reellement enregistre — sinon le champ pourrait montrer « 12 » alors que
+   * c'est 7 qui part en base.
    */
+  const commitPerWeek = () => {
+    setPerWeekInput(String(clampPerWeek(perWeekInput)));
+  };
+
   const selectDuration = (value: number) => {
     if (typeof document !== 'undefined') {
       const active = document.activeElement;
       if (active instanceof HTMLElement) active.blur();
     }
     setDuration(value);
-    // La duree change : les jalons proposes changent aussi. On repart des trois
-    // propositions, sinon les anciens index ne designeraient plus les memes jours.
     setKeptMilestones([0, 1, 2]);
-
     durationsRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
 
@@ -143,7 +146,7 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       startDate,
       steps: STEP_SUGGESTIONS[duration],
       rhythm,
-      targetPerPeriod: rhythm === 'recurring' ? targetPerPeriod : undefined,
+      targetPerPeriod: rhythm === 'recurring' ? perWeek : undefined,
       milestones: suggested.filter((_, index) => keptMilestones.includes(index)),
     });
     setSaving(false);
@@ -218,7 +221,6 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         </div>
       </fieldset>
 
-      {/* --- Rythme ------------------------------------------------------- */}
       <fieldset className="challenge-form__rhythm">
         <legend className="field__label">Rythme</legend>
         <div className="challenge-form__chips">
@@ -260,20 +262,32 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         {rhythm === 'recurring' && (
           <Input
             label="Seances visees par semaine"
-            type="number"
-            min={1}
-            max={7}
-            value={String(targetPerPeriod)}
+            /* `text` et non `number` : un champ numerique vide est difficile a
+               saisir sur mobile, et le navigateur y impose ses propres bornes.
+               On filtre nous-memes les caracteres non numeriques. */
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={perWeekInput}
             onChange={(event) => {
-              const parsed = Number(event.target.value);
-              setTargetPerPeriod(Number.isFinite(parsed) ? Math.min(7, Math.max(1, parsed)) : 3);
+              // On ne garde que les chiffres : ni signe, ni separateur, ni
+              // lettre. Le champ peut rester vide pendant la frappe.
+              const digits = event.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+              setPerWeekInput(digits);
             }}
-            hint="Un objectif souple : c'est un cap, pas un quota."
+            onBlur={commitPerWeek}
+            hint={
+              'De ' +
+              MIN_PER_WEEK +
+              ' a ' +
+              MAX_PER_WEEK +
+              ' par semaine. Un objectif souple : c\'est un cap, pas un quota.'
+            }
           />
         )}
       </fieldset>
 
-      {/* --- Jalons ------------------------------------------------------- */}
       {suggested.length > 0 && (
         <fieldset className="challenge-form__milestones">
           <legend className="field__label">Jalons</legend>
@@ -342,4 +356,17 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       </div>
     </form>
   );
+}
+
+/**
+ * Convertit la saisie en nombre de seances borne.
+ *
+ * Un champ vide retombe sur la valeur par defaut (3) plutot que sur 0 : un
+ * utilisateur qui efface sans retaper ne doit pas se retrouver avec un objectif
+ * nul enregistre a son insu.
+ */
+function clampPerWeek(input: string): number {
+  const parsed = Number.parseInt(input, 10);
+  if (!Number.isFinite(parsed) || input.trim() === '') return 3;
+  return Math.min(MAX_PER_WEEK, Math.max(MIN_PER_WEEK, parsed));
 }
