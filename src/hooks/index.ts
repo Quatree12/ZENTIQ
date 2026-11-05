@@ -10,3 +10,7 @@ export { useOffline, useServiceWorker } from './useOffline';
 export type { UseOfflineResult, UseServiceWorkerResult } from './useOffline';
 export { useFavorites, useProfile, useSettings } from './useProfile';
 export type { UseFavoritesResult, UseProfileResult, UseSettingsResult } from './useProfile';
+export { useJourneyStats } from './useJourneyStats';
+export type { UseJourneyStatsResult } from './useJourneyStats';
+export { useChallenges } from './useChallenges';
+export type { UseChallengesResult } from './useChallenges';

@@ -7,3 +7,4 @@ export { useGoalsStore } from './goals.store';
 export { useHabitsStore } from './habits.store';
 export { useJournalStore } from './journal.store';
 export { useFavoritesStore, favoriteKey } from './favorites.store';
+export { useChallengesStore } from './challenges.store';
