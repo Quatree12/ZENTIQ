@@ -17,15 +17,10 @@ import {
 
 /* --------------------------------------------------------------------------
    1. TEXTE PLUS LARGE
-   --------------------------------------------------------------------------
-   Le reglage existait et etait persiste, mais aucune regle CSS ne le lisait.
-   Ces tests verifient qu'il devient REELLEMENT effectif : l'attribut pose sur
-   <html> est le declencheur du bloc `[data-large-text='true']` de themes.css.
    -------------------------------------------------------------------------- */
 
 describe('applyRenderSettings — Texte plus large', () => {
   beforeEach(() => {
-    // Environnement DOM minimal, pour tester l'effet sur l'element racine.
     document.documentElement.removeAttribute('data-large-text');
     document.documentElement.removeAttribute('data-accent');
     document.documentElement.removeAttribute('data-density');
@@ -51,8 +46,6 @@ describe('applyRenderSettings — Texte plus large', () => {
       largeReadableText: false,
     });
 
-    // La chaine doit etre 'false', et non l'attribut absent ou vide : le
-    // selecteur CSS teste une valeur exacte.
     expect(document.documentElement.dataset.largeText).toBe('false');
   });
 
@@ -88,12 +81,14 @@ describe('applyRenderSettings — Texte plus large', () => {
 
 /* --------------------------------------------------------------------------
    2. HABITUDES SUIVIES vs REGULARITE
-   --------------------------------------------------------------------------
-   Le resume affichait « HABITUDES 2 » juste sous un anneau a « 0 % », ce qui
-   laissait croire a une incoherence : le 2 comptait les habitudes SUIVIES, le
-   0 % leur REGULARITE. Ces tests fixent la distinction des deux valeurs.
    -------------------------------------------------------------------------- */
 
+/**
+ * Habitude de test pour une statistique.
+ *
+ * `lastReviewedAt` est fourni : le champ est REQUIS par le type `Habit` depuis
+ * la migration v2. L'omettre ici faisait echouer le type-check sur ce fichier.
+ */
 function habitStat(consistency: number | null, name = 'Test'): HabitStat {
   return {
     habit: {
@@ -106,6 +101,7 @@ function habitStat(consistency: number | null, name = 'Test'): HabitStat {
       icon: 'circle-check',
       accent: 'teal',
       archived: false,
+      lastReviewedAt: null,
       createdAt: '2026-01-01T08:00:00.000Z',
       updatedAt: '2026-01-01T08:00:00.000Z',
     },
@@ -129,9 +125,7 @@ describe('habitudes suivies et regularite', () => {
       journalCount: 0,
     });
 
-    // Deux habitudes suivies...
     expect(summary.habitsTracked).toBe(2);
-    // ...et une regularite nulle. Les deux chiffres sont distincts.
     expect(summary.consistency).toBe(0);
   });
 

@@ -1,13 +1,3 @@
-/**
- * Tests des statistiques de Journey.
- *
- * Le module `@/utils/journey-stats` est PUR : ces tests lui donnent des
- * donnees controlees et verifient les mesures. Aucun acces a IndexedDB, aucun
- * rendu React — c'est exactement ce qui rend ces calculs verifiables.
- *
- * Les dates sont exprimees RELATIVEMENT a aujourd'hui (via `lastNDays`), pour
- * que les tests ne dependent pas du jour d'execution.
- */
 import { describe, expect, it } from 'vitest';
 import {
   computeBestStreak,
@@ -23,6 +13,17 @@ import {
 } from '@/utils/journey-stats';
 import { lastNDays } from '@/utils/dates';
 import type { Goal, Habit, HabitCompletion, MoodEntry, MoodLevel } from '@/types';
+
+/**
+ * Tests des statistiques de Journey.
+ *
+ * Le module `@/utils/journey-stats` est PUR : ces tests lui donnent des
+ * donnees controlees et verifient les mesures. Aucun acces a IndexedDB, aucun
+ * rendu React — c'est exactement ce qui rend ces calculs verifiables.
+ *
+ * Les dates sont exprimees RELATIVEMENT a aujourd'hui (via `lastNDays`), pour
+ * que les tests ne dependent pas du jour d'execution.
+ */
 
 /* --------------------------------------------------------------------------
    Fabriques de donnees de test
@@ -40,6 +41,12 @@ function mood(date: string, level: MoodLevel, createdAt = '2026-01-01T08:00:00.0
   };
 }
 
+/**
+ * Habitude de test.
+ *
+ * `lastReviewedAt` est fourni : le champ est REQUIS par le type depuis la
+ * migration v2, et une habitude qui ne vient pas d'etre relue porte `null`.
+ */
 function habit(overrides: Partial<Habit> = {}): Habit {
   return {
     id: 'h-1',
@@ -51,6 +58,7 @@ function habit(overrides: Partial<Habit> = {}): Habit {
     icon: 'circle-check',
     accent: 'teal',
     archived: false,
+    lastReviewedAt: null,
     createdAt: '2026-01-01T08:00:00.000Z',
     updatedAt: '2026-01-01T08:00:00.000Z',
     ...overrides,
@@ -97,8 +105,6 @@ describe('computeMoodStats', () => {
     expect(stats.trend).toBeNull();
     expect(stats.bestDay).toBeNull();
     expect(stats.hardestDay).toBeNull();
-    // La serie de points doit rester complete, meme vide : c'est elle qui
-    // dessine la courbe.
     expect(stats.points).toHaveLength(7);
     expect(stats.points.every((p) => p.mood === null)).toBe(true);
   });
@@ -108,7 +114,6 @@ describe('computeMoodStats', () => {
     const entries = [mood(days[0]!, 2), mood(days[1]!, 4), mood(days[2]!, 5)];
 
     const stats = computeMoodStats(entries, 7);
-    // (2 + 4 + 5) / 3 = 3.666... -> 3.7
     expect(stats.average).toBe(3.7);
     expect(stats.entriesCount).toBe(3);
     expect(stats.missingCount).toBe(4);
@@ -126,7 +131,7 @@ describe('computeMoodStats', () => {
 
   it('ignore les entrees hors de la periode demandee', () => {
     const days = lastNDays(30);
-    const old = days[0]!; // il y a 30 jours : dans la fenetre de 30, hors de celle de 7
+    const old = days[0]!;
     const stats7 = computeMoodStats([mood(old, 1)], 7);
 
     expect(stats7.entriesCount).toBe(0);
@@ -148,7 +153,6 @@ describe('computeMoodStats', () => {
 
   it('detecte une tendance a la hausse', () => {
     const days = lastNDays(8);
-    // Premieres moities basses, secondes hautes.
     const entries = [
       mood(days[0]!, 1),
       mood(days[1]!, 1),
@@ -227,7 +231,6 @@ describe('expectedDaysIn', () => {
 
   it('compte uniquement les jours cibles pour une habitude personnalisee', () => {
     const window = lastNDays(7);
-    // Une seule cible : le jour courant de la semaine apparait une fois sur 7 jours.
     const monday = 1;
     const result = expectedDaysIn(habit({ frequency: 'custom', targetDays: [monday] }), window);
     expect(result).toBeGreaterThanOrEqual(0);
@@ -244,14 +247,13 @@ describe('computeHabitStat', () => {
     const stat = computeHabitStat(habitData, completions, 7);
     expect(stat.completedDays).toBe(4);
     expect(stat.expectedDays).toBe(7);
-    expect(stat.consistency).toBe(57); // 4/7 -> 57 %
+    expect(stat.consistency).toBe(57);
   });
 
   it('renvoie null et non 0 quand rien n etait attendu', () => {
     const habitData = habit({ frequency: 'custom', targetDays: [] });
     const stat = computeHabitStat(habitData, [], 7);
 
-    // Un « 0 % » serait un reproche immérité : la valeur doit rester absente.
     expect(stat.consistency).toBeNull();
   });
 
@@ -268,7 +270,6 @@ describe('computeHabitStat', () => {
   it('calcule la meilleure serie sans l inventer', () => {
     const days = lastNDays(10);
     const habitData = habit();
-    // Serie de 3 jours, puis trou, puis serie de 2 jours.
     const completions = [
       completion(habitData.id, days[0]!),
       completion(habitData.id, days[1]!),
@@ -284,7 +285,7 @@ describe('computeHabitStat', () => {
   it('ignore les realisations hors periode pour la regularite', () => {
     const days = lastNDays(30);
     const habitData = habit();
-    const completions = [completion(habitData.id, days[0]!)]; // il y a 30 jours
+    const completions = [completion(habitData.id, days[0]!)];
 
     const stat = computeHabitStat(habitData, completions, 7);
     expect(stat.completedDays).toBe(0);
@@ -305,14 +306,12 @@ describe('computeCurrentStreak', () => {
 
   it('ne casse pas la serie si aujourd hui n est pas encore coche', () => {
     const days = lastNDays(5);
-    // Les 3 jours precedents sont coches, pas aujourd'hui.
     const dates = new Set([days[1]!, days[2]!, days[3]!]);
     expect(computeCurrentStreak(dates)).toBe(3);
   });
 
   it('s arrete au premier jour manquant', () => {
     const days = lastNDays(6);
-    // Aujourd'hui et avant-hier, mais pas hier.
     const dates = new Set([days[5]!, days[3]!, days[2]!]);
     expect(computeCurrentStreak(dates)).toBe(1);
   });
@@ -347,11 +346,7 @@ describe('computeOverallConsistency', () => {
       window.slice(0, 7).map((day) => completion('h-a', day)),
       7,
     );
-    const notMeasurable = computeHabitStat(
-      habit({ id: 'h-b', frequency: 'custom', targetDays: [] }),
-      [],
-      7,
-    );
+    const notMeasurable = computeHabitStat(habit({ id: 'h-b', frequency: 'custom', targetDays: [] }), [], 7);
 
     expect(computeOverallConsistency([measurable, notMeasurable])).toBe(100);
   });
@@ -378,7 +373,6 @@ describe('computeGoalStats', () => {
 
     expect(stats.active).toHaveLength(1);
     expect(stats.completed).toHaveLength(1);
-    // Les archives sont exclues du total.
     expect(stats.total).toBe(2);
   });
 
@@ -389,7 +383,6 @@ describe('computeGoalStats', () => {
       goal({ id: 'g-3', status: 'completed', progress: 100 }),
     ]);
 
-    // (20 + 80) / 2 = 50 : l'objectif atteint ne gonfle pas la moyenne.
     expect(stats.overallProgress).toBe(50);
   });
 
@@ -472,7 +465,6 @@ describe('summarizeJourney', () => {
     });
 
     expect(text).toContain('Chaque geste compte');
-    // Aucun mot de reproche.
     expect(text.toLowerCase()).not.toContain('echec');
     expect(text.toLowerCase()).not.toContain('raté');
   });
