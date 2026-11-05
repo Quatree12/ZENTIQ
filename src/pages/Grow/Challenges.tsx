@@ -12,23 +12,22 @@ import { CompletedChallengeCard } from './CompletedChallengeCard';
 import { ChallengeForm } from './ChallengeForm';
 import { CHALLENGE_STATUS_LABELS } from '@/types';
 import { formatDateKey } from '@/utils/dates';
-import './Challenges.css';
-// Styles des jalons, des rythmes et des pickers du formulaire. Ce fichier
-// portait des regles pourtant referencees par le composant : sans cet import,
-// les jalons s'affichaient sans mise en forme (le meme oubli que la regle de
-// l'auteur de citation, restee un temps dans un fichier jamais importe).
-import './ChallengeMilestones.css';
 
 /**
  * CHALLENGES — section de l'espace GROW.
  *
- * Quatre groupes, dans l'ordre d'usage : ce qui est en cours, ce qui va
- * commencer, ce qui est termine, puis ce qui a ete mis de cote. Un challenge
- * mis de cote n'est pas cache : il est range, et peut etre repris.
+ * UN SEUL FICHIER DE STYLE : `Challenges.css`.
  *
- * Toutes les progressions viennent des etapes reellement cochees. Aucun
- * compteur n'est stocke a la main : le repository les derive, et le module de
- * calcul les lit.
+ * Les regles des jalons et des rythmes y ont ete rapatriees. Elles vivaient
+ * dans un `ChallengeMilestones.css` separe, ajoute au depot APRES la derniere
+ * publication reussie. Le service worker servait alors un manifeste de
+ * prechargement qui ne connaissait pas ce fichier : son import echouait, et
+ * avec lui le chargement du graphe de modules — l'application entiere tombait
+ * sur « Importing a module script failed ». .
+ *
+ * Lecon retenue : un nouveau fichier de style doit voyager avec le fichier qui
+ * l'importe dans le MEME commit que la mise en cache, ou mieux, rester dans un
+ * fichier deja connu du service worker. C'est ce second choix qui est applique.
  */
 export function Challenges() {
   const {
