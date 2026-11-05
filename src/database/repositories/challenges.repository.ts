@@ -1,10 +1,16 @@
 import { db } from '@/database/db';
-import type { Challenge, ChallengeDay, ChallengeStatus } from '@/types';
+import type {
+  Challenge,
+  ChallengeDay,
+  ChallengeMilestone,
+  ChallengeRhythm,
+  ChallengeStatus,
+} from '@/types';
 import { nowIso, shiftDays, todayKey } from '@/utils/dates';
 import { guard, prepareInsert, prepareUpdate } from './base.repository';
 
 /**
- * Acces aux challenges.
+ * Acces aux challenges — version avancee.
  *
  * DEUX INVARIANTS TENUS ICI, et nulle part ailleurs :
  *
@@ -13,9 +19,16 @@ import { guard, prepareInsert, prepareUpdate } from './base.repository';
  *      impossible une progression qui ne correspondrait pas aux etapes
  *      reellement cochees.
  *
- *   2. `endDate` est toujours DERIVE de `startDate + durationDays - 1`. Le
- *      challenge dure N jours, jour de depart inclus : un « 7 jours » qui
- *      commence jeudi finit le mercredi suivant.
+ *   2. `endDate` est toujours DERIVE de `startDate + durationDays - 1 +
+ *      postponedDays`. Le challenge dure N jours, jour de depart inclus, et
+ *      chaque report le decale d'autant.
+ *
+ * TROISIEME INVARIANT, ajoute avec les jalons :
+ *
+ *   3. Un jalon est FRANCHI quand toutes les etapes qu'il couvre sont faites.
+ *      Sa date de franchissement est relevee sur les etapes elles-memes, jamais
+ *      inventee. Un jalon ne peut donc pas etre « atteint » sans progression
+ *      reelle.
  *
  * Le statut est recalcule a chaque lecture : un challenge dont la date de
  * depart est passee devient actif sans qu'aucune tache planifiee n'ait a le
@@ -32,6 +45,12 @@ export interface CreateChallengeInput {
   /** Libelles des etapes. Si absent, un libelle generique par jour est utilise. */
   steps?: string[];
   habitId?: string;
+  /** Rythme choisi. Par defaut `once` — le parcours lineaire historique. */
+  rhythm?: ChallengeRhythm;
+  /** Cible par periode, pour le rythme `recurring`. */
+  targetPerPeriod?: number;
+  /** Jalons demandes, sous forme « jusqu'au jour N » + titre. */
+  milestones?: Array<{ title: string; throughDay: number }>;
 }
 
 /** Construit les N etapes d'un challenge, en reprenant les libelles fournis. */
@@ -42,14 +61,70 @@ function buildDays(durationDays: number, steps: string[] = []): ChallengeDay[] {
   }));
 }
 
-/** Dernier jour du challenge : depart + duree - 1. */
-export function computeEndDate(startDate: string, durationDays: number): string {
-  return shiftDays(startDate, Math.max(0, durationDays - 1));
+/**
+ * Construit les jalons demandes, en les bornant a la duree reelle.
+ *
+ * Un jalon qui couvrirait plus de jours que le challenge n'en compte ne serait
+ * jamais franchi : on le ramene a la duree, pour qu'il reste atteignable.
+ */
+function buildMilestones(
+  requested: Array<{ title: string; throughDay: number }> | undefined,
+  durationDays: number,
+): ChallengeMilestone[] {
+  if (!requested || requested.length === 0) return [];
+
+  return requested
+    .map((item) => ({
+      title: item.title.trim(),
+      throughDay: Math.min(Math.max(1, Math.round(item.throughDay)), durationDays),
+    }))
+    .filter((item) => item.title.length > 0)
+    .sort((a, b) => a.throughDay - b.throughDay)
+    .map((item, index) => ({ index: index + 1, title: item.title, throughDay: item.throughDay }));
+}
+
+/** Dernier jour du challenge : depart + duree - 1 + reports. */
+export function computeEndDate(
+  startDate: string,
+  durationDays: number,
+  postponedDays = 0,
+): string {
+  return shiftDays(startDate, Math.max(0, durationDays - 1) + Math.max(0, postponedDays));
 }
 
 /** Compteur derive des etapes completees. Jamais saisi a la main. */
 function countCompleted(days: ChallengeDay[]): number {
   return days.filter((day) => day.completedAt !== undefined).length;
+}
+
+/**
+ * Recalcule les jalons depuis les etapes reellement faites.
+ *
+ * La date de franchissement est celle de la DERNIERE etape du jalon : c'est le
+ * jour ou, concretement, le jalon a ete atteint. Si le jalon n'est pas encore
+ * franchi, `reachedAt` est retire — un jalon franchi ne peut pas le redevenir
+ * apres decochage.
+ */
+function deriveMilestones(
+  milestones: ChallengeMilestone[] | undefined,
+  days: ChallengeDay[],
+): ChallengeMilestone[] {
+  if (!milestones || milestones.length === 0) return [];
+
+  return milestones.map((milestone) => {
+    const covered = days.filter((day) => day.dayNumber <= milestone.throughDay);
+    const reached = covered.length > 0 && covered.every((day) => day.completedAt !== undefined);
+
+    if (!reached) return { ...milestone, reachedAt: undefined };
+
+    // Date la plus tardive parmi les etapes du jalon.
+    const dates = covered
+      .map((day) => day.completedAt)
+      .filter((value): value is string => value !== undefined)
+      .sort();
+
+    return { ...milestone, reachedAt: dates[dates.length - 1] };
+  });
 }
 
 /**
@@ -70,19 +145,27 @@ export function resolveStatus(
   return 'active';
 }
 
-/** Applique le statut recalcule et le compteur derive. */
+/** Applique le statut recalcule, le compteur derive et les jalons derives. */
 function withDerived(challenge: Challenge, reference?: string): Challenge {
   const status = resolveStatus(challenge, reference);
+  const milestones = deriveMilestones(challenge.milestones, challenge.days);
+
   return {
     ...challenge,
     status,
     daysCompleted: countCompleted(challenge.days),
+    milestones,
+    endDate: computeEndDate(
+      challenge.startDate,
+      challenge.durationDays,
+      challenge.postponedDays ?? 0,
+    ),
     completedAt: status === 'completed' ? challenge.completedAt ?? nowIso() : undefined,
   };
 }
 
 export const challengesRepository = {
-  /** Tous les challenges, avec statut et compteur a jour. */
+  /** Tous les challenges, avec statut, compteur et jalons a jour. */
   async listAll(): Promise<Challenge[]> {
     return guard('challenges.listAll', async () => {
       const items = await db.challenges.toArray();
@@ -95,6 +178,16 @@ export const challengesRepository = {
     return guard('challenges.listByStatus', async () => {
       const items = await db.challenges.where('status').equals(status).toArray();
       return items.map((item) => withDerived(item)).sort(sortChallenges);
+    });
+  },
+
+  /** Challenges filtres par rythme. */
+  async listByRhythm(rhythm: ChallengeRhythm): Promise<Challenge[]> {
+    return guard('challenges.listByRhythm', async () => {
+      const all = await challengesRepository.listAll();
+      // Un challenge sans rythme explicite est `once` : il doit apparaitre
+      // dans ce filtre, sinon il disparaitrait de la vue sans raison.
+      return all.filter((item) => (item.rhythm ?? 'once') === rhythm);
     });
   },
 
@@ -112,13 +205,15 @@ export const challengesRepository = {
 
   /**
    * Cree un challenge.
-   * Les etapes et la date de fin sont construites ici, jamais par l'appelant.
+   * Les etapes, la date de fin et les jalons sont construits ici, jamais par
+   * l'appelant.
    */
   async create(input: CreateChallengeInput): Promise<Challenge> {
     return guard('challenges.create', async () => {
       const startDate = input.startDate ?? todayKey();
       const durationDays = Math.max(1, Math.round(input.durationDays));
       const days = buildDays(durationDays, input.steps);
+      const rhythm = input.rhythm ?? 'once';
 
       const challenge = prepareInsert<Challenge>({
         title: input.title.trim(),
@@ -131,6 +226,13 @@ export const challengesRepository = {
         daysCompleted: 0,
         days,
         habitId: input.habitId,
+        rhythm,
+        rhythmConfig:
+          rhythm === 'recurring'
+            ? { rhythm, targetPerPeriod: input.targetPerPeriod, periodDays: 7 }
+            : { rhythm },
+        milestones: buildMilestones(input.milestones, durationDays),
+        postponedDays: 0,
       });
 
       const derived = withDerived(challenge);
@@ -189,6 +291,33 @@ export const challengesRepository = {
       });
 
       const updated = withDerived({ ...existing, days }, todayKey());
+      await db.challenges.put(prepareUpdate(existing, updated));
+      return updated;
+    });
+  },
+
+  /**
+   * Reporte un challenge de quelques jours.
+   *
+   * REGLE PRODUIT : un jour manque n'est JAMAIS une remise a zero. L'utilisateur
+   * decale son challenge, `endDate` est recalcule, et le compteur de reports
+   * augmente. Aucune etape n'est decochee, aucune progression n'est perdue.
+   *
+   * Le report est borne : au-dela de 30 jours cumules, on refuse plutot que de
+   * laisser glisser indefiniment un challenge qui ne se termine jamais.
+   */
+  async postpone(id: string, days = 1): Promise<Challenge | null> {
+    return guard('challenges.postpone', async () => {
+      const existing = await db.challenges.get(id);
+      if (!existing) return null;
+
+      const requested = Math.max(1, Math.round(days));
+      const already = existing.postponedDays ?? 0;
+      const applied = Math.min(requested, Math.max(0, 30 - already));
+      if (applied === 0) return withDerived(existing);
+
+      const postponedDays = already + applied;
+      const updated = withDerived({ ...existing, postponedDays }, todayKey());
       await db.challenges.put(prepareUpdate(existing, updated));
       return updated;
     });
