@@ -79,7 +79,7 @@
   --color-info-soft: var(--color-accent-soft);
 
   /* ---------------------------------------------------------------------
-     7. HUMEURS — 5 niveaux
+     7. HUMEURS
      --------------------------------------------------------------------- */
   --color-mood-1: #e3796f;
   --color-mood-2: #e0b26a;
@@ -131,12 +131,15 @@
      Nunito     -> interface, donnees, navigation
      Montserrat -> citations et titres editoriaux
 
-     Cormorant Garamond est retiree : le rendu serif tres fin manquait de
-     presence en petit corps sur fond sombre. Montserrat, plus large et plus
-     ouverte, tient mieux sur un ecran de telephone.
+     GRAISSE DES CITATIONS : 400 (Regular).
+     Le 600 precedent donnait un rendu gras que l'utilisateur n'a pas
+     souhaite. Le trait fin de Montserrat est conserve : c'est un choix
+     assume, et l'italique suffit a distinguer une citation d'un paragraphe.
 
-     `--font-data` pointe vers Nunito avec `tabular-nums` : les chiffres ne
-     tremblent pas quand ils changent (cf. .data-value).
+     TAILLE DES CITATIONS : reduite de 10 % environ, pour laisser la
+     hierarchie au titre de page et au corps de texte.
+
+     `--font-data` pointe vers Nunito avec `tabular-nums`.
      ===================================================================== */
   --font-ui: 'Nunito', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-data: 'Nunito', 'Nunito Sans', system-ui, -apple-system, sans-serif;
@@ -155,11 +158,10 @@
   --text-3xl: clamp(1.75rem, 1.5rem + 1.1vw, 1.875rem); /* 28 -> 30 px */
   --text-4xl: clamp(2.125rem, 1.7rem + 1.8vw, 2.5rem); /* 34 -> 40 px */
 
-  /* Citation editoriale — Montserrat.
-     La borne basse redescend par rapport a Cormorant : Montserrat occupe
-     nettement plus de largeur a taille egale, et une citation de deux lignes
-     en devient trois si on garde la meme valeur. */
-  --text-editorial: clamp(1.375rem, 1.1rem + 1.3vw, 1.75rem); /* 22 -> 28 px */
+  /* Citation editoriale — Montserrat 400.
+     Plus basse que le corps de texte dans sa borne haute, pour que le titre
+     de page reste l'element dominant de l'ecran. */
+  --text-editorial: clamp(1.25rem, 1.05rem + 1vw, 1.5625rem); /* 20 -> 25 px */
 
   /* Roles dedies */
   --text-stat: clamp(1.75rem, 1.4rem + 1.4vw, 2.125rem); /* 28 -> 34 px */
@@ -175,11 +177,11 @@
 
   /* Interlignes */
   --leading-tight: 1.2;
-  --leading-snug: 1.35;
+  --leading-snug: 1.4;
   --leading-normal: 1.55;
   --leading-relaxed: 1.65;
 
-  /* Interlettrage — Montserrat est deja large, on ne l'espace pas davantage */
+  /* Interlettrage */
   --tracking-tight: -0.01em;
   --tracking-normal: 0;
   --tracking-wide: 0.03em;

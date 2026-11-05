@@ -1,34 +1,28 @@
 /* ==========================================================================
    ZENTIQ — TYPOGRAPHIE
-   Nunito     : interface, donnees, navigation (police principale)
+   Nunito     : interface, donnees, navigation
    Montserrat : citations et titres editoriaux
 
-   PHASE 4.1.1 — MONTSERRAT POUR LES CITATIONS
-   --------------------------------------------
-   Cormorant Garamond est retiree de l'application. Le rendu serif classique,
-   tres fin en petit corps sur fond sombre, manquait de presence sur un ecran
-   de telephone.
+   PHASE 4.1.2 — TRAIT FIN SUR LES CITATIONS
+   ------------------------------------------
+   Montserrat passe de 600 a 400 sur les citations.
+   Le 600 donnait un rendu gras que l'utilisateur n'a pas souhaite : il veut un
+   trait fin. C'est un choix assume — l'italique et la taille suffisent a
+   distinguer une citation d'un paragraphe, sans avoir a jouer sur la graisse.
 
-   Montserrat la remplace : formes geometriques ouvertes, qui tiennent mieux a
-   petite taille, et contraste net avec Nunito — l'oeil distingue immediatement
-   une citation d'un paragraphe.
-
-   GRAISSE : 600 et non 500. Montserrat en 500 serait trop legere en petit
-   corps sur Deep Space. Le 600 garde la chaleur sans perdre la fermete.
-
-   L'ITALIQUE EST CONSERVE : c'est lui qui signale le registre editorial.
-   Pour le retirer, une seule ligne a supprimer dans `.editorial-quote`.
+   Les TITRES EDITORIAUX restent en 700 : un titre est un repere, il doit
+   porter. C'est seulement le corps de la citation qui s'allege.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   ROLES EDITORIAUX — Montserrat 600 / 700
+   ROLES EDITORIAUX — Montserrat
    -------------------------------------------------------------------------- */
 
-/* Citation / affirmation */
+/* Citation / affirmation — trait fin, italique, taille contenue */
 .editorial-quote {
   font-family: var(--font-editorial);
   font-size: var(--text-editorial);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-regular);
   font-style: italic;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-normal);
@@ -37,7 +31,7 @@
   overflow-wrap: break-word;
 }
 
-/* Titre d'ecran editorial */
+/* Titre d'ecran editorial — reste affirmé */
 .editorial-title {
   font-family: var(--font-editorial);
   font-size: var(--text-3xl);
@@ -147,7 +141,7 @@
   color: var(--color-text-tertiary);
 }
 
-/* Statistique mise en avant — 28 a 34 px */
+/* Statistique mise en avant */
 .stat-value {
   font-family: var(--font-data);
   font-size: var(--text-stat);
@@ -159,7 +153,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   TEXTE LIBRE (journal, notes)
+   TEXTE LIBRE
    -------------------------------------------------------------------------- */
 .prose {
   font-family: var(--font-ui);
@@ -188,4 +182,4 @@
    CHARGEMENT DES POLICES
    -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap');

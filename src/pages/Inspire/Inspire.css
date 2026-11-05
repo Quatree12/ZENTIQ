@@ -87,14 +87,13 @@
   gap: var(--space-3);
 }
 
-/* Citation — Montserrat 600, italique.
-   L'interlettrage reste a 0 : Montserrat est large, la resserrer la rendrait
-   pateuse. Le 600 lui donne la presence qui manquait a Cormorant. */
+/* Citation — Montserrat 400, italique, trait fin.
+   La graisse 600 precedente donnait un rendu gras non souhaite. */
 .inspire-item__text {
   margin: 0;
   font-family: var(--font-editorial);
   font-size: var(--text-editorial);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-regular);
   font-style: italic;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-normal);
@@ -109,12 +108,12 @@
   color: var(--color-accent);
 }
 
-/* Affirmation — a la premiere personne, ton pose, sans italique */
+/* Affirmation — a la premiere personne, trait fin, sans italique */
 .inspire-item__affirmation {
   margin: 0;
   font-family: var(--font-editorial);
   font-size: var(--text-xl);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-regular);
   line-height: var(--leading-snug);
   color: var(--color-text-primary);
 }
