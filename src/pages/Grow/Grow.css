@@ -1,132 +1,82 @@
 /* ==========================================================================
-   Grow — styles locaux à l'espace
+   GROW — mise en page des sections
+
+   CE QUI ETAIT CASSE, ET POURQUOI
+   ------------------------------
+   Deux defauts visibles sur mobile :
+
+   1. Le bouton d'action de l'etat vide (« Creer un objectif ») apparaissait
+      CENTRE, seul au milieu de l'ecran, detache de son titre de section.
+      L'en-tete de section et l'etat vide etaient deux blocs sans conteneur
+      commun : rien ne garantissait leur empilement, et la mise en page du
+      composant EmptyState le centrait dans la largeur disponible.
+
+   2. La phrase de l'etat vide debordait sous la section suivante. Sa hauteur
+      n'etait pas contenue, donc les Habitudes commencaient avant la fin du
+      texte.
+
+   CORRECTIF : la section est une colonne a hauteur automatique, l'etat vide
+   est aligne a GAUCHE (comme le reste de l'application, qui est editorial) et
+   son texte est borne horizontalement.
    ========================================================================== */
 
 .grow-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
+  /* Contient ses enfants : aucun debordement sur la section suivante. */
+  min-width: 0;
+  overflow: visible;
 }
 
-.grow-section h2,
-.grow-section h3,
-.grow-section p {
-  margin: 0;
-}
-
-/* --------------------------------------------------------------------------
-   Objectifs
-   -------------------------------------------------------------------------- */
-.goal-list,
-.habit-list {
+/* L'en-tete reste seul sur sa ligne : titre a gauche, action a droite. */
+.grow-section > header {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin: 0;
-}
-
-.goal-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.goal-item__title {
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.goal-item__next {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border-left: 2px solid var(--color-accent);
-  background-color: var(--color-accent-softer);
-  border-radius: var(--radius-xs);
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
-}
-
-.goal-item__progress {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
 }
 
-.goal-item__progress > :first-child {
-  flex: 1;
-}
-
-/* --------------------------------------------------------------------------
-   Habitudes
-   -------------------------------------------------------------------------- */
-.habit-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.habit-item__main {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.habit-item__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.grow-section > header > div {
   min-width: 0;
 }
 
-.habit-item__name {
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  color: var(--color-text-primary);
+.grow-section > header h2,
+.grow-section > header p {
+  margin: 0;
 }
 
-/* Case à cocher — cible tactile pleine, état lisible sans couleur seule */
-.habit-check {
-  display: grid;
-  place-items: center;
-  width: var(--tap-target-min);
-  height: var(--tap-target-min);
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
+/* --- Etat vide, borne et aligne a gauche ---------------------------------
+   `align-self` empeche l'etat vide de s'etirer, et la largeur maximale garde
+   les lignes de texte lisibles plutot que de les etaler sur tout l'ecran. */
+.grow-section .empty-state {
+  align-self: stretch;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 100%;
+}
+
+/* Le bouton de l'etat vide ne prend que sa largeur naturelle : un bouton
+   pleine largeur sous un texte aligne a gauche paraissait accidentel. */
+.grow-section .empty-state .btn {
+  align-self: flex-start;
+}
+
+/* --- Listes --------------------------------------------------------------- */
+.grow-section .goal-list,
+.grow-section .habit-list,
+.grow-section .challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-.habit-check__box {
-  display: block;
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  transition:
-    background-color var(--transition-standard),
-    border-color var(--transition-standard);
-}
-
-.habit-check:hover .habit-check__box {
-  border-color: var(--color-accent);
-}
-
-.habit-check.is-done .habit-check__box {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  background-image: linear-gradient(
-      45deg,
-      transparent 44%,
-      var(--color-text-on-accent) 44%,
-      var(--color-text-on-accent) 56%,
-      transparent 56%
-    ),
-    linear-gradient(-45deg, transparent 44%, var(--color-text-on-accent) 44%, var(--color-text-on-accent) 56%, transparent 56%);
-  background-size: 12px 12px, 12px 12px;
-  background-position: center;
-  background-repeat: no-repeat;
+.grow-section .goal-list > li,
+.grow-section .habit-list > li,
+.grow-section .challenge-list > li {
+  min-width: 0;
 }
