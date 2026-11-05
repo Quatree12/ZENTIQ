@@ -1,14 +1,20 @@
 /* ==========================================================================
    Notifications (toasts) — zone sure, sans chevauchement
    ==========================================================================
-   Deux problemes corriges ici, tous deux constates sur iPhone :
-     1. Les messages s'empilaient au-dessus de la barre de navigation mobile
-        et se recouvraient entre eux.
-     2. Chaque action declenchait son propre message, meme repetitif
-        (« Preference enregistree. » trois fois de suite).
+   PHASE 4.1.6 — LA NOTIFICATION NE MASQUE PLUS LE CONTENU
+   -------------------------------------------------------
+   La zone etait placee juste au-dessus de la barre mobile. Bien pour la barre,
+   moins bien pour le contenu : en bas de page, la notification recouvrait le
+   dernier interrupteur des preferences.
 
-   La zone est desormais placee au-dessus de la barre mobile, en tenant compte
-   de la safe area iOS, et un seul message est affiche a la fois.
+   Trois corrections :
+     1. La zone est calee PLUS HAUT (deux fois la hauteur de barre), pour
+        laisser une bande de contenu visible entre les deux.
+     2. Le message devient plus compact : une ligne de texte au lieu de deux,
+        et une icone reduite.
+     3. Le detail facultatif passe en une seule ligne tronquee proprement.
+
+   Sur desktop, rien ne change : la notification reste en bas a droite.
    ========================================================================== */
 
 .toast-region {
@@ -18,30 +24,32 @@
   left: var(--space-5);
   right: var(--space-5);
 
-  /* Au-dessus de la barre de navigation mobile, safe area iOS incluse. */
-  bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-4));
+  /* Deux hauteurs de barre mobile sous le contenu du toast : celui-ci ne peut
+     plus recouvrir le dernier element de la page, meme en bas de defilement. */
+  bottom: calc(
+    var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-10)
+  );
 
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   pointer-events: none;
 }
 
-/* Sur desktop, pas de barre mobile : on descend pres du bord. */
 @media (min-width: 900px) {
   .toast-region {
     left: auto;
     right: var(--space-8);
     bottom: var(--space-8);
-    width: 380px;
+    width: 360px;
   }
 }
 
 .toast {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
@@ -64,7 +72,6 @@
 .toast__icon {
   display: inline-flex;
   flex-shrink: 0;
-  padding-top: 2px;
 }
 
 .toast--info .toast__icon {
@@ -89,23 +96,29 @@
 }
 
 .toast__message {
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   color: var(--color-text-primary);
+  line-height: var(--leading-snug);
 }
 
+/* Detail eventuel : une seule ligne, tronquee si trop long. */
 .toast__detail {
-  margin-top: var(--space-1);
-  font-size: var(--text-sm);
+  margin-top: 2px;
+  font-size: var(--text-xs);
   color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toast__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   border-radius: var(--radius-xs);
   color: var(--color-text-tertiary);

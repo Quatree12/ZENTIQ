@@ -7,14 +7,19 @@ import { formatTime } from '@/utils/formatters';
 import type { UserSettings } from '@/types';
 
 /**
- * Préférences.
+ * Preferences.
  *
- * Chaque changement est enregistré immédiatement : pas de bouton « Valider » à
- * oublier. Les préférences visuelles (accent, densité, animations) s'appliquent
- * en direct sur le document.
+ * Chaque changement est enregistre immediatement : pas de bouton « Valider » a
+ * oublier. Les preferences visuelles (accent, densite, texte plus large,
+ * animations) s'appliquent en direct sur le document.
  *
- * Note honnête : « Texte plus large » est persisté dès maintenant, mais son
- * effet visuel complet relève de la phase accessibilité.
+ * PHASE 4.1.6 — LIBELLE CORRIGE
+ * -----------------------------
+ * Le texte d'aide de « Texte plus large » annoncait que le rendu complet
+ * arriverait « avec la phase accessibilite ». C'etait vrai en phase 1, ou la
+ * preference etait persistee sans effet. Ce n'est plus le cas : le reglage
+ * agrandit reellement tout le texte, d'environ 20 %. Le libelle le dit
+ * maintenant, et precise ce qui change.
  */
 export function Preferences() {
   const { settings, loading, updateSettings, refresh } = useSettings();
@@ -31,16 +36,16 @@ export function Preferences() {
 
   const patch = async (changes: Partial<Omit<UserSettings, 'id' | 'createdAt' | 'updatedAt'>>) => {
     await updateSettings(changes);
-    notify('Préférence enregistrée.', { tone: 'success' });
+    notify('Preference enregistree.', { tone: 'success' });
   };
 
-  if (loading && !settings) return <LoadingState label="Lecture de tes préférences…" compact />;
+  if (loading && !settings) return <LoadingState label="Lecture de tes preferences…" compact />;
   if (!settings) return null;
 
   return (
     <section className="me-section" aria-labelledby="preferences-heading">
       <header>
-        <p className="overline">Préférences</p>
+        <p className="overline">Preferences</p>
         <h2 className="heading-sm" id="preferences-heading">
           Adapter l'application
         </h2>
@@ -51,21 +56,21 @@ export function Preferences() {
 
         <SwitchRow
           label="Accent lavande"
-          description="Déplace l'accent principal vers la teinte lavande, plus introspective."
+          description="Deplace l'accent principal vers la teinte lavande, plus introspective."
           checked={settings.accentTheme === 'lavender'}
           onChange={(checked) => void patch({ accentTheme: checked ? 'lavender' : 'teal' })}
         />
 
         <SwitchRow
           label="Affichage compact"
-          description="Réduit les espacements pour afficher plus de contenu à l'écran."
+          description="Reduit les espacements pour afficher plus de contenu a l'ecran."
           checked={settings.density === 'compact'}
           onChange={(checked) => void patch({ density: checked ? 'compact' : 'comfortable' })}
         />
 
         <SwitchRow
-          label="Réduire les animations"
-          description="Les transitions deviennent quasi instantanées. Utile si le mouvement te gêne."
+          label="Reduire les animations"
+          description="Les transitions deviennent quasi instantanees. Utile si le mouvement te gene."
           checked={settings.reduceMotion}
           onChange={(checked) => void patch({ reduceMotion: checked })}
         />
@@ -76,21 +81,21 @@ export function Preferences() {
 
         <SwitchRow
           label="Texte plus large"
-          description="Augmente la taille du texte pour les longues lectures. Enregistré dès maintenant ; le rendu complet arrive avec la phase accessibilité."
+          description="Agrandit tout le texte de l'application d'environ 20 % : titres, paragraphes, boutons et navigation. L'effet est immediat."
           checked={settings.largeReadableText}
           onChange={(checked) => void patch({ largeReadableText: checked })}
         />
 
         <SwitchRow
-          label="Semaine commençant le lundi"
-          description="Convention suisse et française. Décoche pour commencer le dimanche."
+          label="Semaine commencant le lundi"
+          description="Convention suisse et francaise. Decoche pour commencer le dimanche."
           checked={settings.weekStartsOnMonday}
           onChange={(checked) => void patch({ weekStartsOnMonday: checked })}
         />
 
         <SwitchRow
           label="Heure sur 24 heures"
-          description="Affiche les heures en format 24 h plutôt qu'en 12 h."
+          description="Affiche les heures en format 24 h plutot qu'en 12 h."
           checked={settings.use24HourClock}
           onChange={(checked) => void patch({ use24HourClock: checked })}
         />
@@ -101,7 +106,7 @@ export function Preferences() {
 
         <SwitchRow
           label="Activer le rappel"
-          description="Un message court pour t'inviter à prendre un instant, aux jours choisis."
+          description="Un message court pour t'inviter a prendre un instant, aux jours choisis."
           checked={settings.dailyReminderEnabled}
           onChange={(checked) => void patch({ dailyReminderEnabled: checked })}
         />
@@ -117,7 +122,7 @@ export function Preferences() {
             disabled={!settings.dailyReminderEnabled}
           />
           <span className="pref-field__hint body-sm">
-            Affiché comme {formatTime(settings.dailyReminderTime, settings.use24HourClock)}.
+            Affiche comme {formatTime(settings.dailyReminderTime, settings.use24HourClock)}.
           </span>
         </label>
       </div>
@@ -127,7 +132,7 @@ export function Preferences() {
 
         <SwitchRow
           label="Rappel de sauvegarde"
-          description="Te suggère d'exporter tes données si tu ne l'as pas fait depuis longtemps."
+          description="Te suggere d'exporter tes donnees si tu ne l'as pas fait depuis longtemps."
           checked={settings.autoBackupReminder}
           onChange={(checked) => void patch({ autoBackupReminder: checked })}
         />
