@@ -50,7 +50,7 @@ export interface MoodStats {
   entriesCount: number;
   /** Nombre de jours de la periode laisses sans entree. */
   missingCount: number;
-  /** Tendance : variation entre la premiere et la seconde moitie. */
+  /** Tendance : dynamique des derniers jours renseignes. */
   trend: 'up' | 'down' | 'stable' | null;
   /** Ecart de la tendance, en points d'humeur (positif = en hausse). */
   trendDelta: number | null;
@@ -60,13 +60,27 @@ export interface MoodStats {
   hardestDay: MoodPoint | null;
 }
 
+/** Taille de la fenetre glissante utilisee pour la tendance. */
+const TREND_WINDOW = 3;
+
 /**
  * Statistiques d'humeur sur une periode.
  *
- * La tendance compare la moyenne de la premiere moitie a celle de la seconde :
- * c'est plus robuste qu'une comparaison du premier et du dernier jour, qui
- * reagirait a un seul mauvais sommeil. Un ecart inferieur a 0,3 point est
- * considere comme stable : en dessous, ce n'est pas une tendance, c'est du bruit.
+ * TENDANCE — FENETRE GLISSANTE
+ * -----------------------------
+ * Le calcul precedent decoupait la periode en deux moities et comparait leurs
+ * moyennes. Sur un jeu reel (4, 5, 4, 2, 3, 4, 5), il annoncait « En baisse
+ * -0.8 » alors que la courbe remontait nettement sur la fin : les trois
+ * premiers jours formaient une moyenne haute, et le creux isole du quatrieme
+ * suffisait a faire chuter la seconde moitie.
+ *
+ * Le decoupage en moities est donc trop sensible a la POSITION d'un mauvais
+ * jour. On compare desormais les trois derniers jours RENSEIGNES aux trois
+ * precedents : c'est la dynamique recente, celle que l'utilisateur ressent. La
+ * fenetre glisse, elle ne depend plus de la longueur de la periode choisie.
+ *
+ * Il faut au moins 2 jours dans chaque fenetre pour conclure : en dessous, un
+ * ecart ne serait pas une tendance, ce serait un echantillon.
  */
 export function computeMoodStats(entries: MoodEntry[], days: StatPeriod): MoodStats {
   const window = lastNDays(days);
@@ -103,17 +117,17 @@ export function computeMoodStats(entries: MoodEntry[], days: StatPeriod): MoodSt
   const total = valued.reduce((sum, point) => sum + point.mood, 0);
   const average = round1(total / valued.length);
 
-  const half = Math.floor(days / 2);
-  const firstHalf = valued.filter((point) => window.indexOf(point.date) < half);
-  const secondHalf = valued.filter((point) => window.indexOf(point.date) >= half);
-
+  // --- Tendance : fenetre glissante sur les jours RENSEIGNES ----------------
   let trend: MoodStats['trend'] = null;
   let trendDelta: number | null = null;
 
-  if (firstHalf.length > 0 && secondHalf.length > 0) {
+  const recent = valued.slice(-TREND_WINDOW);
+  const before = valued.slice(-TREND_WINDOW * 2, -TREND_WINDOW);
+
+  if (recent.length >= 2 && before.length >= 2) {
     const meanOf = (list: typeof valued) =>
       list.reduce((sum, point) => sum + point.mood, 0) / list.length;
-    const delta = round1(meanOf(secondHalf) - meanOf(firstHalf));
+    const delta = round1(meanOf(recent) - meanOf(before));
     trendDelta = delta;
     trend = delta > 0.3 ? 'up' : delta < -0.3 ? 'down' : 'stable';
   }
