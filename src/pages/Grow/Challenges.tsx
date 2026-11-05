@@ -35,6 +35,7 @@ export function Challenges() {
     createChallenge,
     completeDay,
     uncompleteDay,
+    postpone,
     setAside,
     resume,
     removeChallenge,
@@ -107,14 +108,11 @@ export function Challenges() {
         />
       ) : (
         <>
-          {/* Resume sobre : uniquement des chiffres reels. */}
           <Card compact className="challenge-summary">
             <div className="row-wrap">
               <Badge tone="teal">{summary.active} en cours</Badge>
               {summary.upcoming > 0 && <Badge>{summary.upcoming} a venir</Badge>}
-              {summary.completed > 0 && (
-                <Badge tone="success">{summary.completed} termine</Badge>
-              )}
+              {summary.completed > 0 && <Badge tone="success">{summary.completed} termine</Badge>}
               {summary.setAside > 0 && <Badge>{summary.setAside} mis de cote</Badge>}
               {summary.averageProgress !== null && (
                 <Badge tone="lavender">Progression moyenne {summary.averageProgress} %</Badge>
@@ -131,6 +129,7 @@ export function Challenges() {
                     busy={busyIds.includes(challenge.id)}
                     onCompleteDay={(dayNumber) => void completeDay(challenge.id, dayNumber)}
                     onUncompleteDay={(dayNumber) => void uncompleteDay(challenge.id, dayNumber)}
+                    onPostpone={(days) => void postpone(challenge.id, days)}
                     onSetAside={() => void setAside(challenge.id)}
                     onDelete={() => setPendingDelete(challenge.id)}
                   />

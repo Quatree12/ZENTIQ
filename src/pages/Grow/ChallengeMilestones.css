@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Challenges — jalons, rythmes et pickers
+   ========================================================================== */
+
+/* --- Liste des jalons dans la carte --------------------------------------- */
+.challenge-milestones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.challenge-milestone {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-field);
+  background-color: var(--color-surface-sunken, var(--color-surface));
+}
+
+/* Un jalon franchi se distingue par sa bordure, pas par un fond criard. */
+.challenge-milestone.is-reached {
+  border-color: var(--color-accent);
+}
+
+.challenge-milestone__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-text-tertiary);
+}
+
+.challenge-milestone.is-reached .challenge-milestone__icon {
+  color: var(--color-success, var(--color-accent));
+}
+
+.challenge-milestone__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.challenge-milestone__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  overflow-wrap: break-word;
+}
+
+/* --- Pickers du formulaire ------------------------------------------------- */
+.challenge-form__rhythm,
+.challenge-form__milestones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rhythm-chip,
+.milestone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* Cible tactile : le formulaire est utilise au pouce, sur mobile. */
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color var(--transition-standard),
+    border-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.rhythm-chip.is-active,
+.milestone-chip.is-active {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-soft, var(--color-surface));
+  color: var(--color-text-primary);
+}
+
+.rhythm-chip:hover,
+.milestone-chip:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* La liste des jalons occupe toute la largeur : chaque ligne est lisible. */
+.milestone-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestone-picker .milestone-chip {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.milestone-chip__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 19px;
+  height: 19px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  color: var(--color-accent-contrast, var(--color-bg));
+}
+
+.milestone-chip.is-active .milestone-chip__check {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+}
+
+.milestone-chip__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.milestone-chip__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  overflow-wrap: break-word;
+}
