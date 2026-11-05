@@ -18,15 +18,20 @@ import type { Goal, Habit, HabitCompletion, MoodEntry, MoodLevel } from '@/types
  * Tests des statistiques de Journey.
  *
  * Le module `@/utils/journey-stats` est PUR : ces tests lui donnent des
- * donnees controlees et verifient les mesures. Aucun acces a IndexedDB, aucun
- * rendu React — c'est exactement ce qui rend ces calculs verifiables.
+ * données contrôlées et vérifient les mesures. Aucun accès à IndexedDB, aucun
+ * rendu React — c'est exactement ce qui rend ces calculs vérifiables.
  *
- * Les dates sont exprimees RELATIVEMENT a aujourd'hui (via `lastNDays`), pour
- * que les tests ne dependent pas du jour d'execution.
+ * Les dates sont exprimées RELATIVEMENT à aujourd'hui (via `lastNDays`), pour
+ * que les tests ne dépendent pas du jour d'exécution.
+ *
+ * ACCENTS DES LIBELLÉS : depuis l'ajout des accents à l'interface, les
+ * assertions qui portent sur du TEXTE ont été mises à jour — « 1 journée
+ * documentée », « 1 entrée de journal », « Pas encore assez de données ». Un
+ * test qui vérifiait la version sans accents échouait dès la correction.
  */
 
 /* --------------------------------------------------------------------------
-   Fabriques de donnees de test
+   Fabriques de données de test
    -------------------------------------------------------------------------- */
 
 function mood(date: string, level: MoodLevel, createdAt = '2026-01-01T08:00:00.000Z'): MoodEntry {
@@ -45,7 +50,7 @@ function mood(date: string, level: MoodLevel, createdAt = '2026-01-01T08:00:00.0
  * Habitude de test.
  *
  * `lastReviewedAt` est fourni : le champ est REQUIS par le type depuis la
- * migration v2, et une habitude qui ne vient pas d'etre relue porte `null`.
+ * migration v2, et une habitude qui ne vient pas d'être relue porte `null`.
  */
 function habit(overrides: Partial<Habit> = {}): Habit {
   return {
@@ -96,7 +101,7 @@ function goal(overrides: Partial<Goal> = {}): Goal {
    -------------------------------------------------------------------------- */
 
 describe('computeMoodStats', () => {
-  it('renvoie un etat vide quand il n y a aucune donnee', () => {
+  it('renvoie un état vide quand il n y a aucune donnée', () => {
     const stats = computeMoodStats([], 7);
 
     expect(stats.average).toBeNull();
@@ -129,7 +134,7 @@ describe('computeMoodStats', () => {
     expect(stats.missingCount).toBe(28);
   });
 
-  it('ignore les entrees hors de la periode demandee', () => {
+  it('ignore les entrées hors de la période demandée', () => {
     const days = lastNDays(30);
     const old = days[0]!;
     const stats7 = computeMoodStats([mood(old, 1)], 7);
@@ -138,7 +143,7 @@ describe('computeMoodStats', () => {
     expect(stats7.average).toBeNull();
   });
 
-  it('ne conserve qu une entree par jour, la plus recente', () => {
+  it('ne conserve qu une entrée par jour, la plus récente', () => {
     const days = lastNDays(7);
     const today = days[6]!;
     const entries = [
@@ -151,7 +156,7 @@ describe('computeMoodStats', () => {
     expect(stats.average).toBe(5);
   });
 
-  it('detecte une tendance a la hausse', () => {
+  it('détecte une tendance à la hausse', () => {
     const days = lastNDays(8);
     const entries = [
       mood(days[0]!, 1),
@@ -169,7 +174,7 @@ describe('computeMoodStats', () => {
     expect(stats.trendDelta).toBeGreaterThan(0.3);
   });
 
-  it('detecte une tendance a la baisse', () => {
+  it('détecte une tendance à la baisse', () => {
     const days = lastNDays(8);
     const entries = [
       mood(days[0]!, 5),
@@ -186,7 +191,7 @@ describe('computeMoodStats', () => {
     expect(stats.trend).toBe('down');
   });
 
-  it('considere une variation faible comme stable', () => {
+  it('considère une variation faible comme stable', () => {
     const days = lastNDays(8);
     const entries = days.map((day) => mood(day, 4));
 
@@ -206,11 +211,11 @@ describe('computeMoodStats', () => {
 });
 
 describe('describeTrend', () => {
-  it('donne un libelle non culpabilisant pour chaque etat', () => {
+  it('donne un libellé non culpabilisant pour chaque etat', () => {
     expect(describeTrend('up')).toBe('En hausse');
     expect(describeTrend('down')).toBe('En baisse');
     expect(describeTrend('stable')).toBe('Stable');
-    expect(describeTrend(null)).toBe('Pas encore assez de donnees');
+    expect(describeTrend(null)).toBe('Pas encore assez de données');
   });
 });
 
@@ -229,7 +234,7 @@ describe('expectedDaysIn', () => {
     expect(expectedDaysIn(habit({ frequency: 'weekly' }), window)).toBe(4);
   });
 
-  it('compte uniquement les jours cibles pour une habitude personnalisee', () => {
+  it('compte uniquement les jours cibles pour une habitude personnalisée', () => {
     const window = lastNDays(7);
     const monday = 1;
     const result = expectedDaysIn(habit({ frequency: 'custom', targetDays: [monday] }), window);
@@ -239,7 +244,7 @@ describe('expectedDaysIn', () => {
 });
 
 describe('computeHabitStat', () => {
-  it('calcule la regularite sur les donnees reelles', () => {
+  it('calcule la régularité sur les données réelles', () => {
     const window = lastNDays(7);
     const habitData = habit();
     const completions = window.slice(0, 4).map((day) => completion(habitData.id, day));
@@ -250,14 +255,14 @@ describe('computeHabitStat', () => {
     expect(stat.consistency).toBe(57);
   });
 
-  it('renvoie null et non 0 quand rien n etait attendu', () => {
+  it('renvoie null et non 0 quand rien n était attendu', () => {
     const habitData = habit({ frequency: 'custom', targetDays: [] });
     const stat = computeHabitStat(habitData, [], 7);
 
     expect(stat.consistency).toBeNull();
   });
 
-  it('ne melange pas les realisations de deux habitudes', () => {
+  it('ne mélange pas les réalisations de deux habitudes', () => {
     const window = lastNDays(7);
     const a = habit({ id: 'h-a', name: 'A' });
     const b = habit({ id: 'h-b', name: 'B' });
@@ -267,7 +272,7 @@ describe('computeHabitStat', () => {
     expect(computeHabitStat(b, completions, 7).completedDays).toBe(1);
   });
 
-  it('calcule la meilleure serie sans l inventer', () => {
+  it('calcule la meilleure série sans l inventer', () => {
     const days = lastNDays(10);
     const habitData = habit();
     const completions = [
@@ -282,7 +287,7 @@ describe('computeHabitStat', () => {
     expect(stat.bestStreak).toBe(3);
   });
 
-  it('ignore les realisations hors periode pour la regularite', () => {
+  it('ignore les réalisations hors période pour la régularité', () => {
     const days = lastNDays(30);
     const habitData = habit();
     const completions = [completion(habitData.id, days[0]!)];
@@ -294,23 +299,23 @@ describe('computeHabitStat', () => {
 });
 
 describe('computeCurrentStreak', () => {
-  it('renvoie 0 sans aucune realisation', () => {
+  it('renvoie 0 sans aucune réalisation', () => {
     expect(computeCurrentStreak(new Set())).toBe(0);
   });
 
-  it('compte les jours consecutifs jusqu a aujourd hui', () => {
+  it('compte les jours consécutifs jusqu à aujourd hui', () => {
     const days = lastNDays(5);
     const dates = new Set([days[1]!, days[2]!, days[3]!, days[4]!]);
     expect(computeCurrentStreak(dates)).toBe(4);
   });
 
-  it('ne casse pas la serie si aujourd hui n est pas encore coche', () => {
+  it('ne casse pas la série si aujourd hui n est pas encore coché', () => {
     const days = lastNDays(5);
     const dates = new Set([days[1]!, days[2]!, days[3]!]);
     expect(computeCurrentStreak(dates)).toBe(3);
   });
 
-  it('s arrete au premier jour manquant', () => {
+  it('s arrête au premier jour manquant', () => {
     const days = lastNDays(6);
     const dates = new Set([days[5]!, days[3]!, days[2]!]);
     expect(computeCurrentStreak(dates)).toBe(1);
@@ -318,17 +323,17 @@ describe('computeCurrentStreak', () => {
 });
 
 describe('computeBestStreak', () => {
-  it('renvoie 0 sans donnee', () => {
+  it('renvoie 0 sans donnée', () => {
     expect(computeBestStreak(new Set())).toBe(0);
   });
 
-  it('trouve la plus longue suite, meme ancienne', () => {
+  it('trouve la plus longue suite, même ancienne', () => {
     const days = lastNDays(12);
     const dates = new Set([days[0]!, days[1]!, days[2]!, days[3]!, days[4]!, days[9]!]);
     expect(computeBestStreak(dates)).toBe(5);
   });
 
-  it('renvoie 1 pour une seule journee isolee', () => {
+  it('renvoie 1 pour une seule journée isolée', () => {
     const days = lastNDays(3);
     expect(computeBestStreak(new Set([days[0]!]))).toBe(1);
   });
@@ -339,14 +344,18 @@ describe('computeOverallConsistency', () => {
     expect(computeOverallConsistency([])).toBeNull();
   });
 
-  it('ignore les habitudes sans regularite calculable', () => {
+  it('ignore les habitudes sans régularité calculable', () => {
     const window = lastNDays(7);
     const measurable = computeHabitStat(
       habit({ id: 'h-a' }),
       window.slice(0, 7).map((day) => completion('h-a', day)),
       7,
     );
-    const notMeasurable = computeHabitStat(habit({ id: 'h-b', frequency: 'custom', targetDays: [] }), [], 7);
+    const notMeasurable = computeHabitStat(
+      habit({ id: 'h-b', frequency: 'custom', targetDays: [] }),
+      [],
+      7,
+    );
 
     expect(computeOverallConsistency([measurable, notMeasurable])).toBe(100);
   });
@@ -357,14 +366,14 @@ describe('computeOverallConsistency', () => {
    -------------------------------------------------------------------------- */
 
 describe('computeGoalStats', () => {
-  it('renvoie un etat vide sans objectif', () => {
+  it('renvoie un état vide sans objectif', () => {
     const stats = computeGoalStats([]);
     expect(stats.total).toBe(0);
     expect(stats.overallProgress).toBeNull();
     expect(stats.active).toHaveLength(0);
   });
 
-  it('separe les objectifs actifs des objectifs atteints', () => {
+  it('sépare les objectifs actifs des objectifs atteints', () => {
     const stats = computeGoalStats([
       goal({ id: 'g-1', status: 'active' }),
       goal({ id: 'g-2', status: 'completed' }),
@@ -386,23 +395,29 @@ describe('computeGoalStats', () => {
     expect(stats.overallProgress).toBe(50);
   });
 
-  it('ne considere pas un objectif en pause comme atteint', () => {
+  it('ne considère pas un objectif en pause comme atteint', () => {
     const stats = computeGoalStats([goal({ id: 'g-1', status: 'paused', progress: 30 })]);
     expect(stats.active).toHaveLength(1);
     expect(stats.completed).toHaveLength(0);
   });
 
-  it('detecte les echeances depassees', () => {
-    const stats = computeGoalStats([goal({ id: 'g-1', targetDate: '2020-01-01' })], '2026-06-01');
+  it('détecte les échéances dépassées', () => {
+    const stats = computeGoalStats(
+      [goal({ id: 'g-1', targetDate: '2020-01-01' })],
+      '2026-06-01',
+    );
     expect(stats.overdue).toHaveLength(1);
   });
 
-  it('detecte les echeances proches', () => {
-    const stats = computeGoalStats([goal({ id: 'g-1', targetDate: '2026-06-10' })], '2026-06-01');
+  it('détecte les échéances proches', () => {
+    const stats = computeGoalStats(
+      [goal({ id: 'g-1', targetDate: '2026-06-10' })],
+      '2026-06-01',
+    );
     expect(stats.dueSoon).toHaveLength(1);
   });
 
-  it('ignore les objectifs sans echeance dans overdue et dueSoon', () => {
+  it('ignore les objectifs sans échéance dans overdue et dueSoon', () => {
     const stats = computeGoalStats([goal({ id: 'g-1' })], '2026-06-01');
     expect(stats.overdue).toHaveLength(0);
     expect(stats.dueSoon).toHaveLength(0);
@@ -410,11 +425,11 @@ describe('computeGoalStats', () => {
 });
 
 /* --------------------------------------------------------------------------
-   4. SYNTHESE
+   4. SYNTHÈSE
    -------------------------------------------------------------------------- */
 
 describe('computeJourneySummary', () => {
-  it('produit un resume vide coherent sans donnees', () => {
+  it('produit un résumé vide cohérent sans données', () => {
     const summary = computeJourneySummary({
       moods: computeMoodStats([], 7),
       habitStats: [],
@@ -429,7 +444,7 @@ describe('computeJourneySummary', () => {
     expect(summary.challengesActive).toBe(0);
   });
 
-  it('agrege les mesures des quatre domaines', () => {
+  it('agrège les mesures des quatre domaines', () => {
     const window = lastNDays(7);
     const habitData = habit({ id: 'h-1' });
 
@@ -465,11 +480,11 @@ describe('summarizeJourney', () => {
     });
 
     expect(text).toContain('Chaque geste compte');
-    expect(text.toLowerCase()).not.toContain('echec');
+    expect(text.toLowerCase()).not.toContain('échec');
     expect(text.toLowerCase()).not.toContain('raté');
   });
 
-  it('accorde les libelles au singulier', () => {
+  it('accorde les libellés au singulier', () => {
     const text = summarizeJourney({
       moodAverage: 4,
       moodEntries: 1,
@@ -482,8 +497,8 @@ describe('summarizeJourney', () => {
       challengesActive: 0,
     });
 
-    expect(text).toContain('1 journee documentee');
-    expect(text).toContain('1 entree de journal');
+    expect(text).toContain('1 journée documentée');
+    expect(text).toContain('1 entrée de journal');
     expect(text).toContain('1 objectif atteint');
   });
 });
