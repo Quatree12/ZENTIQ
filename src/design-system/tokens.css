@@ -1,6 +1,5 @@
 /* ==========================================================================
    ZENTIQ — DESIGN TOKENS
-   Direction artistique : DIGITAL AURA x LAVENDER MIND
    ========================================================================== */
 
 :root {
@@ -76,7 +75,7 @@
   --gradient-surface: linear-gradient(180deg, rgb(224 240 237 / 3%), transparent);
   --gradient-hero: linear-gradient(160deg, rgb(114 200 193 / 14%), rgb(169 154 203 / 9%) 55%, transparent);
 
-  /* 9. SPACING — base 4 px */
+  /* 9. SPACING */
   --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
@@ -103,21 +102,13 @@
   --radius-full: 999px;
 
   /* =====================================================================
-     11. TYPOGRAPHIE — RETOUR A MONTSERRAT + HIERARCHIE REVUE
+     11. TYPOGRAPHIE
      =====================================================================
-     Fuzzy Bubbles est ABANDONNEE : rendu visuellement identique a Montserrat
-     aux yeux de l'utilisateur, et le test a coincide avec une erreur de
-     chargement de module. On ne garde pas une police qui n'apporte rien et
-     qui s'accompagne d'une regression.
+     Nunito     -> interface
+     Montserrat -> citations et titres editoriaux
 
-     HIERARCHIE CORRIGEE
-     -------------------
-     Le corps de texte etait trop grand par rapport aux titres. Deux
-     mouvements, dans des directions opposees :
-       - corps de texte  : 17 -> 16 px
-       - titres sections : 24 -> 26 px
-     L'ecart entre titre et corps passe de 7 a 10 px : c'est cet ecart, plus
-     que la taille absolue, qui fait lire une hierarchie.
+     PHASE 4.1.5 — le titre et le sous-titre de PAGE sont remontes dans
+     PageHeader.css (32-38 px pour le titre, 18 px pour le sous-titre).
      ===================================================================== */
   --font-ui: 'Nunito', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-data: 'Nunito', 'Nunito Sans', system-ui, -apple-system, sans-serif;
@@ -129,7 +120,7 @@
   --text-xs: 0.78125rem; /* 12.5 px */
   --text-sm: 0.875rem; /* 14 px */
   --text-base: 1rem; /* 16 px — corps de texte */
-  --text-md: 1.0625rem; /* 17 px — lecture longue */
+  --text-md: 1.125rem; /* 18 px — sous-titres de page */
   --text-lg: 1.1875rem; /* 19 px — titres de cartes */
   --text-xl: 1.375rem; /* 22 px — sous-titres */
   --text-2xl: 1.625rem; /* 26 px — titres de sections */
@@ -137,7 +128,6 @@
   --text-3xl: clamp(1.875rem, 1.6rem + 1.1vw, 2rem); /* 30 -> 32 px */
   --text-4xl: clamp(2.25rem, 1.8rem + 1.8vw, 2.625rem); /* 36 -> 42 px */
 
-  /* Citation — Montserrat, taille contenue sous les titres */
   --text-editorial: clamp(1.25rem, 1.08rem + 0.9vw, 1.5rem); /* 20 -> 24 px */
 
   --text-stat: clamp(1.75rem, 1.4rem + 1.4vw, 2.125rem); /* 28 -> 34 px */
