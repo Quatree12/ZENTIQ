@@ -12,13 +12,9 @@ import { AFFIRMATIONS, searchContent } from '@/content/library';
 import { INSPIRATION_CATEGORY_LABELS, type InspirationCategory } from '@/types';
 
 /**
- * Affirmations — section de l'espace Inspire.
- *
- * Source : la banque éditoriale (`@/content/library`). Les affirmations sont
- * écrites à la première personne et peuvent être marquées comme favorites.
- *
- * Le filtre par catégorie est dérivé du contenu réel : aucune catégorie vide
- * n'est affichée.
+ * Affirmations — le badge de categorie et le coeur suivent l'accent actif.
+ * Le filtre par categorie est derive du contenu reel : aucune categorie vide
+ * n'est affichee.
  */
 export function Affirmations() {
   const [query, setQuery] = useState('');
@@ -39,7 +35,7 @@ export function Affirmations() {
   const handleToggle = async (id: string, text: string) => {
     const wasFavorite = isFavorite('affirmation', id);
     await toggleFavorite('affirmation', id);
-    notify(wasFavorite ? 'Retiré des favoris.' : 'Ajouté aux favoris.', {
+    notify(wasFavorite ? 'Retire des favoris.' : 'Ajoute aux favoris.', {
       tone: 'success',
       detail: text,
     });
@@ -55,7 +51,7 @@ export function Affirmations() {
           onChange={(event) => setQuery(event.target.value)}
           type="search"
         />
-        <div className="row-wrap" role="group" aria-label="Filtrer par catégorie">
+        <div className="row-wrap" role="group" aria-label="Filtrer par categorie">
           <button
             type="button"
             className={category === 'all' ? 'filter-chip is-active' : 'filter-chip'}
@@ -78,11 +74,11 @@ export function Affirmations() {
 
       {items.length === 0 ? (
         <EmptyState
-          title="Aucune affirmation trouvée"
+          title="Aucune affirmation trouvee"
           description={
             query.trim()
-              ? 'Rien ne correspond à « ' + query.trim() + ' ». Essaie un autre mot, ou efface la recherche.'
-              : 'Aucune affirmation dans cette catégorie pour le moment.'
+              ? 'Rien ne correspond a « ' + query.trim() + ' ». Essaie un autre mot, ou efface la recherche.'
+              : 'Aucune affirmation dans cette categorie pour le moment.'
           }
           action={{
             label: 'Effacer les filtres',
@@ -96,10 +92,10 @@ export function Affirmations() {
         <ul className="inspire-list">
           {items.map((item) => (
             <li key={item.id}>
-              <Card compact accent="lavender" className="inspire-item">
+              <Card compact accent="teal" className="inspire-item">
                 <p className="inspire-item__affirmation">{item.text}</p>
                 <div className="row-between">
-                  <Badge tone="lavender">
+                  <Badge tone="accent">
                     {INSPIRATION_CATEGORY_LABELS[item.category]}
                   </Badge>
                   <IconButton
@@ -108,7 +104,7 @@ export function Affirmations() {
                         ? 'Retirer des favoris'
                         : 'Ajouter aux favoris'
                     }
-                    accent="lavender"
+                    accent="teal"
                     active={isFavorite('affirmation', item.id)}
                     onClick={() => void handleToggle(item.id, item.text)}
                   >

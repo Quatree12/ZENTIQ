@@ -26,17 +26,11 @@ interface ResolvedFavorite {
   category?: string;
 }
 
-/**
- * Favoris — section de l'espace Inspire.
- *
- * Croise la table `favorites` avec la banque éditoriale : seuls les items
- * réellement enregistrés sont affichés, dans l'ordre où ils ont été marqués.
- */
+/** Favoris — les badges suivent l'accent actif. */
 export function Favorites() {
   const { favoriteKeys, toggleFavorite, refresh } = useFavorites();
   const { notify } = useToast();
 
-  // Résolution des clés `type:id` vers le contenu réel de la banque.
   const items = useMemo<ResolvedFavorite[]>(() => {
     const byKey = new Map<string, ResolvedFavorite>();
 
@@ -75,7 +69,7 @@ export function Favorites() {
   const handleRemove = async (kind: FavoriteKind, id: string, title: string) => {
     await toggleFavorite(kind, id);
     await refresh();
-    notify('Retiré des favoris.', { tone: 'info', detail: title });
+    notify('Retire des favoris.', { tone: 'info', detail: title });
   };
 
   return (
@@ -84,15 +78,15 @@ export function Favorites() {
         <p className="overline">Favoris</p>
         <h2 className="heading-sm" id="library-favorites">
           {items.length === 0
-            ? 'Aucun élément'
-            : items.length + ' élément' + (items.length > 1 ? 's' : '')}
+            ? 'Aucun element'
+            : items.length + ' element' + (items.length > 1 ? 's' : '')}
         </h2>
       </header>
 
       {items.length === 0 ? (
         <EmptyState
           title="Aucun favori pour l'instant"
-          description="Touche le cœur sur une citation, une affirmation ou un titre pour le retrouver ici."
+          description="Touche le coeur sur une citation, une affirmation ou un titre pour le retrouver ici."
         />
       ) : (
         <ul className="inspire-list">
@@ -113,7 +107,7 @@ export function Favorites() {
                   </div>
                   <IconButton
                     label="Retirer des favoris"
-                    accent="lavender"
+                    accent="teal"
                     active
                     onClick={() => void handleRemove(item.kind, item.id, item.title)}
                   >
@@ -121,7 +115,7 @@ export function Favorites() {
                   </IconButton>
                 </div>
                 <div className="row-wrap">
-                  <Badge tone="lavender">{TYPE_LABELS[item.kind]}</Badge>
+                  <Badge tone="accent">{TYPE_LABELS[item.kind]}</Badge>
                   {item.category && <Badge>{item.category}</Badge>}
                 </div>
               </Card>

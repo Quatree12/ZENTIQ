@@ -14,8 +14,9 @@ import { useTodaySummary } from './useTodaySummary';
 import './Today.css';
 
 /**
- * Inspiration du jour : une citation et une affirmation, choisies de façon
- * stable pour la date. La citation peut être mise en favori depuis l'accueil.
+ * Inspiration du jour : une citation et une affirmation, choisies de facon
+ * stable pour la date. Le badge de categorie et le coeur suivent l'accent
+ * actif — c'est le correctif de la phase 4.1.
  */
 export function DailyInspiration() {
   const dayKey = todayKey();
@@ -27,7 +28,7 @@ export function DailyInspiration() {
   const handleToggle = async () => {
     const wasFavorite = isFavorite('quote', quote.id);
     await toggleFavorite('quote', quote.id);
-    notify(wasFavorite ? 'Retiré des favoris.' : 'Ajouté aux favoris.', {
+    notify(wasFavorite ? 'Retire des favoris.' : 'Ajoute aux favoris.', {
       tone: 'success',
       detail: quote.text,
     });
@@ -41,14 +42,14 @@ export function DailyInspiration() {
         attribution={quote.author}
         footer={
           <>
-            <Badge tone="lavender">{INSPIRATION_CATEGORY_LABELS[quote.category]}</Badge>
+            <Badge tone="accent">{INSPIRATION_CATEGORY_LABELS[quote.category]}</Badge>
             <IconButton
               label={
                 isFavorite('quote', quote.id)
                   ? 'Retirer des favoris'
                   : 'Ajouter aux favoris'
               }
-              accent="lavender"
+              accent="teal"
               active={isFavorite('quote', quote.id)}
               onClick={() => void handleToggle()}
             >
@@ -58,7 +59,6 @@ export function DailyInspiration() {
         }
       />
 
-      {/* L'affirmation du jour accompagne la citation, en retrait visuel. */}
       <Card compact accent="teal">
         <p className="overline">Affirmation du jour</p>
         <p className="inspire-item__affirmation">{affirmation.text}</p>
@@ -69,7 +69,7 @@ export function DailyInspiration() {
 
 /**
  * Raccourcis vers les espaces voisins.
- * Chacun mène réellement quelque part : aucun bouton décoratif.
+ * Chacun mene reellement quelque part : aucun bouton decoratif.
  */
 export function TodayShortcuts() {
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ export function TodayShortcuts() {
         </span>
         <h3 className="heading-sm">Piocher de l'inspiration</h3>
         <p className="body-sm">
-          Citations, affirmations et références musicales à parcourir quand tu cherches un élan.
+          Citations, affirmations et references musicales a parcourir quand tu cherches un elan.
         </p>
         <Button
           variant="tertiary"
@@ -99,7 +99,7 @@ export function TodayShortcuts() {
         </span>
         <h3 className="heading-sm">Avancer sur un objectif</h3>
         <p className="body-sm">
-          Tes objectifs, tes habitudes du jour et leur progression, réunis au même endroit.
+          Tes objectifs, tes habitudes du jour et leur progression, reunis au meme endroit.
         </p>
         <Button
           variant="tertiary"
@@ -115,9 +115,6 @@ export function TodayShortcuts() {
 
 /**
  * Progression personnelle du jour.
- *
- * Le résumé s'adapte à ce qui existe : coches d'habitudes, humeur du jour,
- * objectifs en cours. Aucune valeur n'est affichée si elle n'a pas de source.
  */
 export function TodayProgress() {
   const navigate = useNavigate();
@@ -130,9 +127,9 @@ export function TodayProgress() {
     <Card compact className="today-progress">
       <div className="row-between">
         <div>
-          <p className="overline">Ta journée</p>
+          <p className="overline">Ta journee</p>
           <h2 className="heading-sm">
-            {firstName ? firstName + ', voici où tu en es.' : 'Voici où tu en es.'}
+            {firstName ? firstName + ', voici ou tu en es.' : 'Voici ou tu en es.'}
           </h2>
         </div>
       </div>
@@ -150,12 +147,12 @@ export function TodayProgress() {
         </div>
         <div className="today-stat">
           <dt className="data-label">Humeur du jour</dt>
-          <dd className="data-value">{loading ? '—' : hasMood ? 'Notée' : 'À noter'}</dd>
+          <dd className="data-value">{loading ? '—' : hasMood ? 'Notee' : 'A noter'}</dd>
         </div>
       </dl>
 
       <Button variant="secondary" size="sm" onClick={() => navigate('/journey')}>
-        Voir mon évolution
+        Voir mon evolution
       </Button>
     </Card>
   );

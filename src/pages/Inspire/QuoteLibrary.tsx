@@ -13,11 +13,18 @@ import { INSPIRATION_CATEGORY_LABELS, type InspirationCategory } from '@/types';
 import './Inspire.css';
 
 /**
- * Bibliothèque de citations.
+ * Bibliotheque de citations.
  *
- * Source : la banque éditoriale (`@/content/library`). La recherche est locale,
- * donc elle fonctionne hors ligne. Les filtres de catégorie sont dérivés du
- * contenu réellement présent — jamais de catégories vides inventées.
+ * Source : la banque editoriale (`@/content/library`). La recherche est locale,
+ * donc elle fonctionne hors ligne. Les filtres de categorie sont derives du
+ * contenu reellement present — jamais de categories vides inventees.
+ *
+ * PHASE 4.1 — COULEURS SUIVANT L'ACCENT
+ * -------------------------------------
+ * Le badge de categorie et le coeur utilisent `tone="accent"` / `accent=…`
+ * et non plus une couleur ficee. En accent teal, ils sont turquoise comme le
+ * reste de la page ; en accent lavande, ils restent lavande. C'est ce qui
+ * corrige l'incoherence signalee : un badge lavande sous une interface teal.
  */
 export function QuoteLibrary() {
   const [query, setQuery] = useState('');
@@ -38,7 +45,7 @@ export function QuoteLibrary() {
   const handleToggle = async (id: string, text: string) => {
     const wasFavorite = isFavorite('quote', id);
     await toggleFavorite('quote', id);
-    notify(wasFavorite ? 'Retiré des favoris.' : 'Ajouté aux favoris.', {
+    notify(wasFavorite ? 'Retire des favoris.' : 'Ajoute aux favoris.', {
       tone: 'success',
       detail: text,
     });
@@ -54,7 +61,7 @@ export function QuoteLibrary() {
           onChange={(event) => setQuery(event.target.value)}
           type="search"
         />
-        <div className="row-wrap" role="group" aria-label="Filtrer par catégorie">
+        <div className="row-wrap" role="group" aria-label="Filtrer par categorie">
           <button
             type="button"
             className={category === 'all' ? 'filter-chip is-active' : 'filter-chip'}
@@ -77,11 +84,11 @@ export function QuoteLibrary() {
 
       {items.length === 0 ? (
         <EmptyState
-          title="Aucune citation trouvée"
+          title="Aucune citation trouvee"
           description={
             query.trim()
-              ? 'Rien ne correspond à « ' + query.trim() + ' ». Essaie un autre mot, ou efface la recherche.'
-              : 'Aucune citation dans cette catégorie pour le moment.'
+              ? 'Rien ne correspond a « ' + query.trim() + ' ». Essaie un autre mot, ou efface la recherche.'
+              : 'Aucune citation dans cette categorie pour le moment.'
           }
           action={{
             label: 'Effacer les filtres',
@@ -100,7 +107,7 @@ export function QuoteLibrary() {
                 <div className="row-between">
                   <span className="inspire-item__author">{item.author}</span>
                   <div className="row">
-                    <Badge tone="lavender">
+                    <Badge tone="accent">
                       {INSPIRATION_CATEGORY_LABELS[item.category]}
                     </Badge>
                     <IconButton
@@ -109,7 +116,7 @@ export function QuoteLibrary() {
                           ? 'Retirer des favoris'
                           : 'Ajouter aux favoris'
                       }
-                      accent="lavender"
+                      accent="teal"
                       active={isFavorite('quote', item.id)}
                       onClick={() => void handleToggle(item.id, item.text)}
                     >

@@ -20,13 +20,8 @@ const MOMENT_LABELS: Record<MusicMoment, string> = {
 const MOMENT_ORDER: MusicMoment[] = ['matin', 'focus', 'effort', 'soir'];
 
 /**
- * Inspirations musicales — section de l'espace Inspire.
- *
- * Source : la banque éditoriale (`@/content/library`). Les références sont
- * classées par moment d'écoute, et peuvent être marquées comme favorites.
- *
- * Aucun extrait de paroles n'est reproduit. Seuls le titre et l'interprète sont
- * cités, à titre de référence culturelle.
+ * Inspirations musicales — le badge de moment d'ecoute suit l'accent actif,
+ * comme celui des citations. Le coeur egalement.
  */
 export function MusicInspiration() {
   const [query, setQuery] = useState('');
@@ -47,7 +42,7 @@ export function MusicInspiration() {
   const handleToggle = async (id: string, title: string) => {
     const wasFavorite = isFavorite('music', id);
     await toggleFavorite('music', id);
-    notify(wasFavorite ? 'Retiré des favoris.' : 'Ajouté aux favoris.', {
+    notify(wasFavorite ? 'Retire des favoris.' : 'Ajoute aux favoris.', {
       tone: 'success',
       detail: title,
     });
@@ -58,7 +53,7 @@ export function MusicInspiration() {
       <div className="inspire-filters">
         <Input
           label="Rechercher"
-          placeholder="Un titre, un interprète…"
+          placeholder="Un titre, un interprete…"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           type="search"
@@ -86,11 +81,11 @@ export function MusicInspiration() {
 
       {items.length === 0 ? (
         <EmptyState
-          title="Aucune référence trouvée"
+          title="Aucune reference trouvee"
           description={
             query.trim()
-              ? 'Rien ne correspond à « ' + query.trim() + ' ». Essaie un autre titre, ou efface la recherche.'
-              : 'Aucune référence pour ce moment de la journée.'
+              ? 'Rien ne correspond a « ' + query.trim() + ' ». Essaie un autre titre, ou efface la recherche.'
+              : 'Aucune reference pour ce moment de la journee.'
           }
           action={{
             label: 'Effacer les filtres',
@@ -121,7 +116,7 @@ export function MusicInspiration() {
                         ? 'Retirer des favoris'
                         : 'Ajouter aux favoris'
                     }
-                    accent="lavender"
+                    accent="teal"
                     active={isFavorite('music', item.id)}
                     onClick={() => void handleToggle(item.id, item.title)}
                   >
@@ -132,7 +127,7 @@ export function MusicInspiration() {
                 <p className="body-sm music-item__note">{item.note}</p>
 
                 <div className="row-wrap">
-                  <Badge tone="teal">{MOMENT_LABELS[item.moment]}</Badge>
+                  <Badge tone="accent">{MOMENT_LABELS[item.moment]}</Badge>
                 </div>
               </Card>
             </li>
