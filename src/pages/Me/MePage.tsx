@@ -3,35 +3,42 @@ import { Profile } from './Profile';
 import { Preferences } from './Preferences';
 import { BackupReminder } from './BackupReminder';
 import { Notifications } from './Notifications';
+import { ExportPicker } from './ExportPicker';
 import { Privacy } from './Privacy';
 import { DevKitPanel } from './MeKit';
 import './Me.css';
 import './UIKit.css';
 import './DevKit.css';
+import './ExportPicker.css';
 
 /**
  * ME — l'espace personnel.
  *
- * Cinq sections : profil, preferences, notifications, confidentialite, et la
- * bibliotheque de composants (repliee, outil de developpement).
+ * Six sections : profil, préférences, notifications, export sélectif,
+ * confidentialité, et la bibliothèque de composants (repliée, outil de
+ * développement).
  *
- * `BackupReminder` s'insere entre les preferences et les notifications : il ne
- * s'affiche que lorsque la derniere sauvegarde date, donc sa place n'est pas
- * fixe dans la lecture — quand il est la, il se voit.
+ * `BackupReminder` s'insère entre les préférences et les notifications : il ne
+ * s'affiche que lorsque la dernière sauvegarde date, donc sa place n'est pas
+ * fixe dans la lecture — quand il est là, il se voit.
+ *
+ * `ExportPicker` précède `Privacy` : on choisit d'abord ce qu'on emporte, puis
+ * on trouve les actions de fond (exporter, importer, effacer).
  */
 export default function MePage() {
   return (
     <div className="section-stack">
       <PageHeader
         eyebrow="Me"
-        title="Ton espace, tes reglages"
-        description="Profil, preferences et gestion de tes donnees locales. Tu peux tout ajuster, et tout emporter."
+        title="Ton espace, tes réglages"
+        description="Profil, préférences et gestion de tes données locales. Tu peux tout ajuster, et tout emporter."
       />
 
       <Profile />
       <Preferences />
       <BackupReminder />
       <Notifications />
+      <ExportPicker />
       <Privacy />
       <DevKitPanel />
     </div>

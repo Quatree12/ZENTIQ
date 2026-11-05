@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Export sélectif
+
+   ATTENTION : importé dans le MÊME commit que sa création. Ne jamais le
+   renommer ni le détacher de son composant — le service worker ne sert que les
+   fichiers de son manifeste.
+   ========================================================================== */
+
+.export-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Chaque ligne est une cible tactile pleine largeur : on coche au pouce. */
+.export-picker__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--tap-target-min);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-field);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    border-color var(--transition-standard),
+    background-color var(--transition-standard);
+}
+
+.export-picker__row:hover {
+  border-color: var(--color-border-strong);
+}
+
+.export-picker__row.is-selected {
+  border-color: var(--color-border-accent);
+  background-color: var(--color-accent-softer);
+}
+
+/* La case native est conservée : elle porte le clavier, le lecteur d'écran et
+   l'état indéterminé — la redessiner coûterait tout ça. */
+.export-picker__row input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.export-picker__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.export-picker__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.export-picker__count {
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
