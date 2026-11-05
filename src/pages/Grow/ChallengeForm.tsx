@@ -18,21 +18,29 @@
  *   3. Le conteneur defile jusqu'au bouton touche, pour qu'il reste visible
  *      une fois le clavier referme.
  *
- * Sur desktop, aucun clavier a refermer : le comportement est inchange.
+ * JALONS — trois propositions, jamais imposees
+ * --------------------------------------------
+ * Les jalons proposes sont CALCULES sur la duree choisie : un jalon « la
+ * moitie du chemin » sur un 7 jours couvre le jour 4, sur un 30 jours couvre le
+ * jour 15. L'utilisateur peut decocher ceux qu'il ne veut pas ; un challenge
+ * sans jalon reste parfaitement valide.
+ *
+ * Les jalons ne sont pas des recompenses : chacun se franchit quand ses etapes
+ * sont reellement faites, et la date est relevee sur les etapes elles-memes.
  */
-import { useId, useRef, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/buttons';
 import { Input, Textarea } from '@/components/inputs';
 import { useToast } from '@/components/feedback/Toast';
 import type { CreateChallengeInput } from '@/database/repositories';
-import { CHALLENGE_DURATIONS } from '@/types';
+import { CHALLENGE_DURATIONS, CHALLENGE_RHYTHM_LABELS, type ChallengeRhythm } from '@/types';
 import { firstError, maxLength } from '@/utils/validators';
 import { todayKey } from '@/utils/dates';
 
 /** Suggestions d'etapes, pour ne pas laisser l'utilisateur devant une page blanche. */
 const STEP_SUGGESTIONS: Record<number, string[]> = {
-  3: ["Observer ce qui m'entoure", 'Faire une chose utile', 'Nommer ce que j\'ai appris'],
+  3: ["Observer ce qui m'entoure", 'Faire une chose utile', "Nommer ce que j'ai appris"],
   7: [
     'Definir mon intention',
     'Faire un premier pas',
@@ -46,6 +54,26 @@ const STEP_SUGGESTIONS: Record<number, string[]> = {
   21: Array.from({ length: 21 }, (_, index) => 'Etape ' + (index + 1)),
   30: Array.from({ length: 30 }, (_, index) => 'Etape ' + (index + 1)),
 };
+
+/** Rythmes proposes, dans l'ordre du plus simple au plus souple. */
+const RHYTHMS: ChallengeRhythm[] = ['once', 'recurring', 'milestones'];
+
+/**
+ * Jalons suggeres pour une duree donnee.
+ *
+ * Trois jalons : un premier tiers, la moitie du chemin, et la derniere ligne
+ * droite. Les numeros sont calcules, arrondis a l'entier, et bornes a la duree —
+ * un jalon au-dela du dernier jour ne serait jamais franchi.
+ */
+function suggestMilestones(duration: number): Array<{ title: string; throughDay: number }> {
+  if (duration < 3) return [];
+  const clamp = (value: number) => Math.min(Math.max(1, value), duration);
+  return [
+    { title: 'Premier tiers', throughDay: clamp(Math.round(duration / 3)) },
+    { title: 'Moitie du chemin', throughDay: clamp(Math.round(duration / 2)) },
+    { title: 'Derniere ligne droite', throughDay: clamp(duration - 1) },
+  ];
+}
 
 export interface ChallengeFormProps {
   onSubmit: (input: CreateChallengeInput) => Promise<boolean>;
@@ -62,8 +90,14 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
   const [goal, setGoal] = useState('');
   const [duration, setDuration] = useState<number>(7);
   const [startDate, setStartDate] = useState(todayKey());
+  const [rhythm, setRhythm] = useState<ChallengeRhythm>('once');
+  const [targetPerPeriod, setTargetPerPeriod] = useState<number>(3);
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
+
+  // Jalons proposes pour la duree courante, et ceux que l'utilisateur garde.
+  const suggested = useMemo(() => suggestMilestones(duration), [duration]);
+  const [keptMilestones, setKeptMilestones] = useState<number[]>([0, 1, 2]);
 
   const titleError = firstError(
     title.trim().length === 0 ? 'Donne un nom a ton challenge.' : null,
@@ -83,9 +117,17 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       if (active instanceof HTMLElement) active.blur();
     }
     setDuration(value);
+    // La duree change : les jalons proposes changent aussi. On repart des trois
+    // propositions, sinon les anciens index ne designeraient plus les memes jours.
+    setKeptMilestones([0, 1, 2]);
 
-    // Le bouton reste visible une fois le clavier referme.
     durationsRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
+
+  const toggleMilestone = (index: number) => {
+    setKeptMilestones((current) =>
+      current.includes(index) ? current.filter((item) => item !== index) : [...current, index].sort(),
+    );
   };
 
   const handleSubmit = async () => {
@@ -100,6 +142,9 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       durationDays: duration,
       startDate,
       steps: STEP_SUGGESTIONS[duration],
+      rhythm,
+      targetPerPeriod: rhythm === 'recurring' ? targetPerPeriod : undefined,
+      milestones: suggested.filter((_, index) => keptMilestones.includes(index)),
     });
     setSaving(false);
 
@@ -157,12 +202,10 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
                 className={isActive ? 'duration-chip is-active' : 'duration-chip'}
                 aria-pressed={isActive}
                 onPointerDown={(event) => {
-                  // Traite avant tout blur declenche par le clic.
                   event.preventDefault();
                   selectDuration(value);
                 }}
                 onClick={(event) => {
-                  // Repli pour les navigateurs sans Pointer Events.
                   event.preventDefault();
                   if (typeof PointerEvent === 'undefined') selectDuration(value);
                 }}
@@ -174,6 +217,106 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
           })}
         </div>
       </fieldset>
+
+      {/* --- Rythme ------------------------------------------------------- */}
+      <fieldset className="challenge-form__rhythm">
+        <legend className="field__label">Rythme</legend>
+        <div className="challenge-form__chips">
+          {RHYTHMS.map((value) => {
+            const isActive = rhythm === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                className={isActive ? 'rhythm-chip is-active' : 'rhythm-chip'}
+                aria-pressed={isActive}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  if (typeof document !== 'undefined') {
+                    const active = document.activeElement;
+                    if (active instanceof HTMLElement) active.blur();
+                  }
+                  setRhythm(value);
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  if (typeof PointerEvent === 'undefined') setRhythm(value);
+                }}
+              >
+                {isActive && <Check size={14} aria-hidden="true" />}
+                {CHALLENGE_RHYTHM_LABELS[value]}
+              </button>
+            );
+          })}
+        </div>
+        <p className="body-sm">
+          {rhythm === 'once'
+            ? 'Un parcours suivi : tu avances jour apres jour.'
+            : rhythm === 'recurring'
+              ? 'Un nombre de fois vise par semaine. Manquer un jour ne remet rien a zero.'
+              : 'Tu avances par etapes franchies, sans contrainte de calendrier.'}
+        </p>
+
+        {rhythm === 'recurring' && (
+          <Input
+            label="Seances visees par semaine"
+            type="number"
+            min={1}
+            max={7}
+            value={String(targetPerPeriod)}
+            onChange={(event) => {
+              const parsed = Number(event.target.value);
+              setTargetPerPeriod(Number.isFinite(parsed) ? Math.min(7, Math.max(1, parsed)) : 3);
+            }}
+            hint="Un objectif souple : c'est un cap, pas un quota."
+          />
+        )}
+      </fieldset>
+
+      {/* --- Jalons ------------------------------------------------------- */}
+      {suggested.length > 0 && (
+        <fieldset className="challenge-form__milestones">
+          <legend className="field__label">Jalons</legend>
+          <p className="body-sm">
+            Trois reperes sur le chemin. Chacun se franchit quand les etapes qu'il couvre sont
+            faites. Decoche ceux dont tu ne veux pas.
+          </p>
+          <ul className="milestone-picker">
+            {suggested.map((milestone, index) => {
+              const kept = keptMilestones.includes(index);
+              return (
+                <li key={milestone.title + index}>
+                  <button
+                    type="button"
+                    className={kept ? 'milestone-chip is-active' : 'milestone-chip'}
+                    aria-pressed={kept}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      if (typeof document !== 'undefined') {
+                        const active = document.activeElement;
+                        if (active instanceof HTMLElement) active.blur();
+                      }
+                      toggleMilestone(index);
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (typeof PointerEvent === 'undefined') toggleMilestone(index);
+                    }}
+                  >
+                    <span className="milestone-chip__check" aria-hidden="true">
+                      {kept && <Check size={14} />}
+                    </span>
+                    <span className="milestone-chip__text">
+                      <span className="milestone-chip__title">{milestone.title}</span>
+                      <span className="body-sm">jusqu'au jour {milestone.throughDay}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </fieldset>
+      )}
 
       <Input
         label="Premier jour"
