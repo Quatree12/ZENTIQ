@@ -5,17 +5,16 @@
  * drawer mobile et la barre inférieure mobile en dérivent tous. Ajouter un
  * espace ne demande donc qu'une entrée ici.
  *
- * LIBELLÉS EN FRANÇAIS
- * --------------------
- * Les cinq espaces portaient leur nom de code — Today, Inspire, Grow, Journey,
- * Me. C'est la barre la plus visible de l'application : elle s'affiche sur
- * chaque écran, et elle était la seule à rester en anglais au milieu d'une
- * interface française.
+ * LES CINQ LIBELLÉS RESTENT EN ANGLAIS, ET C'EST UN CHOIX PRODUIT
+ * --------------------------------------------------------------
+ * Ils ont été traduits une fois — Today en « Aujourd'hui », Grow en « Grandir »,
+ * Me en « Moi » — au motif que le reste de l'interface est en français. C'était
+ * une décision qui n'appartenait pas au développement : ces cinq mots sont les
+ * NOMS des espaces, pas des libellés d'interface à traduire. Inspire et Journey
+ * avaient d'ailleurs été conservés pour cette raison, ce qui rendait la barre
+ * incohérente : trois traduits, deux non.
  *
- * Deux d'entre eux gardent pourtant leur mot d'origine, parce qu'il EST le nom
- * de l'espace dans le brief produit : Inspire et Journey ne sont pas des
- * traductions de « Inspirer » et « Parcours », ce sont les noms choisis pour ces
- * espaces. On ne les renomme pas au risque de casser l'identité du produit.
+ * La barre est donc de nouveau homogène, dans la langue du produit.
  */
 import {
   Compass,
@@ -29,7 +28,7 @@ import {
 export interface NavItem {
   /** Chemin de route. */
   path: string;
-  /** Libellé affiché. */
+  /** Libellé affiché — nom de l'espace, jamais traduit. */
   label: string;
   /** Phrase courte, utilisée en sous-titre et en infobulle. */
   tagline: string;
@@ -42,7 +41,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   {
     path: '/today',
-    label: "Aujourd'hui",
+    label: 'Today',
     tagline: 'Ton point de départ du jour',
     icon: Sun,
     inMobileBar: true,
@@ -56,7 +55,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     path: '/grow',
-    label: 'Grandir',
+    label: 'Grow',
     tagline: 'Objectifs, habitudes, challenges',
     icon: Sprout,
     inMobileBar: true,
@@ -70,7 +69,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     path: '/me',
-    label: 'Moi',
+    label: 'Me',
     tagline: 'Profil, préférences, confidentialité',
     icon: Footprints,
     inMobileBar: true,
