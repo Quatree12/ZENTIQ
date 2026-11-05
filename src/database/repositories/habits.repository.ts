@@ -1,14 +1,14 @@
 import { db } from '@/database/db';
 import type { Habit, HabitCompletion } from '@/types';
-import { lastNDays, todayKey } from '@/utils/dates';
+import { lastNDays, nowIso, todayKey } from '@/utils/dates';
 import { guard, prepareInsert, prepareUpdate } from './base.repository';
 
 /**
- * Accès aux habitudes et à leurs réalisations.
+ * Acces aux habitudes et a leurs realisations.
  *
- * La règle produit : on célèbre ce qui a été fait, on ne compte pas les échecs.
- * Les calculs de série s'interrompent proprement et ne renvoient jamais de
- * valeur négative.
+ * La regle produit : on celebre ce qui a ete fait, on ne compte pas les echecs.
+ * Les calculs de serie s'interrompent proprement et ne renvoient jamais de
+ * valeur negative.
  */
 
 export interface CreateHabitInput {
@@ -23,16 +23,16 @@ export interface CreateHabitInput {
 }
 
 export interface HabitWithStatus extends Habit {
-  /** Vrai si l'habitude est cochée pour le jour de référence. */
+  /** Vrai si l'habitude est cochee pour le jour de reference. */
   doneToday: boolean;
-  /** Nombre de réalisations sur les 7 derniers jours. */
+  /** Nombre de realisations sur les 7 derniers jours. */
   completedThisWeek: number;
-  /** Série courante (jours consécutifs), bornée à 90 jours d'analyse. */
+  /** Serie courante (jours consecutifs), bornee a 90 jours d'analyse. */
   streak: number;
 }
 
 export const habitsRepository = {
-  /** Habitudes actives (non archivées). */
+  /** Habitudes actives (non archivees). */
   async listActive(): Promise<Habit[]> {
     return guard('habits.listActive', async () => {
       const habits = await db.habits.toArray();
@@ -40,7 +40,7 @@ export const habitsRepository = {
     });
   },
 
-  /** Toutes les habitudes, y compris archivées. */
+  /** Toutes les habitudes, y compris archivees. */
   async listAll(): Promise<Habit[]> {
     return guard('habits.listAll', async () => {
       const habits = await db.habits.toArray();
@@ -52,6 +52,14 @@ export const habitsRepository = {
     return guard('habits.get', async () => (await db.habits.get(id)) ?? null);
   },
 
+  /**
+   * Cree une habitude.
+   *
+   * `lastReviewedAt` est pose explicitement a `null` : une habitude qui vient
+   * d'etre creee n'a pas encore ete relue. Le champ est requis par le type
+   * depuis la migration v2 — l'omettre laisserait un `undefined` dans une base
+   * dont le schema le declare present.
+   */
   async create(input: CreateHabitInput): Promise<Habit> {
     return guard('habits.create', async () => {
       const habit = prepareInsert<Habit>({
@@ -64,6 +72,7 @@ export const habitsRepository = {
         icon: input.icon ?? 'circle-check',
         accent: input.accent ?? 'teal',
         archived: false,
+        lastReviewedAt: null,
       });
       await db.habits.add(habit);
       return habit;
@@ -80,18 +89,27 @@ export const habitsRepository = {
     });
   },
 
-  /** Archive une habitude : elle disparaît du quotidien, l'historique reste. */
+  /**
+   * Marque une habitude comme relue.
+   * Prepare un bilan periodique : l'interface ne s'en sert pas encore, mais le
+   * repository expose l'operation pour que le champ ne reste pas inutilisable.
+   */
+  async markReviewed(id: string): Promise<Habit> {
+    return habitsRepository.update(id, { lastReviewedAt: nowIso() });
+  },
+
+  /** Archive une habitude : elle disparait du quotidien, l'historique reste. */
   async archive(id: string): Promise<Habit> {
     return habitsRepository.update(id, { archived: true });
   },
 
-  /** Réactive une habitude archivée. */
+  /** Reactive une habitude archivee. */
   async restore(id: string): Promise<Habit> {
     return habitsRepository.update(id, { archived: false });
   },
 
   /**
-   * Supprime une habitude ET ses réalisations.
+   * Supprime une habitude ET ses realisations.
    * Suppression en cascade pour ne pas laisser d'historique orphelin.
    */
   async remove(id: string): Promise<void> {
@@ -104,17 +122,17 @@ export const habitsRepository = {
   },
 
   /* ------------------------------------------------------------------------
-     Réalisations
+     Realisations
      ------------------------------------------------------------------------ */
 
-  /** Réalisations pour un jour donné. */
+  /** Realisations pour un jour donne. */
   async completionsForDate(date: string): Promise<HabitCompletion[]> {
     return guard('habits.completionsForDate', () =>
       db.habitCompletions.where('date').equals(date).toArray(),
     );
   },
 
-  /** Réalisations d'une habitude sur les derniers jours. */
+  /** Realisations d'une habitude sur les derniers jours. */
   async completionDates(habitId: string, days = 90): Promise<string[]> {
     return guard('habits.completionDates', async () => {
       const completions = await db.habitCompletions.where('habitId').equals(habitId).toArray();
@@ -126,7 +144,7 @@ export const habitsRepository = {
     });
   },
 
-  /** Vrai si l'habitude est cochée pour ce jour. */
+  /** Vrai si l'habitude est cochee pour ce jour. */
   async isCompleted(habitId: string, date: string): Promise<boolean> {
     return guard('habits.isCompleted', async () => {
       const match = await db.habitCompletions.where('[habitId+date]').equals([habitId, date]).first();
@@ -135,8 +153,8 @@ export const habitsRepository = {
   },
 
   /**
-   * Coche l'habitude pour un jour. Idempotent : si la coche existe déjà, elle
-   * est renvoyée telle quelle au lieu d'être dupliquée.
+   * Coche l'habitude pour un jour. Idempotent : si la coche existe deja, elle
+   * est renvoyee telle quelle au lieu d'etre dupliquee.
    */
   async complete(habitId: string, date: string = todayKey()): Promise<HabitCompletion> {
     return guard('habits.complete', async () => {
@@ -163,7 +181,7 @@ export const habitsRepository = {
     });
   },
 
-  /** Bascule l'état d'une habitude pour un jour, et renvoie le nouvel état. */
+  /** Bascule l'etat d'une habitude pour un jour, et renvoie le nouvel etat. */
   async toggle(habitId: string, date: string = todayKey()): Promise<boolean> {
     const done = await habitsRepository.isCompleted(habitId, date);
     if (done) {
@@ -179,8 +197,8 @@ export const habitsRepository = {
      ------------------------------------------------------------------------ */
 
   /**
-   * Habitudes actives accompagnées de leur état du jour, de la semaine et de
-   * leur série courante. Un seul passage en base évite les allers-retours.
+   * Habitudes actives accompagnees de leur etat du jour, de la semaine et de
+   * leur serie courante. Un seul passage en base evite les allers-retours.
    */
   async listWithStatus(date: string = todayKey()): Promise<HabitWithStatus[]> {
     return guard('habits.listWithStatus', async () => {
@@ -211,7 +229,7 @@ export const habitsRepository = {
     });
   },
 
-  /** Nombre de habitudes actives. */
+  /** Nombre d'habitudes actives. */
   async count(): Promise<number> {
     return guard('habits.count', async () => {
       const habits = await db.habits.toArray();
@@ -220,14 +238,14 @@ export const habitsRepository = {
   },
 };
 
-/** Ordre stable : création la plus récente d'abord. */
+/** Ordre stable : creation la plus recente d'abord. */
 function sortHabits(a: Habit, b: Habit): number {
   return b.createdAt.localeCompare(a.createdAt);
 }
 
 /**
- * Série courante : nombre de jours consécutifs cochés, en remontant depuis
- * `upTo`. Un jour non coché arrête le comptage, sans pénalité rétroactive.
+ * Serie courante : nombre de jours consecutifs coches, en remontant depuis
+ * `upTo`. Un jour non coche arrete le comptage, sans penalite retroactive.
  */
 function computeStreak(dates: Set<string>, upTo: string): number {
   if (dates.size === 0) return 0;
@@ -240,7 +258,7 @@ function computeStreak(dates: Set<string>, upTo: string): number {
     if (dates.has(key)) {
       streak += 1;
     } else if (key !== upTo) {
-      // Aujourd'hui peut ne pas encore être coché sans casser la série.
+      // Aujourd'hui peut ne pas encore etre coche sans casser la serie.
       break;
     }
   }

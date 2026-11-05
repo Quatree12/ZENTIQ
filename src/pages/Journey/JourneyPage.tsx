@@ -5,23 +5,28 @@ import { JourneySummaryCard } from './JourneySummaryCard';
 import { MoodStats } from './MoodStats';
 import { HabitStats } from './HabitStats';
 import { GoalStats } from './GoalStats';
+import { Trends } from './Trends';
 import { MoodHistory } from './MoodHistory';
 import { ProgressTimeline } from './ProgressTimeline';
 import { Journal } from './Journal';
 import './Journey.css';
 import './JourneyStats.css';
+import './Trends.css';
 
 /**
  * JOURNEY — l'espace de suivi personnel.
  *
  * Ordre de lecture : la synthese d'abord (ou en suis-je), puis les analyses par
- * domaine (humeur, habitudes, objectifs), puis l'historique brut (humeurs
- * passees, timeline, journal).
+ * domaine (humeur, habitudes, objectifs), puis les TENDANCES, puis l'historique
+ * brut (humeurs passees, timeline, journal).
  *
  * Le hook `useJourneyStats` est monte UNE fois ici, et ses donnees sont passees
  * en proprietes aux sections analytiques : changer la periode met tout a jour
- * de facon coherente, sans que chaque section recharge la base. C'est ce qui
- * evite quatre lectures IndexedDB concurrentes pour un meme ecran.
+ * de facon coherente, sans que chaque section recharge la base.
+ *
+ * `Trends` fait exception : il charge son propre rapport, parce qu'il analyse
+ * une fenetre differente (7 ou 30 jours, choisie dans l'ecran) et croise des
+ * domaines que `useJourneyStats` ne rapproche pas — humeur contre habitudes.
  *
  * Toutes les mesures viennent des donnees locales reelles. Aucune statistique
  * n'est generee pour remplir l'interface.
@@ -48,6 +53,7 @@ export default function JourneyPage() {
           <MoodStats stats={moods} period={period} onPeriodChange={setPeriod} />
           <HabitStats stats={habitStats} period={period} />
           <GoalStats stats={goals} />
+          <Trends />
           <MoodHistory />
           <ProgressTimeline />
           <Journal />
