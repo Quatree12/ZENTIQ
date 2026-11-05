@@ -44,7 +44,7 @@
   background-color: var(--color-surface-sunken);
 }
 
-/* Deux champs côte a côte : le titre prend la place, le jour reste étroit. */
+/* Deux champs côte à côte : le titre prend la place, le jour reste étroit. */
 .milestone-editor__fields {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
