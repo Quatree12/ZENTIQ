@@ -128,22 +128,29 @@
   /* =====================================================================
      11. TYPOGRAPHIE
      =====================================================================
-     Nunito     -> interface, donnees, navigation
-     Montserrat -> citations et titres editoriaux
+     Nunito        -> interface, donnees, navigation
+     Fuzzy Bubbles -> citations (TEST en cours)
+     Montserrat    -> titres editoriaux uniquement
 
-     GRAISSE DES CITATIONS : 400 (Regular).
-     Le 600 precedent donnait un rendu gras que l'utilisateur n'a pas
-     souhaite. Le trait fin de Montserrat est conserve : c'est un choix
-     assume, et l'italique suffit a distinguer une citation d'un paragraphe.
+     TEST FUZZY BUBBLES — 4.1.3
+     -------------------------
+     Fuzzy Bubbles est une manuscrite decorative. Elle est appliquee aux
+     SEULES citations, jamais au corps de texte : un texte long dans une
+     manuscrite irreguliere fatigue vite.
 
-     TAILLE DES CITATIONS : reduite de 10 % environ, pour laisser la
-     hierarchie au titre de page et au corps de texte.
+     DEUX CONTRAINTES DE CETTE POLICE :
+       - une seule graisse utilisable : aucune variation possible
+       - aucun italique : le navigateur le simulerait, avec un rendu penche
+         approximatif. On retire donc l'italique sur les citations.
 
-     `--font-data` pointe vers Nunito avec `tabular-nums`.
+     POUR REVENIR EN ARRIERE : remplacer --font-citation par
+     'Montserrat' ci-dessous, et remettre font-style: italic dans
+     `.editorial-quote` (typography.css) et `.inspire-item__text` (Inspire.css).
      ===================================================================== */
   --font-ui: 'Nunito', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-data: 'Nunito', 'Nunito Sans', system-ui, -apple-system, sans-serif;
   --font-editorial: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+  --font-citation: 'Fuzzy Bubbles', 'Comic Sans MS', cursive, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Echelle de base */
@@ -158,10 +165,10 @@
   --text-3xl: clamp(1.75rem, 1.5rem + 1.1vw, 1.875rem); /* 28 -> 30 px */
   --text-4xl: clamp(2.125rem, 1.7rem + 1.8vw, 2.5rem); /* 34 -> 40 px */
 
-  /* Citation editoriale — Montserrat 400.
-     Plus basse que le corps de texte dans sa borne haute, pour que le titre
-     de page reste l'element dominant de l'ecran. */
-  --text-editorial: clamp(1.25rem, 1.05rem + 1vw, 1.5625rem); /* 20 -> 25 px */
+  /* Citation — Fuzzy Bubbles.
+     Une manuscrite parait plus petite a taille egale : on remonte legerement
+     la borne basse pour compenser, sans depasser le titre de page. */
+  --text-editorial: clamp(1.375rem, 1.15rem + 1vw, 1.6875rem); /* 22 -> 27 px */
 
   /* Roles dedies */
   --text-stat: clamp(1.75rem, 1.4rem + 1.4vw, 2.125rem); /* 28 -> 34 px */
@@ -175,9 +182,10 @@
   --weight-bold: 700;
   --weight-extrabold: 800;
 
-  /* Interlignes */
+  /* Interlignes — Fuzzy Bubbles a une hauteur d'x genereuse : 1,45 evite
+     que les lignes se touchent. */
   --leading-tight: 1.2;
-  --leading-snug: 1.4;
+  --leading-snug: 1.45;
   --leading-normal: 1.55;
   --leading-relaxed: 1.65;
 

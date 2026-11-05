@@ -1,29 +1,32 @@
 /* ==========================================================================
    ZENTIQ — TYPOGRAPHIE
-   Nunito     : interface, donnees, navigation
-   Montserrat : citations et titres editoriaux
+   Nunito        : interface, donnees, navigation
+   Fuzzy Bubbles : citations (TEST 4.1.3)
+   Montserrat    : titres editoriaux
 
-   PHASE 4.1.2 — TRAIT FIN SUR LES CITATIONS
-   ------------------------------------------
-   Montserrat passe de 600 a 400 sur les citations.
-   Le 600 donnait un rendu gras que l'utilisateur n'a pas souhaite : il veut un
-   trait fin. C'est un choix assume — l'italique et la taille suffisent a
-   distinguer une citation d'un paragraphe, sans avoir a jouer sur la graisse.
+   TEST FUZZY BUBBLES
+   ------------------
+   Seules les CITATIONS changent de police. Le corps de texte, les titres
+   d'interface, les chiffres et la navigation restent en Nunito.
 
-   Les TITRES EDITORIAUX restent en 700 : un titre est un repere, il doit
-   porter. C'est seulement le corps de la citation qui s'allege.
+   L'ITALIQUE EST RETIRE sur les citations : Fuzzy Bubbles n'en propose pas,
+   et un italique simule par le navigateur donne un rendu penche irregulier
+   qui abime le trait.
+
+   POUR REVENIR A MONTSERRAT : dans tokens.css,
+     --font-citation: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+   et remettre `font-style: italic;` ci-dessous et dans Inspire.css.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   ROLES EDITORIAUX — Montserrat
+   CITATIONS — Fuzzy Bubbles
    -------------------------------------------------------------------------- */
 
-/* Citation / affirmation — trait fin, italique, taille contenue */
 .editorial-quote {
-  font-family: var(--font-editorial);
+  font-family: var(--font-citation);
   font-size: var(--text-editorial);
   font-weight: var(--weight-regular);
-  font-style: italic;
+  font-style: normal;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
@@ -31,7 +34,7 @@
   overflow-wrap: break-word;
 }
 
-/* Titre d'ecran editorial — reste affirmé */
+/* Titre d'ecran editorial — reste en Montserrat, il porte la hierarchie */
 .editorial-title {
   font-family: var(--font-editorial);
   font-size: var(--text-3xl);
@@ -141,7 +144,6 @@
   color: var(--color-text-tertiary);
 }
 
-/* Statistique mise en avant */
 .stat-value {
   font-family: var(--font-data);
   font-size: var(--text-stat);
@@ -182,4 +184,5 @@
    CHARGEMENT DES POLICES
    -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&display=swap');
