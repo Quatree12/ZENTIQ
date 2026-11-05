@@ -1,15 +1,15 @@
 import { appConfig } from '@/app/app-config';
 
 /**
- * Accès au stockage local hors IndexedDB.
+ * Acces au stockage local hors IndexedDB.
  *
- * IndexedDB porte les données métier ; il reste utile pour de petites valeurs
- * de rendu (dernière route, préférence de thème immédiatement applicable) qui
- * doivent être lues de façon synchrone au démarrage.
+ * IndexedDB porte les donnees metier ; il reste utile pour de petites valeurs
+ * de rendu (derniere route, preferences visuelles) qui doivent etre lues de
+ * facon synchrone au demarrage.
  *
- * Tout est encapsulé : le reste de l'application ne manipule jamais
- * `localStorage` directement, ce qui rend le comportement prévisible quand le
- * navigateur le refuse (navigation privée, quota, politique d'entreprise).
+ * Tout est encapsule : le reste de l'application ne manipule jamais
+ * `localStorage` directement, ce qui rend le comportement previsible quand le
+ * navigateur le refuse (navigation privee, quota, politique d'entreprise).
  */
 
 const isAvailable = (): boolean => {
@@ -25,10 +25,10 @@ const isAvailable = (): boolean => {
 };
 
 export const storage = {
-  /** Disponibilité du stockage (faux en navigation privée stricte). */
+  /** Disponibilite du stockage (faux en navigation privee stricte). */
   available: isAvailable(),
 
-  /** Lecture typée, avec valeur de repli. Ne lève jamais. */
+  /** Lecture typee, avec valeur de repli. Ne leve jamais. */
   read<T>(key: string, fallback: T): T {
     try {
       const raw = window.localStorage.getItem(key);
@@ -39,7 +39,7 @@ export const storage = {
     }
   },
 
-  /** Écriture typée. Renvoie `false` si l'écriture a échoué. */
+  /** Ecriture typee. Renvoie `false` si l'ecriture a echoue. */
   write(key: string, value: unknown): boolean {
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
@@ -49,17 +49,17 @@ export const storage = {
     }
   },
 
-  /** Suppression, sans erreur si la clé n'existe pas. */
+  /** Suppression, sans erreur si la cle n'existe pas. */
   remove(key: string): void {
     try {
       window.localStorage.removeItem(key);
     } catch {
-      // Volontairement silencieux : un échec de nettoyage n'est pas bloquant.
+      // Volontairement silencieux : un echec de nettoyage n'est pas bloquant.
     }
   },
 };
 
-/** Dernière section visitée — permet de retrouver sa place à la réouverture. */
+/** Derniere section visitee — permet de retrouver sa place a la reouverture. */
 export function readLastRoute(): string | null {
   return storage.read<string | null>(appConfig.storageKeys.lastRoute, null);
 }
@@ -69,13 +69,18 @@ export function writeLastRoute(path: string): void {
 }
 
 /**
- * Profil de rendu mis en cache : évite un clignotement de thème au démarrage
- * avant que IndexedDB ne soit ouvert.
+ * Preferences de rendu mises en cache : evite un clignotement de theme au
+ * demarrage, avant que IndexedDB ne soit ouvert.
+ *
+ * `largeReadableText` a ete AJOUTE ici (et non remplace) : la preference etait
+ * persistee en base mais absente du cache de rendu, donc perdue jusqu'a
+ * l'ouverture d'IndexedDB — et jamais appliquee, faute de regle CSS.
  */
 export interface CachedRenderSettings {
   accentTheme: 'teal' | 'lavender';
   reduceMotion: boolean;
   density: 'comfortable' | 'compact';
+  largeReadableText: boolean;
 }
 
 export function readCachedRenderSettings(): CachedRenderSettings | null {
@@ -87,8 +92,13 @@ export function writeCachedRenderSettings(settings: CachedRenderSettings): void 
 }
 
 /**
- * Applique les préférences visuelles sur l'élément racine.
- * Appelé au démarrage (avant le rendu) et à chaque changement de réglage.
+ * Applique les preferences visuelles sur l'element racine.
+ * Appele au demarrage (avant le rendu) et a chaque changement de reglage.
+ *
+ * C'est ICI que la preference « Texte plus large » devient effective :
+ * l'attribut `data-large-text` declenche le bloc correspondant de themes.css.
+ * La valeur est ecrite en chaine (`'true'` / `'false'`) et non en booleen :
+ * un attribut absent, vide ou a `"false"` ne doit PAS activer la regle.
  */
 export function applyRenderSettings(settings: CachedRenderSettings): void {
   if (typeof document === 'undefined') return;
@@ -97,4 +107,5 @@ export function applyRenderSettings(settings: CachedRenderSettings): void {
   root.dataset.accent = settings.accentTheme;
   root.dataset.density = settings.density;
   root.dataset.reduceMotion = String(settings.reduceMotion);
+  root.dataset.largeText = String(settings.largeReadableText);
 }
