@@ -6,23 +6,33 @@ import { VitePWA } from 'vite-plugin-pwa';
 /**
  * Configuration Vite de ZENTIQ.
  *
- * - `base` : le site est publie sur GitHub Pages dans un sous-dossier
- *   (https://quatree12.github.io/ZENTIQ/). Sans ce reglage, Vite genere des
- *   chemins absolus a la racine du domaine (/assets/...) qui renvoient une 404.
- * - `@/` pointe vers `src/` : les imports restent stables quand
- *   l'arborescence grandit.
- * - Le plugin PWA genere le service worker et le manifest de precache au build.
+ * PHASE 4.1.8 — CORRECTIF « Importing a module script failed »
+ * ------------------------------------------------------------
+ * Cette erreur apparaissait sur une seule route a la fois — Inspire, puis une
+ * autre — alors que le reste de l'application fonctionnait.
+ *
+ * LA CAUSE
+ *   Le service worker precisait `index.html` ET les fichiers compiles. Or Vite
+ *   renomme ces fichiers a chaque build (un hash dans le nom). Si le SW servait
+ *   un `index.html` ancien pointant vers des fichiers qui n'existent plus, le
+ *   routeur tentait de charger une route paresseuse (`lazy()`) et echouait sur
+ *   un module introuvable. Les routes deja chargees continuaient de fonctionner
+ *   ce qui donnait cette impression de panne isolee.
+ *
+ * LA CORRECTION
+ *   1. `index.html` est EXCLU du precache (globIgnores). Il est desormais
+ *      toujours demande au reseau, donc jamais desynchronise de ses assets.
+ *   2. Une regle `NetworkFirst` avec delai court sert le HTML : en ligne, on a
+ *      la version fraiche ; hors ligne, le cache prend le relais.
+ *   3. Les fichiers compiles restent en precache classique — eux portent leur
+ *      hash dans le nom, donc ils ne peuvent pas etre perimes.
+ *
+ * Le repli hors ligne est conserve : l'application reste utilisable sans
+ * reseau, mais elle ne peut plus servir un HTML qui ne correspond a rien.
  *
  * PHASE 4.1 — POLICES HORS LIGNE
- * ------------------------------
- * Nunito et Cormorant Garamond viennent de Google Fonts. Le precache du build
- * ne couvre que les fichiers locaux : sans regle dediee, les polices seraient
- * perdues des que l'appareil passe hors ligne, et l'interface retomberait sur
- * la pile systeme.
- *
- * Les deux regles `runtimeCaching` ci-dessous corrigent cela :
- *   - la feuille de style Google change rarement -> StaleWhileRevalidate
- *   - les fichiers de police sont immuables      -> CacheFirst, un an
+ *   Deux regles de cache pour Google Fonts, sinon l'interface retombe sur la
+ *   pile systeme des que l'appareil passe hors ligne.
  */
 export default defineConfig({
   base: '/ZENTIQ/',
@@ -43,12 +53,27 @@ export default defineConfig({
       filename: 'sw.js',
       manifest: false, // on livre un public/manifest.webmanifest ecrit a la main
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: '/ZENTIQ/index.html',
-        navigateFallbackDenylist: [/^\/ZENTIQ\/offline\.html$/],
+        // index.html est EXCLU : il doit rester synchronise avec ses assets.
+        globPatterns: ['**/*.{js,css,svg,png,woff2}'],
+        globIgnores: ['**/index.html'],
+        // Plus de repli de navigation sur un HTML precache.
+        navigateFallback: undefined,
         cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: false,
         runtimeCaching: [
           {
+            // Le document HTML : reseau d'abord, cache en secours hors ligne.
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'zentiq-documents',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            // Feuille de style Google Fonts.
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
             options: {
@@ -57,6 +82,7 @@ export default defineConfig({
             },
           },
           {
+            // Fichiers de police : immuables, donc cache-first.
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
