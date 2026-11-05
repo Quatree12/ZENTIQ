@@ -18,23 +18,23 @@ import './JournalSearch.css';
  *
  * RECHERCHE ET FILTRES
  * --------------------
- * La recherche est LOCALE et faite en memoire : les entrees sont deja chargees,
- * et un aller-retour IndexedDB a chaque frappe serait plus lent pour rien. Elle
+ * La recherche est LOCALE et faite en mémoire : les entrées sont déjà chargées,
+ * et un aller-retour IndexedDB à chaque frappe serait plus lent pour rien. Elle
  * porte sur le titre ET le contenu, sans accent ni casse — chercher « energie »
  * doit trouver « Énergie ».
  *
- * Le filtre par humeur et le filtre « epinglees » se combinent avec la
- * recherche : un filtre qui ne s'appliquerait qu'a moitie donnerait des
- * resultats incomprehensibles.
-
- * L'etat vide a DEUX formes distinctes, et c'est volontaire :
- *   - journal vide       -> on invite a ecrire une premiere entree
- *   - filtres sans resultat -> on propose de retirer les filtres
+ * Le filtre par humeur et le filtre « épinglées » se combinent avec la
+ * recherche : un filtre qui ne s'appliquerait qu'à moitié donnerait des
+ * résultats incompréhensibles.
+ *
+ * L'état vide a DEUX formes distinctes, et c'est volontaire :
+ *   - journal vide           -> on invite à écrire une première entrée
+ *   - filtres sans résultat   -> on propose de retirer les filtres
  * Les confondre laisserait croire que le journal est vide alors qu'il est
- * seulement filtre.
+ * seulement filtré.
  */
 
-/** Normalise une chaine pour la recherche : minuscules, sans accents. */
+/** Normalise une chaîne pour la recherche : minuscules, sans accents. */
 function normalize(value: string): string {
   return value
     .toLowerCase()
@@ -42,7 +42,7 @@ function normalize(value: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-/** Vrai si l'entree correspond a la recherche libre. */
+/** Vrai si l'entrée correspond à la recherche libre. */
 function matchesQuery(entry: JournalEntry, needle: string): boolean {
   if (!needle) return true;
   const haystack = normalize(entry.title + ' ' + entry.content);
@@ -63,7 +63,7 @@ export function Journal() {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState<MoodLevel | ''>('');
 
-  // Filtres d'affichage. Ils ne touchent jamais aux donnees.
+  // Filtres d'affichage. Ils ne touchent jamais aux données.
   const [query, setQuery] = useState('');
   const [moodFilter, setMoodFilter] = useState<MoodFilter>('all');
   const [pinFilter, setPinFilter] = useState<PinFilter>('all');
@@ -96,13 +96,13 @@ export function Journal() {
     });
 
     if (ok) {
-      notify('Entree enregistree.', { tone: 'success' });
+      notify('Entrée enregistrée.', { tone: 'success' });
       setComposeOpen(false);
       setTitle('');
       setContent('');
       setMood('');
     } else {
-      notify("L'entree n'a pas pu etre enregistree.", { tone: 'error' });
+      notify("L'entrée n'a pas pu être enregistrée.", { tone: 'error' });
     }
   };
 
@@ -110,7 +110,7 @@ export function Journal() {
     if (!pendingDelete) return;
     await removeEntry(pendingDelete);
     setPendingDelete(null);
-    notify('Entree supprimee.', { tone: 'info' });
+    notify('Entrée supprimée.', { tone: 'info' });
   };
 
   if (loading && entries.length === 0) return <LoadingState label="Lecture de ton journal…" />;
@@ -124,8 +124,8 @@ export function Journal() {
           <p className="overline">Journal</p>
           <h2 className="heading-sm" id="journal-heading">
             {entries.length === 0
-              ? 'Aucune entree'
-              : `${entries.length} entree${entries.length > 1 ? 's' : ''}`}
+              ? 'Aucune entrée'
+              : `${entries.length} entrée${entries.length > 1 ? 's' : ''}`}
           </h2>
         </div>
         <Button
@@ -134,11 +134,11 @@ export function Journal() {
           leadingIcon={<Plus size={16} />}
           onClick={() => setComposeOpen(true)}
         >
-          Ecrire
+          Écrire
         </Button>
       </header>
 
-      {/* La barre de recherche n'apparait que s'il y a de quoi chercher. */}
+      {/* La barre de recherche n'apparaît que s'il y a de quoi chercher. */}
       {entries.length > 0 && (
         <div className="journal-filters">
           <div className="journal-search">
@@ -148,7 +148,7 @@ export function Journal() {
               className="journal-search__input"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Chercher dans tes entrees…"
+              placeholder="Chercher dans tes entrées…"
               aria-label="Chercher dans le journal"
             />
             {query.length > 0 && (
@@ -165,7 +165,7 @@ export function Journal() {
               aria-pressed={pinFilter === 'pinned'}
               onClick={() => setPinFilter(pinFilter === 'pinned' ? 'all' : 'pinned')}
             >
-              <Pin size={14} aria-hidden="true" /> Epinglees
+              <Pin size={14} aria-hidden="true" /> Épinglées
             </button>
             {MOOD_LEVELS.map((level) => (
               <button
@@ -183,7 +183,7 @@ export function Journal() {
           {filtersActive && (
             <div className="row-between">
               <p className="body-sm">
-                {visible.length} resultat{visible.length > 1 ? 's' : ''} sur {entries.length}.
+                {visible.length} résultat{visible.length > 1 ? 's' : ''} sur {entries.length}.
               </p>
               <Button variant="tertiary" size="sm" onClick={resetFilters}>
                 Tout afficher
@@ -197,14 +197,14 @@ export function Journal() {
         <EmptyState
           icon={BookOpen}
           title="Ton journal est vide"
-          description="Quelques lignes suffisent. Rien n'est juge ici, et personne d'autre que toi ne le lira."
-          action={{ label: 'Ecrire une entree', onClick: () => setComposeOpen(true) }}
+          description="Quelques lignes suffisent. Rien n'est jugé ici, et personne d'autre que toi ne le lira."
+          action={{ label: 'Écrire une entrée', onClick: () => setComposeOpen(true) }}
         />
       ) : visible.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="Aucune entree ne correspond"
-          description="Essaie un autre mot, ou retire les filtres pour retrouver toutes tes entrees."
+          title="Aucune entrée ne correspond"
+          description="Essaie un autre mot, ou retire les filtres pour retrouver toutes tes entrées."
           action={{ label: 'Tout afficher', onClick: resetFilters }}
         />
       ) : (
@@ -214,15 +214,13 @@ export function Journal() {
               <Card compact className="journal-item">
                 <div className="row-between">
                   <div className="journal-item__head">
-                    <span className="journal-item__date">
-                      {formatRelativeDateKey(entry.date)}
-                    </span>
+                    <span className="journal-item__date">{formatRelativeDateKey(entry.date)}</span>
                     {entry.title && <h3 className="journal-item__title">{entry.title}</h3>}
                   </div>
                   <div className="row">
                     {entry.mood && <Badge tone="lavender">{MOOD_LABELS[entry.mood]}</Badge>}
                     <IconButton
-                      label={entry.pinned ? "Retirer l'epingle" : 'Epingler'}
+                      label={entry.pinned ? "Retirer l'épingle" : 'Épingler'}
                       accent="teal"
                       active={entry.pinned}
                       onClick={() => void togglePin(entry.id)}
@@ -248,8 +246,8 @@ export function Journal() {
       <Modal
         open={composeOpen}
         onClose={() => setComposeOpen(false)}
-        title="Nouvelle entree"
-        description="Ce que tu ecris reste sur cet appareil."
+        title="Nouvelle entrée"
+        description="Ce que tu écris reste sur cet appareil."
         size="lg"
         footer={
           <>
@@ -271,26 +269,26 @@ export function Journal() {
           label="Titre (facultatif)"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="Un titre court pour retrouver cette journee"
+          placeholder="Un titre court pour retrouver cette journée"
         />
         <Textarea
           label="Ton texte"
           value={content}
           onChange={(event) => setContent(event.target.value)}
-          placeholder="Ce qui s'est passe, ce que tu remarques, ce que tu ressens…"
+          placeholder="Ce qui s'est passé, ce que tu remarques, ce que tu ressens…"
           rows={8}
           counterMax={appConfig.limits.journalMaxLength}
           maxLength={appConfig.limits.journalMaxLength}
           required
         />
         <Select
-          label="Humeur associee (facultatif)"
+          label="Humeur associée (facultatif)"
           value={String(mood)}
           onChange={(event) =>
             setMood(event.target.value === '' ? '' : (Number(event.target.value) as MoodLevel))
           }
           options={[
-            { value: '', label: 'Non renseignee' },
+            { value: '', label: 'Non renseignée' },
             ...MOOD_LEVELS.map((level) => ({
               value: String(level),
               label: MOOD_LABELS[level],
@@ -301,8 +299,8 @@ export function Journal() {
 
       <ConfirmDialog
         open={pendingDelete !== null}
-        title="Supprimer cette entree ?"
-        message="Cette action est definitive. Si tu souhaites plutot la garder sous la main, epingle-la au lieu de la supprimer."
+        title="Supprimer cette entrée ?"
+        message="Cette action est définitive. Si tu souhaites plutôt la garder sous la main, épingle-la au lieu de la supprimer."
         confirmLabel="Supprimer"
         tone="danger"
         onConfirm={() => void handleDelete()}

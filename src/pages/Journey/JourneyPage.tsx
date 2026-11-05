@@ -16,20 +16,20 @@ import './Trends.css';
 /**
  * JOURNEY — l'espace de suivi personnel.
  *
- * Ordre de lecture : la synthese d'abord (ou en suis-je), puis les analyses par
+ * Ordre de lecture : la synthèse d'abord (où en suis-je), puis les analyses par
  * domaine (humeur, habitudes, objectifs), puis les TENDANCES, puis l'historique
- * brut (humeurs passees, timeline, journal).
+ * brut (humeurs passées, timeline, journal).
  *
- * Le hook `useJourneyStats` est monte UNE fois ici, et ses donnees sont passees
- * en proprietes aux sections analytiques : changer la periode met tout a jour
- * de facon coherente, sans que chaque section recharge la base.
+ * Le hook `useJourneyStats` est monté UNE fois ici, et ses données sont passées
+ * en propriétés aux sections analytiques : changer la période met tout à jour
+ * de façon cohérente, sans que chaque section recharge la base.
  *
  * `Trends` fait exception : il charge son propre rapport, parce qu'il analyse
- * une fenetre differente (7 ou 30 jours, choisie dans l'ecran) et croise des
- * domaines que `useJourneyStats` ne rapproche pas — humeur contre habitudes.
+ * une fenêtre différente (7 ou 30 jours, choisie dans l'écran) et croise des
+ * domaines que `useJourneyStats` ne rapproche pas.
  *
- * Toutes les mesures viennent des donnees locales reelles. Aucune statistique
- * n'est generee pour remplir l'interface.
+ * Toutes les mesures viennent des données locales réelles. Aucune statistique
+ * n'est générée pour remplir l'interface.
  */
 export default function JourneyPage() {
   const { loading, error, hasAnyData, period, setPeriod, moods, habitStats, goals, summary, refresh } =
@@ -40,7 +40,7 @@ export default function JourneyPage() {
       <PageHeader
         eyebrow="Journey"
         title="Ta trajectoire"
-        description="Ce que tu as traverse, ecrit et coche. C'est le recit de ton avancee, pas une evaluation."
+        description="Ce que tu as traversé, écrit et coché. C'est le récit de ton avancée, pas une évaluation."
       />
 
       {loading && !hasAnyData ? (
