@@ -11,12 +11,18 @@ import { VitePWA } from 'vite-plugin-pwa';
  *   chemins absolus a la racine du domaine (/assets/...) qui renvoient une 404.
  * - `@/` pointe vers `src/` : les imports restent stables quand
  *   l'arborescence grandit.
- * - Le plugin PWA genere le service worker et le manifest de precache au
- *   build ; en dev le SW est desactive pour que le rechargement a chaud reste
- *   previsible.
+ * - Le plugin PWA genere le service worker et le manifest de precache au build.
  *
- * La configuration des TESTS vit dans `vitest.config.ts` : elle n'a pas besoin
- * du plugin PWA, qui ralentirait chaque execution.
+ * PHASE 4.1 — POLICES HORS LIGNE
+ * ------------------------------
+ * Nunito et Cormorant Garamond viennent de Google Fonts. Le precache du build
+ * ne couvre que les fichiers locaux : sans regle dediee, les polices seraient
+ * perdues des que l'appareil passe hors ligne, et l'interface retomberait sur
+ * la pile systeme.
+ *
+ * Les deux regles `runtimeCaching` ci-dessous corrigent cela :
+ *   - la feuille de style Google change rarement -> StaleWhileRevalidate
+ *   - les fichiers de police sont immuables      -> CacheFirst, un an
  */
 export default defineConfig({
   base: '/ZENTIQ/',
@@ -38,11 +44,28 @@ export default defineConfig({
       manifest: false, // on livre un public/manifest.webmanifest ecrit a la main
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        // Le fallback de navigation doit lui aussi porter le sous-dossier,
-        // sinon les routes profondes tombent hors ligne / en 404.
         navigateFallback: '/ZENTIQ/index.html',
         navigateFallbackDenylist: [/^\/ZENTIQ\/offline\.html$/],
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
       },
       devOptions: { enabled: false },
     }),

@@ -7,27 +7,81 @@
     <title>ZENTIQ — Your mind. Your momentum.</title>
     <meta name="description" content="ZENTIQ t'accompagne pour retrouver ta motivation et avancer à ton rythme." />
 
-    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <!--
+      POLICES — phase 4.1
+      Nunito est la police principale de l'interface ; Cormorant Garamond reste
+      reservee aux citations et aux titres editoriaux.
+
+      `preconnect` ouvre la connexion avant que le CSS ne soit lu : sans lui, la
+      premiere requete de police attend la resolution DNS et le texte bascule
+      visiblement d'une police a l'autre.
+
+      `display=swap` evite tout texte invisible pendant le chargement : le texte
+      s'affiche immediatement dans la pile systeme, puis Nunito prend le relais.
+      Aucun ecran blanc, meme sur une connexion lente.
+
+      HORS LIGNE : ces deux feuilles sont mises en cache par le service worker
+      (cf. `runtimeCaching` dans vite.config.ts), et les fichiers de police eux-
+      memes sont conserves en cache-first. Une fois l'application ouverte, la
+      typographie reste disponible sans reseau.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap"
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0D1015" />
-    <link rel="apple-touch-icon" href="%BASE_URL%icons/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ZENTIQ" />
 
+    <!--
+      Splash / first paint : Deep Space, pour qu'aucun ecran blanc n'apparaisse
+      avant le montage de React.
+    -->
     <style>
-      html, body { margin: 0; background: #0d1015; }
-      #boot-splash {
-        position: fixed; inset: 0; display: grid; place-items: center;
+      html,
+      body {
+        margin: 0;
         background: #0d1015;
       }
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        gap: 18px;
+        background: #0d1015;
+        font-family: 'Nunito', system-ui, sans-serif;
+        color: #e0f0ed;
+      }
       #boot-splash .spinner {
-        width: 26px; height: 26px; border-radius: 50%;
-        border: 2px solid #34445a; border-top-color: #72c8c1;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid #34445a;
+        border-top-color: #72c8c1;
         animation: boot-spin 0.9s linear infinite;
       }
-      @keyframes boot-spin { to { transform: rotate(360deg); } }
-      @media (prefers-reduced-motion: reduce) { #boot-splash .spinner { animation-duration: 3s; } }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash .spinner {
+          animation-duration: 3s;
+        }
+      }
     </style>
   </head>
   <body>
