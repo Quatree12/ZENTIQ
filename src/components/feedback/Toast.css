@@ -1,16 +1,34 @@
+/* ==========================================================================
+   Notifications (toasts) — zone sure, sans chevauchement
+   ==========================================================================
+   Deux problemes corriges ici, tous deux constates sur iPhone :
+     1. Les messages s'empilaient au-dessus de la barre de navigation mobile
+        et se recouvraient entre eux.
+     2. Chaque action declenchait son propre message, meme repetitif
+        (« Preference enregistree. » trois fois de suite).
+
+   La zone est desormais placee au-dessus de la barre mobile, en tenant compte
+   de la safe area iOS, et un seul message est affiche a la fois.
+   ========================================================================== */
+
 .toast-region {
   position: fixed;
   z-index: var(--z-toast);
-  bottom: var(--space-5);
+
   left: var(--space-5);
   right: var(--space-5);
+
+  /* Au-dessus de la barre de navigation mobile, safe area iOS incluse. */
+  bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-4));
+
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   pointer-events: none;
 }
 
-@media (min-width: 768px) {
+/* Sur desktop, pas de barre mobile : on descend pres du bord. */
+@media (min-width: 900px) {
   .toast-region {
     left: auto;
     right: var(--space-8);
@@ -24,7 +42,7 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
-  background-color: var(--color-surface);
+  background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
   box-shadow: var(--shadow-lg);
@@ -88,6 +106,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
   border-radius: var(--radius-xs);
   color: var(--color-text-tertiary);
   background: none;

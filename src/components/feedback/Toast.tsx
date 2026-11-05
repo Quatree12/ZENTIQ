@@ -1,9 +1,18 @@
 /**
  * Notifications transitoires (toasts).
  *
- * Un contexte React expose `notify()` à toute l'application. Les messages
- * s'empilent en bas à droite sur desktop, en haut sur mobile ; ils ne bloquent
- * jamais l'interaction et sont annoncés aux lecteurs d'écran.
+ * Un contexte React expose `notify()` a toute l'application.
+ *
+ * DEUX REGLES, issues de bugs constates sur iPhone :
+ *   1. UN SEUL message a l'ecran. Une nouvelle notification remplace la
+ *      precedente au lieu de s'empiler — sur mobile, trois messages
+ *      successifs se recouvraient et masquaient la navigation.
+ *   2. UNE SEULE notification par action repetee. Trois clics sur trois
+ *      interrupteurs ne produisent pas trois fois « Preference enregistree. » :
+ *      le minuteur du message identique deja affiche est simplement prolonge.
+ *
+ * La zone d'affichage est positionnee au-dessus de la barre de navigation
+ * mobile, safe area iOS incluse (cf. Toast.css).
  */
 import { CheckCircle2, Info, TriangleAlert, X, XCircle } from 'lucide-react';
 import {
@@ -27,7 +36,7 @@ export interface Toast {
   tone: ToastTone;
   message: string;
   detail?: string;
-  /** Durée d'affichage en ms ; `0` pour un message persistant. */
+  /** Duree d'affichage en ms ; `0` pour un message persistant. */
   duration: number;
 }
 
@@ -52,85 +61,113 @@ const TONE_ICONS: Record<ToastTone, typeof Info> = {
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // UN SEUL message a la fois : une liste ne servirait qu'a empiler, ce que
+  // l'on veut precisement eviter sur mobile.
+  const [toast, setToast] = useState<Toast | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const dismiss = useCallback((id: string) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id));
-    const timer = timers.current.get(id);
-    if (timer) {
-      clearTimeout(timer);
-      timers.current.delete(id);
+  // Reference stable vers le message courant : evite d'avoir `toast` en
+  // dependance de `notify`, qui serait recree a chaque affichage.
+  const toastRef = useRef<Toast | null>(null);
+  toastRef.current = toast;
+
+  const clearTimer = useCallback(() => {
+    if (timer.current !== null) {
+      clearTimeout(timer.current);
+      timer.current = null;
     }
   }, []);
 
+  const dismiss = useCallback(
+    (id: string) => {
+      clearTimer();
+      setToast((current) => (current && current.id === id ? null : current));
+    },
+    [clearTimer],
+  );
+
   const notify = useCallback(
     (message: string, options: NotifyOptions = {}) => {
-      const id = createId();
       const duration = options.duration ?? appConfig.toastDurationMs;
-      setToasts((current) => [
-        ...current,
-        { id, tone: options.tone ?? 'info', message, detail: options.detail, duration },
-      ]);
+      const existing = toastRef.current;
+
+      // Message identique deja affiche : on prolonge, on n'empile pas.
+      if (existing && existing.message === message && existing.detail === options.detail) {
+        clearTimer();
+        const keptId = existing.id;
+        if (duration > 0) {
+          timer.current = setTimeout(() => {
+            setToast((current) => (current && current.id === keptId ? null : current));
+            timer.current = null;
+          }, duration);
+        }
+        return keptId;
+      }
+
+      const id = createId();
+      clearTimer();
+      setToast({
+        id,
+        tone: options.tone ?? 'info',
+        message,
+        detail: options.detail,
+        duration,
+      });
 
       if (duration > 0) {
-        timers.current.set(
-          id,
-          setTimeout(() => dismiss(id), duration),
-        );
+        timer.current = setTimeout(() => {
+          setToast((current) => (current && current.id === id ? null : current));
+          timer.current = null;
+        }, duration);
       }
 
       return id;
     },
-    [dismiss],
+    [clearTimer],
   );
 
-  // Nettoyage : aucun minuteur ne doit survivre au démontage du provider.
+  // Nettoyage : aucun minuteur ne doit survivre au demontage du provider.
   useEffect(() => {
-    const active = timers.current;
     return () => {
-      for (const timer of active.values()) clearTimeout(timer);
-      active.clear();
+      if (timer.current !== null) clearTimeout(timer.current);
     };
   }, []);
 
   const value = useMemo(() => ({ notify, dismiss }), [notify, dismiss]);
+  const CurrentIcon = toast ? TONE_ICONS[toast.tone] : null;
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-region" role="region" aria-label="Notifications">
-        {toasts.map((toast) => {
-          const Icon = TONE_ICONS[toast.tone];
-          return (
-            <div key={toast.id} className={`toast toast--${toast.tone}`} role="status">
-              <span className="toast__icon" aria-hidden="true">
-                <Icon size={18} />
-              </span>
-              <div className="toast__body">
-                <p className="toast__message">{toast.message}</p>
-                {toast.detail && <p className="toast__detail">{toast.detail}</p>}
-              </div>
-              <button
-                type="button"
-                className="toast__close"
-                onClick={() => dismiss(toast.id)}
-                aria-label="Fermer la notification"
-              >
-                <X size={16} aria-hidden="true" />
-              </button>
+      <div className="toast-region" role="region" aria-label="Notifications" aria-live="polite">
+        {toast && CurrentIcon && (
+          <div className={'toast toast--' + toast.tone} role="status">
+            <span className="toast__icon" aria-hidden="true">
+              <CurrentIcon size={18} />
+            </span>
+            <div className="toast__body">
+              <p className="toast__message">{toast.message}</p>
+              {toast.detail && <p className="toast__detail">{toast.detail}</p>}
             </div>
-          );
-        })}
+            <button
+              type="button"
+              className="toast__close"
+              onClick={() => dismiss(toast.id)}
+              aria-label="Fermer la notification"
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
     </ToastContext.Provider>
   );
 }
 
 /**
- * Accès aux notifications.
- * Renvoie une fonction neutre si aucun provider n'est monté : un composant
- * isolé (test, story) ne doit pas planter à cause d'un contexte manquant.
+ * Acces aux notifications.
+ * Renvoie une fonction neutre si aucun provider n'est monte : un composant
+ * isole (test, story) ne doit pas planter a cause d'un contexte manquant.
  */
 export function useToast(): ToastContextValue {
   const context = useContext(ToastContext);
