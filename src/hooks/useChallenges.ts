@@ -1,0 +1,63 @@
+/**
+ * Hook metier des challenges.
+ */
+import { useCallback } from 'react';
+import { useChallengesStore } from '@/stores/challenges.store';
+import type { CreateChallengeInput } from '@/database/repositories';
+import type { Challenge } from '@/types';
+import { summarizeChallenges, type ChallengeSummary } from '@/utils/challenge-stats';
+
+export interface UseChallengesResult {
+  challenges: Challenge[];
+  summary: ChallengeSummary;
+  loading: boolean;
+  error: string | null;
+  busyIds: string[];
+  createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
+  completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
+  uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
+  setAside: (id: string) => Promise<void>;
+  resume: (id: string) => Promise<void>;
+  removeChallenge: (id: string) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/**
+ * Acces aux challenges.
+ *
+ * `refresh` est memorisee : sans cela, tout `useEffect(…, [refresh])` se
+ * relancerait a chaque rendu — le defaut qui a bloque les premieres versions
+ * des ecrans.
+ */
+export function useChallenges(): UseChallengesResult {
+  const challenges = useChallengesStore((state) => state.challenges);
+  const loading = useChallengesStore((state) => state.loading);
+  const error = useChallengesStore((state) => state.error);
+  const busyIds = useChallengesStore((state) => state.busyIds);
+  const load = useChallengesStore((state) => state.load);
+  const createChallenge = useChallengesStore((state) => state.createChallenge);
+  const completeDay = useChallengesStore((state) => state.completeDay);
+  const uncompleteDay = useChallengesStore((state) => state.uncompleteDay);
+  const setAside = useChallengesStore((state) => state.setAside);
+  const resume = useChallengesStore((state) => state.resume);
+  const removeChallenge = useChallengesStore((state) => state.removeChallenge);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
+
+  return {
+    challenges,
+    summary: summarizeChallenges(challenges),
+    loading,
+    error,
+    busyIds,
+    createChallenge,
+    completeDay,
+    uncompleteDay,
+    setAside,
+    resume,
+    removeChallenge,
+    refresh,
+  };
+}
