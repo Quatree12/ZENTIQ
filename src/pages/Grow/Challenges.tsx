@@ -13,6 +13,11 @@ import { ChallengeForm } from './ChallengeForm';
 import { CHALLENGE_STATUS_LABELS } from '@/types';
 import { formatDateKey } from '@/utils/dates';
 import './Challenges.css';
+// Styles des jalons, des rythmes et des pickers du formulaire. Ce fichier
+// portait des regles pourtant referencees par le composant : sans cet import,
+// les jalons s'affichaient sans mise en forme (le meme oubli que la regle de
+// l'auteur de citation, restee un temps dans un fichier jamais importe).
+import './ChallengeMilestones.css';
 
 /**
  * CHALLENGES — section de l'espace GROW.
