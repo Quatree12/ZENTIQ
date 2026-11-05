@@ -7,7 +7,6 @@ import {
   TABLE_DESCRIPTORS,
   downloadBackup,
   estimateExport,
-  type TableDescriptor,
 } from '@/services/export.service';
 import { useAppStore } from '@/stores/app.store';
 import type { TableName } from '@/database/schema';
@@ -24,10 +23,9 @@ import { pluralize } from '@/utils/formatters';
  *
  * CE QUI EST COCHÉ PAR DÉFAUT
  * ---------------------------
- * Tout, sauf rien. Le comportement historique est préservé : qui ne touche à
- * rien obtient la sauvegarde complète. Mais les deux tables marquées
- * `sensitive` — humeurs et journal — portent un repère visuel, pour que le
- * choix soit conscient plutôt que subi.
+ * Tout. Le comportement historique est préservé : qui ne touche à rien obtient
+ * la sauvegarde complète. Mais les deux tables marquées « personnel » — humeurs
+ * et journal — portent un repère visuel, pour que le choix soit conscient.
  *
  * Le compteur se met à jour à chaque coche : on voit ce qu'on emporte AVANT de
  * télécharger, pas après.
@@ -78,6 +76,8 @@ export function ExportPicker() {
     () => TABLE_DESCRIPTORS.filter((item) => item.sensitive).map((item) => item.table),
     [],
   );
+
+  const hiddenSensitive = sensitiveTables.some((table) => !selected.includes(table));
 
   const handleExport = async () => {
     if (noneSelected) {
@@ -141,20 +141,12 @@ export function ExportPicker() {
       <ul className="export-picker__list">
         {TABLE_DESCRIPTORS.map((item) => {
           const checked = selected.includes(item.table);
-          const count = counts[item.table] ?? item.table ? (counts[item.table] ?? 0) : 0;
+          const count = counts[item.table] ?? 0;
 
           return (
             <li key={item.table}>
-              <label
-                className={
-                  checked ? 'export-picker__row is-selected' : 'export-picker__row'
-                }
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle(item.table)}
-                />
+              <label className={checked ? 'export-picker__row is-selected' : 'export-picker__row'}>
+                <input type="checkbox" checked={checked} onChange={() => toggle(item.table)} />
                 <span className="export-picker__text">
                   <span className="export-picker__label">
                     {item.label}
@@ -169,11 +161,10 @@ export function ExportPicker() {
         })}
       </ul>
 
-      {selected.length > 0 && selected.length < TABLE_DESCRIPTORS.length && (
+      {!allSelected && !noneSelected && (
         <p className="body-sm">
           {selected.length} table{selected.length > 1 ? 's' : ''} sur {TABLE_DESCRIPTORS.length}
-          {sensitiveTables.some((table) => !selected.includes(table)) &&
-            ' — tu laisses une ou plusieurs tables personnelles de côté'}.
+          {hiddenSensitive && ' — tu laisses une ou plusieurs tables personnelles de côté'}.
         </p>
       )}
 
@@ -191,9 +182,7 @@ export function ExportPicker() {
       </div>
 
       {summary && allSelected && (
-        <p className="body-sm">
-          Sauvegarde complète : tous tes éléments partent dans le fichier.
-        </p>
+        <p className="body-sm">Sauvegarde complète : tous tes éléments partent dans le fichier.</p>
       )}
     </section>
   );
