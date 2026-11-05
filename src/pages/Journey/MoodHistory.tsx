@@ -38,7 +38,9 @@ export function MoodHistory() {
       <header>
         <p className="overline">Humeurs</p>
         <h2 className="heading-sm" id="mood-heading">
-          {entries.length === 0 ? 'Aucune donnée' : `${entries.length} check-in${entries.length > 1 ? 's' : ''}`}
+          {entries.length === 0
+            ? 'Aucune donnée'
+            : `${entries.length} check-in${entries.length > 1 ? 's' : ''}`}
         </h2>
       </header>
 
@@ -46,7 +48,12 @@ export function MoodHistory() {
         <EmptyState
           title="Pas encore de check-in"
           description="Note ton humeur depuis l'écran Today. Après quelques jours, une tendance se dessine ici."
-          action={{ label: 'Aller à Today', onClick: () => { window.location.assign('/today'); } }}
+          action={{
+            label: 'Aller à Today',
+            onClick: () => {
+              window.location.assign('/today');
+            },
+          }}
         />
       ) : (
         <>

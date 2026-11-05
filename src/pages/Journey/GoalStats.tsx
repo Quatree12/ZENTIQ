@@ -12,7 +12,7 @@ import { daysBetween, formatDateKey, todayKey } from '@/utils/dates';
  *
  * La progression individuelle est lue sur chaque objectif (elle est saisie dans
  * Grow), et la progression globale est la moyenne des objectifs actifs. Les
- * objectifs atteints sont comptes separement : les melanger gonflerait
+ * objectifs atteints sont comptés séparément : les mélanger gonflerait
  * artificiellement le chiffre.
  */
 export function GoalStats({ stats }: { stats: GoalStats }) {
@@ -27,8 +27,8 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
         </header>
         <EmptyState
           icon={Flag}
-          title="Aucun objectif enregistre"
-          description="Formule un objectif dans Grow, meme petit. Sa progression apparaitra ici au fil du temps."
+          title="Aucun objectif enregistré"
+          description="Formule un objectif dans Grow, même petit. Sa progression apparaîtra ici au fil du temps."
         />
       </section>
     );
@@ -55,7 +55,7 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
             </p>
           </div>
           {stats.dueSoon.length > 0 && (
-            <Badge tone="warning">{stats.dueSoon.length} echeance proche</Badge>
+            <Badge tone="warning">{stats.dueSoon.length} échéance proche</Badge>
           )}
         </div>
         <ProgressBar
@@ -74,14 +74,11 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
               <Card compact className="goal-stat">
                 <div className="row-between">
                   <h3 className="goal-stat__title">{goal.title}</h3>
-                  {goal.isPriority && <Badge tone="teal">Priorite</Badge>}
+                  {goal.isPriority && <Badge tone="teal">Priorité</Badge>}
                 </div>
 
                 <div className="goal-stat__progress">
-                  <ProgressBar
-                    value={goal.progress}
-                    label={'Avancement de ' + goal.title}
-                  />
+                  <ProgressBar value={goal.progress} label={'Avancement de ' + goal.title} />
                   <span className="data-value">{goal.progress}%</span>
                 </div>
 
@@ -91,7 +88,7 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
                     <dd className="body-sm">{GOAL_HORIZON_LABELS[goal.horizon]}</dd>
                   </div>
                   <div>
-                    <dt className="data-label">Cree le</dt>
+                    <dt className="data-label">Créé le</dt>
                     <dd className="body-sm">
                       {formatDateKey(goal.createdAt.slice(0, 10), {
                         day: 'numeric',
@@ -102,7 +99,7 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
                   </div>
                   {goal.targetDate && (
                     <div>
-                      <dt className="data-label">Echeance</dt>
+                      <dt className="data-label">Échéance</dt>
                       <dd className="body-sm">
                         {formatDateKey(goal.targetDate, {
                           day: 'numeric',
@@ -115,14 +112,12 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
                 </dl>
 
                 {goal.targetDate && (
-                  <p className="body-sm">
-                    {describeDeadline(goal.targetDate, reference)}
-                  </p>
+                  <p className="body-sm">{describeDeadline(goal.targetDate, reference)}</p>
                 )}
 
                 {goal.nextStep && (
                   <p className="goal-stat__next">
-                    <span className="overline">Prochaine etape</span>
+                    <span className="overline">Prochaine étape</span>
                     {goal.nextStep}
                   </p>
                 )}
@@ -135,14 +130,16 @@ export function GoalStats({ stats }: { stats: GoalStats }) {
   );
 }
 
-/** Libelle d'echeance — factuel, jamais alarmiste. */
+/** Libellé d'échéance — factuel, jamais alarmiste. */
 function describeDeadline(target: string, reference: string): string {
   const remaining = daysBetween(reference, target);
   if (remaining < 0) {
     const late = Math.abs(remaining);
-    return late === 1 ? 'Echeance depassee d\'un jour.' : 'Echeance depassee de ' + late + ' jours.';
+    return late === 1
+      ? "Échéance dépassée d'un jour."
+      : 'Échéance dépassée de ' + late + ' jours.';
   }
-  if (remaining === 0) return "Echeance aujourd'hui.";
+  if (remaining === 0) return "Échéance aujourd'hui.";
   if (remaining === 1) return 'Il reste un jour.';
   return 'Il reste ' + remaining + ' jours.';
 }
