@@ -1,7 +1,7 @@
 /* ==========================================================================
    ZENTIQ — SPACING & LAYOUT UTILITIES
    Ensemble volontairement restreint. Si un espacement manque, on l'ajoute ici
-   plutôt que d'écrire une valeur magique dans un composant.
+   plutot que d'ecrire une valeur magique dans un composant.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -20,18 +20,20 @@
   }
 }
 
-/* Flux vertical par défaut des pages */
+/* Flux vertical par defaut des pages */
 .stack {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 }
 
-/* Sections empilées avec plus d'air (pages des cinq espaces) */
+/* Sections empilees avec un peu plus d'air (pages des cinq espaces).
+   PHASE 4.1 : l'ecart passe de 32 a 40 px. Avec des titres a 24 px et un corps
+   a 17 px, 32 px ne separait plus assez deux blocs pour l'oeil. */
 .section-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-10);
 }
 
 /* --------------------------------------------------------------------------
@@ -39,7 +41,7 @@
    -------------------------------------------------------------------------- */
 .grid-auto {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-5);
 }
 
@@ -64,11 +66,15 @@
   gap: var(--space-3);
 }
 
+/* `flex-wrap` ajoute en phase 4.1 : avec des libelles plus longs, deux elements
+   cote a cote peuvent ne plus tenir sur une ligne d'iPhone. Les faire passer a
+   la ligne vaut mieux que de les tronquer. */
 .row-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .row-wrap {
@@ -92,7 +98,7 @@
 .spacer-top-lg { margin-top: var(--space-8); }
 
 /* --------------------------------------------------------------------------
-   Séparateur discret
+   Separateur discret
    -------------------------------------------------------------------------- */
 .divider {
   height: 1px;

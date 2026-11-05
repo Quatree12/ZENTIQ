@@ -42,14 +42,19 @@
   min-width: 0;
 }
 
+/* PHASE 4.1 : libelle de navigation a 15 px en Standard, 17 px en Texte plus
+   large, graisse 700. Auparavant en 14 px / 600, trop discret pour etre lu
+   confortablement sur un ecran de telephone. */
 .nav-item__label {
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-tight);
+  font-family: var(--font-ui);
+  font-size: var(--text-nav);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-normal);
 }
 
 .nav-item__tagline {
   font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
@@ -57,7 +62,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   Variante compacte — barre inférieure mobile
+   Variante compacte — barre inferieure mobile
    -------------------------------------------------------------------------- */
 .nav-item--compact {
   flex-direction: column;
@@ -71,15 +76,15 @@
 }
 
 .nav-item--compact .nav-item__label {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
+  font-size: 0.875rem;
+  font-weight: var(--weight-bold);
 }
 
 .nav-item--compact.is-active {
   background-color: transparent;
 }
 
-/* Indicateur d'état actif sur la barre mobile */
+/* Indicateur d'etat actif sur la barre mobile */
 .nav-item--compact.is-active .nav-item__label {
   color: var(--color-accent);
 }
