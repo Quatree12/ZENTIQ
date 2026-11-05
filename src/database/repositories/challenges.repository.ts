@@ -30,6 +30,12 @@ import { guard, prepareInsert, prepareUpdate } from './base.repository';
  *      inventée. Un jalon ne peut donc pas être « atteint » sans progression
  *      réelle.
  *
+ * QUATRIÈME INVARIANT, ajouté avec l'édition des étapes :
+ *
+ *   4. Une étape ne voit JAMAIS sa coche modifiée par l'édition du libellé.
+ *      `updateSteps` réécrit les `label` en préservant `completedAt`
+ *      position par position — la progression est de la donnée, pas du texte.
+ *
  * Le statut est recalculé à chaque lecture : un challenge dont la date de
  * départ est passée devient actif sans qu'aucune tâche planifiée n'ait à le
  * faire.
@@ -56,9 +62,13 @@ export interface CreateChallengeInput {
 /**
  * Modification d'un challenge existant.
  *
- * Seuls les champs EDITABLES y figurent : ni `days`, ni `daysCompleted`, ni
- * `status`, ni `endDate`. Ces valeurs sont dérivées ou liées à un cycle de vie
- * qui a ses propres méthodes (`completeDay`, `postpone`, `setAside`).
+ * Seuls les champs EDITABLES y figurent : ni `daysCompleted`, ni `status`, ni
+ * `endDate`. Ces valeurs sont dérivées ou liées à un cycle de vie qui a ses
+ * propres méthodes (`completeDay`, `postpone`, `setAside`).
+ *
+ * `steps` n'y figure PAS : les étapes se modifient par `updateSteps`, qui a sa
+ * propre garantie — préserver les coches. Les accepter ici laisserait un
+ * appelant écrire `days` en bloc et effacer une progression réelle.
  */
 export interface UpdateChallengeInput {
   title?: string;
@@ -261,12 +271,11 @@ export const challengesRepository = {
   /**
    * Modifie un challenge existant.
    *
-   * SEULS LES CHAMPS EDITABLES SONT ACCEPTES, et c'est deliberé :
-   *   - `days` n'est jamais remplacé. Les étapes portent des coches ; les
-   *     réécrire effacerait une progression réelle.
-   *   - `status`, `endDate` et `daysCompleted` sont dérivés. Les accepter en
-   *     entrée laisserait un appelant écrire un état que la lecture suivante
-   *     contredirait.
+   * SEULS LES CHAMPS EDITABLES SONT ACCEPTÉS, et c'est délibéré :
+   *   - `days` n'est jamais remplacé en bloc. Les étapes portent des coches ;
+   *     les réécrire effacerait une progression réelle. Pour les libellés, voir
+   *     `updateSteps`, qui préserve `completedAt`.
+   *   - `status`, `endDate` et `daysCompleted` sont dérivés.
    *
    * Les jalons, eux, sont remplacés en bloc. Leur date de franchissement est
    * recalculée à partir des étapes : modifier un jalon ne peut donc pas créer
@@ -296,6 +305,44 @@ export const challengesRepository = {
       }
 
       const updated = withDerived({ ...existing, ...patch }, todayKey());
+      await db.challenges.put(prepareUpdate(existing, updated));
+      return updated;
+    });
+  },
+
+  /**
+   * Réécrit les LIBELLÉS des étapes, en préservant intégralement les coches.
+   *
+   * C'est la seule opération autorisée à toucher `days`, et elle ne le fait que
+   * champs par champs :
+   *
+   *   - `label`      : remplacé par le texte fourni, ou laissé tel quel si
+   *                    l'entrée correspondante est absente ou vide ;
+   *   - `completedAt`: JAMAIS modifié. Copié à l'identique depuis l'étape
+   *                    existante, position par position ;
+   *   - `dayNumber`  : conservé, c'est la clé de lecture des jalons.
+   *
+   * Le nombre d'étapes ne change pas non plus : la durée d'un challenge se
+   * décide à la création, et l'étendre après coup romprait le lien entre les
+   * jalons et les jours qu'ils couvrent.
+   *
+   * Une progression ne peut donc pas être perdue par une correction de texte,
+   * et un jalon franchi le reste.
+   */
+  async updateSteps(id: string, labels: string[]): Promise<Challenge | null> {
+    return guard('challenges.updateSteps', async () => {
+      const existing = await db.challenges.get(id);
+      if (!existing) return null;
+
+      const days: ChallengeDay[] = existing.days.map((day, position) => {
+        const provided = (labels[position] ?? '').trim();
+        // Libellé vide : on garde l'ancien plutôt que d'effacer le texte. Un
+        // champ vidé par accident ne doit pas faire disparaître une étape.
+        const label = provided.length > 0 ? provided : day.label;
+        return { dayNumber: day.dayNumber, label, completedAt: day.completedAt };
+      });
+
+      const updated = withDerived({ ...existing, days }, todayKey());
       await db.challenges.put(prepareUpdate(existing, updated));
       return updated;
     });
