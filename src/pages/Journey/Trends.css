@@ -1,0 +1,95 @@
+/* ==========================================================================
+   Ecran Tendances
+   ========================================================================== */
+
+.journey-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.journey-range {
+  display: flex;
+  gap: var(--space-1);
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface-sunken, var(--color-surface));
+}
+
+.journey-range__item {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color var(--transition-standard),
+    color var(--transition-standard);
+}
+
+.journey-range__item.is-active {
+  background-color: var(--color-accent);
+  color: var(--color-accent-contrast, var(--color-bg));
+}
+
+.journey-stat__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.journey-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.journey-trend-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.journey-trend-row:last-child {
+  border-bottom: none;
+}
+
+.journey-note {
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--color-border-strong);
+  border-radius: 0 var(--radius-field) var(--radius-field) 0;
+  color: var(--color-text-tertiary);
+}
+
+.journey-correlation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-correlation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* Le badge ne doit pas s'ecraser quand le texte est long. */
+.journey-correlation > .badge {
+  flex-shrink: 0;
+}
