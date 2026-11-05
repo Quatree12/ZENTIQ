@@ -1,19 +1,19 @@
 /**
- * Carte de challenge termine.
+ * Carte de challenge terminé.
  *
- * Le message de reussite est positif mais sobre : pas de confettis, pas de
- * score, pas de comparaison. On rappelle ce qui a ete fait, et c'est tout.
+ * Le message de réussite est positif mais sobre : pas de confettis, pas de
+ * score, pas de comparaison. On rappelle ce qui a été fait, et c'est tout.
  *
- * PHASE 4.1.8 — PERIODE PLUTOT QU'UNE DATE
- * ----------------------------------------
- * La carte affichait « Termine le 5 novembre » en prenant la date du dernier
- * jour coche. Pour un challenge de 14 jours commence et termine le meme jour,
- * deux dates bizarres "5 nov." a "5 nov." se lisaient comme un challenge
-d'un seul jour.
-
-   On affiche desormais la PERIODE COMPLETE — « du 5 au 18 novembre » — qui
-   rend la duree reelle lisible d'un coup d'oeil. Si le depart et la fin
-   tombent le meme jour (challenge d'un jour), on affiche une seule date.
+ * PHASE 4.1.8 — PÉRIODE PLUTÔT QU'UNE DATE
+ * -----------------------------------------
+ * La carte affichait « Terminé le 5 novembre » en prenant la date du dernier
+ * jour coché. Pour un challenge de 14 jours commencé et terminé le même jour,
+ * deux dates bizarres « 5 nov. » à « 5 nov. » se lisaient comme un challenge
+ * d'un seul jour.
+ *
+ * On affiche désormais la PÉRIODE COMPLÈTE — « du 5 au 18 novembre » — qui rend
+ * la durée réelle lisible d'un coup d'œil. Si le départ et la fin tombent le
+ * même jour (challenge d'un jour), on affiche une seule date.
  */
 import { CheckCircle2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/buttons';
@@ -29,7 +29,7 @@ export interface CompletedChallengeCardProps {
   onDelete: () => void;
 }
 
-/** Periode du challenge : « du 5 au 18 novembre », ou une date si identique. */
+/** Période du challenge : « du 5 au 18 novembre », ou une date si identique. */
 function describePeriod(challenge: Challenge): string {
   const start = formatDateKey(challenge.startDate, { day: 'numeric', month: 'long' });
   const end = formatDateKey(challenge.endDate, { day: 'numeric', month: 'long' });
@@ -50,12 +50,12 @@ export function CompletedChallengeCard({ challenge, onDelete }: CompletedChallen
           <span className="challenge-card__duration">{challenge.durationDays} jours</span>
         </div>
         <Badge tone="success">
-          <CheckCircle2 size={12} aria-hidden="true" /> Termine
+          <CheckCircle2 size={12} aria-hidden="true" /> Terminé
         </Badge>
       </div>
 
       <p className="body-base challenge-card__win">
-        {challenge.title} est termine. Tu as tenu {challenge.durationDays} jours.
+        {challenge.title} est terminé. Tu as tenu {challenge.durationDays} jours.
       </p>
 
       <ProgressBar
@@ -71,19 +71,19 @@ export function CompletedChallengeCard({ challenge, onDelete }: CompletedChallen
           </dd>
         </div>
         <div>
-          <dt className="data-label">Journees</dt>
+          <dt className="data-label">Journées</dt>
           <dd className="data-value">
             {progress.completedDays} / {progress.totalDays}
           </dd>
         </div>
         <div>
-          <dt className="data-label">Periode</dt>
+          <dt className="data-label">Période</dt>
           <dd className="body-sm">{describePeriod(challenge)}</dd>
         </div>
       </dl>
 
       <details className="challenge-card__days">
-        <summary className="body-sm">Voir les journees completees</summary>
+        <summary className="body-sm">Voir les journées complétées</summary>
         <ul className="challenge-days challenge-days--compact">
           {doneDays.map((day) => (
             <li key={day.dayNumber} className="body-sm">

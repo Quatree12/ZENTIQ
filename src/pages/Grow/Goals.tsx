@@ -133,7 +133,8 @@ export function Goals() {
 
                 {goal.targetDate && (
                   <p className="body-sm">
-                    Objectif visé pour le {formatDateKey(goal.targetDate, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    Objectif visé pour le{' '}
+                    {formatDateKey(goal.targetDate, { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 )}
 

@@ -120,7 +120,7 @@ export function Habits() {
                       {habit.intention && <p className="body-sm">« {habit.intention} »</p>}
                       <div className="row-wrap">
                         <Badge tone={habit.doneToday ? 'success' : 'neutral'}>
-                          {habit.doneToday ? 'Fait aujourd\'hui' : 'À faire'}
+                          {habit.doneToday ? "Fait aujourd'hui" : 'À faire'}
                         </Badge>
                         <Badge>{pluralize(habit.completedThisWeek, 'fois')} cette semaine</Badge>
                         {habit.streak > 1 && <Badge tone="teal">{habit.streak} de suite</Badge>}
