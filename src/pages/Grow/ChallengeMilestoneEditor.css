@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Éditeur de jalons
+
+   ATTENTION : importé dans le MÊME commit que sa création. Ne jamais le
+   renommer ni le détacher de son composant — le service worker ne sert que les
+   fichiers de son manifeste. (Leçon apprise à la dure.)
+   ========================================================================== */
+
+.milestone-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.milestone-editor__empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-field);
+}
+
+.milestone-editor__empty p {
+  margin: 0;
+}
+
+.milestone-editor__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestone-editor__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-field);
+  background-color: var(--color-surface-sunken);
+}
+
+/* Deux champs côte a côte : le titre prend la place, le jour reste étroit. */
+.milestone-editor__fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .milestone-editor__fields {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.milestone-editor__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.milestone-editor__reached {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success);
+}
