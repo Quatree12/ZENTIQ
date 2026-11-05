@@ -1,5 +1,6 @@
 import { db } from '@/database/db';
-import { EXPORTABLE_TABLES, type BackupDocument } from '@/database/schema';
+import { type BackupDocument } from '@/database/schema';
+import { EXPORTABLE_TABLES } from '@/database/exportable-tables';
 import { isBackupDocument } from '@/utils/validators';
 
 /**

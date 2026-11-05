@@ -1,6 +1,7 @@
 import { APP_VERSION } from '@/app/app-config';
 import { db, PROFILE_ID, SETTINGS_ID, writeMeta } from '@/database/db';
-import { EXPORTABLE_TABLES, META_KEYS, type BackupDocument } from '@/database/schema';
+import { META_KEYS, type BackupDocument } from '@/database/schema';
+import { EXPORTABLE_TABLES } from '@/database/exportable-tables';
 import { nowIso, todayKey } from '@/utils/dates';
 
 /**
