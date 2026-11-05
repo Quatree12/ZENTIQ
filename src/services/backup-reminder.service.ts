@@ -3,18 +3,18 @@
  *
  * POURQUOI CE SERVICE
  * -------------------
- * Le reglage `autoBackupReminder` existait dans les preferences, etait
- * persiste, et n'etait lu par PERSONNE. C'est le meme defaut qu'a eu
- * « Affichage compact » avant correction : une preference sans consommateur.
+ * Le réglage `autoBackupReminder` existait dans les préférences, était
+ * persisté, et n'était lu par PERSONNE. C'est le même défaut qu'a eu
+ * « Affichage compact » avant correction : une préférence sans consommateur.
  *
  * CE QUE CE SERVICE FAIT, ET CE QU'IL NE FAIT PAS
  * -----------------------------------------------
  * Il ne sauvegarde RIEN automatiquement. Une sauvegarde automatique en
- * arriere-plan serait trompeuse : l'utilisateur croirait ses donnees a l'abri
- * alors que le fichier dormirait dans un dossier de telechargements qu'il ne
- * connait pas. L'export reste un geste volontaire, declenche d'un toucher.
+ * arrière-plan serait trompeuse : l'utilisateur croirait ses données à l'abri
+ * alors que le fichier dormirait dans un dossier de téléchargements qu'il ne
+ * connaît pas. L'export reste un geste volontaire, déclenché d'un toucher.
  *
- * Il dit seulement QUAND la derniere sauvegarde date assez pour qu'on le
+ * Il dit seulement QUAND la dernière sauvegarde date assez pour qu'on le
  * signale. Le rappel ne s'affiche jamais sur une base vide : proposer de
  * sauvegarder rien n'aurait pas de sens.
  */
@@ -24,27 +24,27 @@ import { META_KEYS } from '@/database/schema';
 import type { UserSettings } from '@/types';
 import { daysBetween, todayKey } from '@/utils/dates';
 
-/** Nombre de jours avant de suggerer une sauvegarde. */
+/** Nombre de jours avant de suggérer une sauvegarde. */
 export const BACKUP_REMINDER_AFTER_DAYS = 14;
 
 export interface BackupReminder {
-  /** Vrai si le rappel doit etre affiche. */
+  /** Vrai si le rappel doit être affiché. */
   shouldSuggest: boolean;
-  /** Date de la derniere sauvegarde, `YYYY-MM-DD`. `null` si jamais faite. */
+  /** Date de la dernière sauvegarde, `YYYY-MM-DD`. `null` si jamais faite. */
   lastBackupDate: string | null;
-  /** Jours ecoules depuis, `null` si aucune sauvegarde. */
+  /** Jours écoulés depuis, `null` si aucune sauvegarde. */
   daysSince: number | null;
-  /** Phrase affichee a l'utilisateur, quand il y a lieu. */
+  /** Phrase affichée à l'utilisateur, quand il y a lieu. */
   message: string | null;
 }
 
 /**
- * Evalue s'il faut suggerer une sauvegarde.
+ * Évalue s'il faut suggérer une sauvegarde.
  *
  * Renvoie `shouldSuggest: false` quand :
- *   - le reglage est desactive par l'utilisateur ;
- *   - la base est vide (rien a sauvegarder) ;
- *   - la derniere sauvegarde date de moins de 14 jours.
+ *   - le réglage est désactivé par l'utilisateur ;
+ *   - la base est vide (rien à sauvegarder) ;
+ *   - la dernière sauvegarde date de moins de 14 jours.
  */
 export async function evaluateBackupReminder(settings: UserSettings): Promise<BackupReminder> {
   const empty: BackupReminder = {
@@ -54,10 +54,10 @@ export async function evaluateBackupReminder(settings: UserSettings): Promise<Ba
     message: null,
   };
 
-  // Le reglage n'est pas encore charge, ou l'utilisateur l'a desactive.
+  // Le réglage n'est pas encore chargé, ou l'utilisateur l'a désactivé.
   if (!settings.autoBackupReminder) return empty;
 
-  // Une base vide n'a rien a sauvegarder : on ne sollicite personne pour rien.
+  // Une base vide n'a rien à sauvegarder : on ne sollicite personne pour rien.
   const [moodCount, habitCount, journalCount, goalCount, challengeCount] = await Promise.all([
     db.moods.count(),
     db.habits.count(),
@@ -78,7 +78,7 @@ export async function evaluateBackupReminder(settings: UserSettings): Promise<Ba
       lastBackupDate: null,
       daysSince: null,
       message:
-        "Tu n'as pas encore exporte de sauvegarde. Tes donnees vivent uniquement sur cet appareil : un fichier exporte te permettrait de les retrouver si tu changes de telephone.",
+        "Tu n'as pas encore exporté de sauvegarde. Tes données vivent uniquement sur cet appareil : un fichier exporté te permettrait de les retrouver si tu changes de téléphone.",
     };
   }
 
@@ -92,7 +92,7 @@ export async function evaluateBackupReminder(settings: UserSettings): Promise<Ba
     lastBackupDate,
     daysSince,
     message:
-      'Ta derniere sauvegarde date de ' +
+      'Ta dernière sauvegarde date de ' +
       daysSince +
       ' jours. Un export te prendrait quelques secondes.',
   };
