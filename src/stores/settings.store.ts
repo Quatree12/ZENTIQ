@@ -1,11 +1,3 @@
-/**
- * Store des réglages.
- *
- * Chaque modification est appliquée immédiatement au document (thème, densité)
- * et persistée en base. Le cache localStorage est mis à jour dans la foulée,
- * pour que la prochaine ouverture peigne le bon thème avant l'ouverture
- * d'IndexedDB.
- */
 import { create } from 'zustand';
 import { db, SETTINGS_ID } from '@/database/db';
 import { prepareInsert, prepareUpdate } from '@/database/repositories';
@@ -30,12 +22,19 @@ function messageOf(error: unknown, fallback: string): string {
   return fallback;
 }
 
-/** Applique et met en cache les préférences visuelles. */
+/**
+ * Applique et met en cache les preferences de rendu.
+ *
+ * `largeReadableText` fait partie du lot : c'est lui qui declenche l'attribut
+ * `data-large-text` sur <html>, seul moyen pour le CSS d'agir sur la taille du
+ * texte. Sans cette ligne, la preference restait persistee et sans effet.
+ */
 function syncVisuals(settings: UserSettings): void {
   const payload = {
     accentTheme: settings.accentTheme,
     reduceMotion: settings.reduceMotion,
     density: settings.density,
+    largeReadableText: settings.largeReadableText,
   };
   applyRenderSettings(payload);
   writeCachedRenderSettings(payload);
@@ -76,7 +75,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       syncVisuals(created);
       set({ settings: created, loading: false });
     } catch (error) {
-      set({ loading: false, error: messageOf(error, "Les préférences n'ont pas pu être chargées.") });
+      set({ loading: false, error: messageOf(error, "Les preferences n'ont pas pu etre chargees.") });
     }
   },
 
@@ -91,7 +90,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       syncVisuals(updated);
       set({ settings: updated, saving: false, error: null });
     } catch (error) {
-      set({ saving: false, error: messageOf(error, "La préférence n'a pas pu être enregistrée.") });
+      set({ saving: false, error: messageOf(error, "La preference n'a pas pu etre enregistree.") });
     }
   },
 

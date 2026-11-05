@@ -6,12 +6,20 @@ import { summarizeJourney, type JourneySummary } from '@/utils/journey-stats';
 /**
  * Synthese personnelle de Journey.
  *
- * Cinq mesures, toutes lues dans la base locale. Aucune n'est completee par une
+ * Six mesures, toutes lues dans la base locale. Aucune n'est completee par une
  * valeur de remplissage : une mesure sans donnee affiche « — » et la phrase de
  * synthese reste encourageante, jamais evaluative.
  *
- * L'anneau de progression porte le taux de regularite — la seule mesure qui se
- * lit bien en pourcentage circulaire. Les autres sont des compteurs.
+ * DEUX CHIFFRES DIFFERENTS, DEUX LIBELLES DIFFERENTS
+ * --------------------------------------------------
+ * L'anneau affiche la REGULARITE des habitudes (un pourcentage) ; la mesure
+ * « Habitudes » affiche leur NOMBRE. Ces deux valeurs etaient cote a cote avec
+ * des libelles trop proches, ce qui les rendait confondables : lire « HABITUDES
+ * 2 » juste sous un anneau a « 0 % » laissait croire a une incoherence.
+ *
+ * Le libelle porte desormais l'unite — « 2 suivies » — et la precision
+ * « regularite 0 % » est rappelee sous la valeur. Les deux chiffres ne peuvent
+ * plus etre lus comme un seul.
  */
 export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
   const hasAnything =
@@ -54,35 +62,63 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
             label="Humeur"
             value={summary.moodAverage === null ? '—' : summary.moodAverage.toFixed(1) + ' / 5'}
           />
+
+          {/* Nombre d'habitudes suivies — et non leur regularite. */}
           <Metric
             icon={<Repeat size={16} />}
             label="Habitudes"
-            value={summary.habitsTracked === 0 ? '—' : String(summary.habitsTracked)}
+            value={
+              summary.habitsTracked === 0 ? '—' : String(summary.habitsTracked) + ' suivies'
+            }
+            detail={
+              summary.habitsTracked > 0 && summary.consistency !== null
+                ? 'regularite ' + summary.consistency + ' %'
+                : undefined
+            }
           />
+
           <Metric
             icon={<Target size={16} />}
             label="Objectifs"
-            value={String(summary.goalsActive)}
+            value={
+              summary.goalsActive === 0
+                ? '—'
+                : String(summary.goalsActive) + (summary.goalsActive > 1 ? ' actifs' : ' actif')
+            }
             detail={
               summary.goalsCompleted > 0
                 ? summary.goalsCompleted + ' atteint' + (summary.goalsCompleted > 1 ? 's' : '')
                 : undefined
             }
           />
+
           <Metric
             icon={<BookOpen size={16} />}
             label="Journal"
-            value={String(summary.journalEntries)}
+            value={
+              summary.journalEntries === 0
+                ? '—'
+                : String(summary.journalEntries) +
+                  (summary.journalEntries > 1 ? ' entrees' : ' entree')
+            }
           />
+
           <Metric
             icon={<Flame size={16} />}
             label="Challenges"
-            value={summary.challengesActive === 0 ? '—' : String(summary.challengesActive)}
+            value={
+              summary.challengesActive === 0
+                ? '—'
+                : String(summary.challengesActive) +
+                  (summary.challengesActive > 1 ? ' en cours' : ' en cours')
+            }
           />
+
           <Metric
             icon={<Route size={16} />}
             label="Progression"
             value={summary.goalsProgress === null ? '—' : summary.goalsProgress + ' %'}
+            detail={summary.goalsProgress === null ? undefined : 'objectifs en cours'}
           />
         </dl>
 
