@@ -7,14 +7,27 @@
  *
  * Le rattrapage est possible : une journee passee non cochee reste actionnable.
  * Un challenge n'est jamais bloque, et il n'y a pas de penalite.
+ *
+ * JALONS
+ * ------
+ * Les jalons sont affiches SOUS la barre de progression, dans l'ordre du
+ * parcours. Chacun montre son etat reel : franchi (avec sa date) ou a venir.
+ * Aucun jalon n'est presente comme une recompense — c'est un repere de chemin.
+ *
+ * REPORT
+ * ------
+ * « Decaler d'un jour » decale tout le challenge sans rien decocher. Le nombre
+ * de jours reportes est affiche quand il est superieur a zero, comme une
+ * souplesse utilisee, jamais comme un echec.
  */
-import { CheckCircle2, Circle, Flame, Pause, Trash2 } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Circle, Flag, Flame, Pause, Trash2 } from 'lucide-react';
 import { Button } from '@/components/buttons';
 import { Card } from '@/components/cards';
 import { Badge } from '@/components/badges';
 import { ProgressBar } from '@/components/progress';
 import { useToast } from '@/components/feedback/Toast';
 import type { Challenge } from '@/types';
+import { CHALLENGE_RHYTHM_LABELS, challengeRhythm } from '@/types';
 import {
   computeChallengeProgress,
   describePace,
@@ -22,11 +35,19 @@ import {
 } from '@/utils/challenge-stats';
 import { formatDateKey, todayKey } from '@/utils/dates';
 
+/**
+ * Nombre maximal de jours reportables, cote interface.
+ * Doit rester aligne avec la borne du repository (30) : l'interface n'offre pas
+ * un bouton que les donnees refuseraient.
+ */
+const MAX_POSTPONED_DAYS = 30;
+
 export interface ChallengeCardProps {
   challenge: Challenge;
   busy: boolean;
   onCompleteDay: (dayNumber: number) => void;
   onUncompleteDay: (dayNumber: number) => void;
+  onPostpone: (days: number) => void;
   onSetAside: () => void;
   onDelete: () => void;
 }
@@ -36,6 +57,7 @@ export function ChallengeCard({
   busy,
   onCompleteDay,
   onUncompleteDay,
+  onPostpone,
   onSetAside,
   onDelete,
 }: ChallengeCardProps) {
@@ -44,6 +66,11 @@ export function ChallengeCard({
   const progress = computeChallengeProgress(challenge, today);
   const days = viewChallengeDays(challenge, today);
   const pace = describePace(progress);
+
+  const rhythm = challengeRhythm(challenge);
+  const milestones = challenge.milestones ?? [];
+  const postponed = challenge.postponedDays ?? 0;
+  const canPostpone = postponed < MAX_POSTPONED_DAYS && progress.percent !== 100;
 
   const todayStep =
     progress.todayStepNumber === null
@@ -64,6 +91,15 @@ export function ChallengeCard({
     }
   };
 
+  const handlePostpone = () => {
+    onPostpone(1);
+    // Le message dit ce qui se passe REELLEMENT : rien n'est perdu.
+    notify('Challenge decale d\'un jour.', {
+      tone: 'info',
+      detail: 'Aucune etape decochee. La date de fin a ete repoussee.',
+    });
+  };
+
   return (
     <Card compact className="challenge-card">
       <div className="row-between">
@@ -81,6 +117,14 @@ export function ChallengeCard({
       {challenge.description && <p className="body-sm">{challenge.description}</p>}
       {challenge.goal && <p className="challenge-card__goal">« {challenge.goal} »</p>}
 
+      {/* Le rythme n'est affiche que s'il n'est pas le parcours par defaut. */}
+      {rhythm !== 'once' && (
+        <div className="row-wrap">
+          <Badge tone="lavender">{CHALLENGE_RHYTHM_LABELS[rhythm]}</Badge>
+          {postponed > 0 && <Badge>{postponed} jour{postponed > 1 ? 's' : ''} reporte{postponed > 1 ? 's' : ''}</Badge>}
+        </div>
+      )}
+
       {/* Progression : compteur + barre, tous deux derives des etapes. */}
       <div className="challenge-card__progress">
         <div className="row-between">
@@ -96,6 +140,37 @@ export function ChallengeCard({
           label={'Progression de ' + challenge.title}
         />
       </div>
+
+      {/* --- Jalons ------------------------------------------------------- */}
+      {milestones.length > 0 && (
+        <ol className="challenge-milestones">
+          {milestones.map((milestone) => {
+            const reached = milestone.reachedAt !== undefined;
+            return (
+              <li
+                key={milestone.index}
+                className={reached ? 'challenge-milestone is-reached' : 'challenge-milestone'}
+              >
+                <span className="challenge-milestone__icon" aria-hidden="true">
+                  {reached ? <CheckCircle2 size={16} /> : <Flag size={16} />}
+                </span>
+                <span className="challenge-milestone__text">
+                  <span className="challenge-milestone__title">{milestone.title}</span>
+                  <span className="body-sm">
+                    {reached
+                      ? 'Franchi le ' +
+                        formatDateKey(milestone.reachedAt as string, {
+                          day: 'numeric',
+                          month: 'short',
+                        })
+                      : "Jusqu'au jour " + milestone.throughDay}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
 
       <dl className="challenge-card__meta">
         <div>
@@ -172,7 +247,7 @@ export function ChallengeCard({
                   <span className="challenge-day__text">
                     <span className="challenge-day__label">
                       Jour {day.dayNumber}
-                      {day.isToday ? ' — aujourd\'hui' : ''}
+                      {day.isToday ? " — aujourd'hui" : ''}
                     </span>
                     <span className="body-sm">{day.label}</span>
                   </span>
@@ -184,6 +259,15 @@ export function ChallengeCard({
       </details>
 
       <div className="row-wrap">
+        <Button
+          variant="tertiary"
+          size="sm"
+          leadingIcon={<CalendarClock size={16} />}
+          disabled={!canPostpone || busy}
+          onClick={handlePostpone}
+        >
+          Decaler d'un jour
+        </Button>
         <Button variant="tertiary" size="sm" leadingIcon={<Pause size={16} />} onClick={onSetAside}>
           Mettre de cote
         </Button>
