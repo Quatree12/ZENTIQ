@@ -24,6 +24,12 @@ interface ChallengesState {
   load: () => Promise<void>;
   createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
   updateChallenge: (id: string, input: UpdateChallengeInput) => Promise<Challenge | null>;
+  /**
+   * Réécrit les libellés des étapes, sans jamais toucher aux coches.
+   * C'est la seule opération autorisée à modifier `days`, et elle préserve la
+   * progression position par position.
+   */
+  updateSteps: (id: string, labels: string[]) => Promise<Challenge | null>;
   completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
   uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
   /**
@@ -84,6 +90,20 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       return updated;
     } catch (error) {
       set({ error: messageOf(error, "La modification n'a pas pu être enregistrée.") });
+      return null;
+    } finally {
+      set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
+    }
+  },
+
+  updateSteps: async (id, labels) => {
+    set({ busyIds: [...get().busyIds, id] });
+    try {
+      const updated = await challengesRepository.updateSteps(id, labels);
+      set({ challenges: await reload(), error: null });
+      return updated;
+    } catch (error) {
+      set({ error: messageOf(error, "Les étapes n'ont pas pu être enregistrées.") });
       return null;
     } finally {
       set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
