@@ -74,14 +74,24 @@ export { MOOD_LABELS, MOOD_LEVELS } from './mood.types';
 export type { Goal, GoalStatus, GoalHorizon } from './goal.types';
 export { GOAL_STATUS_LABELS, GOAL_HORIZON_LABELS } from './goal.types';
 
+/* Challenges.
+   ChallengeDay DOIT figurer ici : sans lui, les composants qui lisent les
+   étapes d'un challenge reçoivent un type incomplet et le compilateur signale
+   « Property 'dayNumber' does not exist ». */
 export type {
   Habit,
   HabitCompletion,
   HabitFrequency,
   Challenge,
   ChallengeStatus,
+  ChallengeDay,
 } from './habit.types';
-export { HABIT_FREQUENCY_LABELS, CHALLENGE_STATUS_LABELS } from './habit.types';
+export {
+  HABIT_FREQUENCY_LABELS,
+  CHALLENGE_STATUS_LABELS,
+  CHALLENGE_DURATIONS,
+  challengeProgress,
+} from './habit.types';
 
 export type { JournalEntry, TimelinePoint } from './journal.types';
 
