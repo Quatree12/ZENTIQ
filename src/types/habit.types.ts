@@ -25,6 +25,13 @@ export interface Habit extends BaseEntity {
   /** Couleur d'accent, token du design system. */
   accent: 'teal' | 'lavender';
   archived: boolean;
+  /**
+   * Derniere relecture de l'habitude, ISO 8601 ou `null`.
+   *
+   * Ajoute par la migration v2. L'interface ne s'en sert pas encore : le champ
+   * est prepare pour un bilan periodique propose, jamais impose.
+   */
+  lastReviewedAt: string | null;
 }
 
 /**
@@ -72,6 +79,59 @@ export interface ChallengeDay {
   completedAt?: string;
 }
 
+/* --------------------------------------------------------------------------
+   RYTHMES DE CHALLENGE
+   --------------------------------------------------------------------------
+   Un challenge « classique » se suit jour apres jour. Mais tout ne se compte
+   pas en jours consecutifs : certaines pratiques se vivent par semaine.
+
+   `once`      — parcours lineaire, la forme historique
+   `recurring` — N fois par periode (ex. 3 seances par semaine)
+   `milestones`— avancement par etapes franchies, sans contrainte de calendrier
+
+   LE RYTHME NE CHANGE RIEN A LA FACON DONT LA PROGRESSION EST CALCULEE :
+   elle reste derivee des etapes reellement cochees. Le rythme dit seulement ce
+   qu'on attend de l'utilisateur, et comment l'interface le decrit.
+   -------------------------------------------------------------------------- */
+export type ChallengeRhythm = 'once' | 'recurring' | 'milestones';
+
+/**
+ * Regle de rythme d'un challenge.
+ *
+ * `periodDays` reste facultatif et n'a de sens qu'avec `recurring` : c'est la
+ * longueur de la periode sur laquelle `targetPerPeriod` est attendu.
+ * Par defaut 7 — la semaine.
+ */
+export interface ChallengeRhythmConfig {
+  rhythm: ChallengeRhythm;
+  /** Nombre de realisations visees par periode (rythme `recurring`). */
+  targetPerPeriod?: number;
+  /** Longueur de la periode en jours (rythme `recurring`). Defaut : 7. */
+  periodDays?: number;
+}
+
+/**
+ * Un jalon : une etape intermediaire visible dans le parcours.
+ *
+ * Les jalons ne sont PAS des recompenses inventees. Chaque jalon porte un
+ * `dayNumber` (ou un `milestoneIndex` pour un rythme sans calendrier) qui
+ * correspond a une etape REELLE du challenge : un jalon se franchit quand ses
+ * etapes sont faites, jamais autrement.
+ */
+export interface ChallengeMilestone {
+  /** Position du jalon, 1 = premier du parcours. */
+  index: number;
+  /** Titre court, ecrit par l'utilisateur. */
+  title: string;
+  /**
+   * Numero du DERNIER jour couvert par ce jalon.
+   * Ex. un jalon « 1 semaine » sur un 21 jours couvre jusqu'au jour 7.
+   */
+  throughDay: number;
+  /** Date de franchissement, `YYYY-MM-DD`. Absente tant qu'il n'est pas atteint. */
+  reachedAt?: string;
+}
+
 /**
  * Challenge multi-jours (3, 7, 14, 21 ou 30 jours).
  *
@@ -104,6 +164,27 @@ export interface Challenge extends BaseEntity {
   completedAt?: string;
   /** Habitude liee, si le challenge s'appuie sur une routine existante. */
   habitId?: string;
+
+  /* --- Champs ajoutes en v3 (migration : valeurs posees par defaut) ------- */
+
+  /**
+   * Rythme du challenge.
+   * Absent sur les challenges crees avant la v3 : ils sont lus comme `once`,
+   * ce qui est exactement ce qu'ils etaient.
+   */
+  rhythm?: ChallengeRhythm;
+  /** Regle de rythme detaillee (uniquement si `rhythm === 'recurring'`). */
+  rhythmConfig?: ChallengeRhythmConfig;
+  /** Jalons du parcours. Absent = aucun jalon, le parcours reste lineaire. */
+  milestones?: ChallengeMilestone[];
+  /**
+   * Jours de report accordes, `YYYY-MM-DD`.
+   *
+   * Un jour manque n'est JAMAIS une remise a zero : l'utilisateur peut decaler
+   * son challenge. `endDate` est alors recalcule, et les jours reportes sont
+   * conserves ici pour que l'historique reste lisible.
+   */
+  postponedDays?: number;
 }
 
 /**
@@ -118,6 +199,77 @@ export function challengeProgress(
   return Math.min(100, Math.round((done / challenge.durationDays) * 100));
 }
 
+/* --------------------------------------------------------------------------
+   LECTURE DU RYTHME
+   -------------------------------------------------------------------------- */
+
+/**
+ * Rythme effectif d'un challenge.
+ *
+ * Un challenge sans `rhythm` est un challenge `once` : c'est la forme sous
+ * laquelle tous les challenges existants ont ete crees. On ne leur invente pas
+ * un rythme qu'ils n'avaient pas.
+ */
+export function challengeRhythm(challenge: Pick<Challenge, 'rhythm'>): ChallengeRhythm {
+  return challenge.rhythm ?? 'once';
+}
+
+/** Duree de periode effective pour un rythme recurrent. */
+export function rhythmPeriodDays(config?: ChallengeRhythmConfig): number {
+  const value = config?.periodDays;
+  if (value === undefined || value <= 0) return 7;
+  return Math.round(value);
+}
+
+/**
+ * Etapes attendues par periode.
+ * `null` quand le rythme n'est pas recurrent, ou que la cible n'est pas fixee.
+ */
+export function rhythmTargetPerPeriod(config?: ChallengeRhythmConfig): number | null {
+  const value = config?.targetPerPeriod;
+  if (value === undefined || value <= 0) return null;
+  return Math.round(value);
+}
+
+/**
+ * Rythme tenu, ou non, pour la periode en cours.
+ *
+ * Renvoie `null` pour un rythme non recurrent : il n'y a rien a tenir.
+ * `completed` compte les etapes faites dans la periode courante ; `target` est
+ * l'objectif. L'interface en deduit « 2 sur 3 cette semaine » sans jamais
+ * presenter un echec.
+ */
+export function rhythmStatus(
+  challenge: Pick<Challenge, 'rhythm' | 'rhythmConfig' | 'days'>,
+  reference: string,
+): { completed: number; target: number } | null {
+  if (challengeRhythm(challenge) !== 'recurring') return null;
+  const target = rhythmTargetPerPeriod(challenge.rhythmConfig);
+  if (target === null) return null;
+
+  const period = rhythmPeriodDays(challenge.rhythmConfig);
+  const start = shiftDaysLocal(reference, -(period - 1));
+
+  const completed = challenge.days.filter(
+    (day) => day.completedAt !== undefined && day.completedAt >= start && day.completedAt <= reference,
+  ).length;
+
+  return { completed, target };
+}
+
+/**
+ * Decalage de date local, `YYYY-MM-DD`.
+ *
+ * Ecrit ici plutot qu'importe de `@/utils/dates` : un module de TYPES ne doit
+ * dependre d'aucun autre module applicatif, sous peine de cycle d'import.
+ */
+function shiftDaysLocal(dateKey: string, delta: number): string {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
+  date.setUTCDate(date.getUTCDate() + delta);
+  return date.toISOString().slice(0, 10);
+}
+
 export const HABIT_FREQUENCY_LABELS: Record<HabitFrequency, string> = {
   daily: 'Tous les jours',
   weekly: 'Chaque semaine',
@@ -129,6 +281,13 @@ export const CHALLENGE_STATUS_LABELS: Record<ChallengeStatus, string> = {
   active: 'En cours',
   completed: 'Termine',
   abandoned: 'Mis de cote',
+};
+
+/** Libelles des rythmes, pour les filtres et les formulaires. */
+export const CHALLENGE_RHYTHM_LABELS: Record<ChallengeRhythm, string> = {
+  once: 'Parcours suivi',
+  recurring: 'Rythme hebdomadaire',
+  milestones: 'Par etapes',
 };
 
 /** Durees proposees a la creation, du plus court au plus long. */

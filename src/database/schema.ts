@@ -14,8 +14,7 @@
  * dans `migrations.ts`.
  *
  * La liste des tables EXPORTABLES ne vit plus ici : elle se deduit de `TABLES`
- * dans `exportable-tables.ts`. Ajouter une table au schema la rend donc
- * exportable automatiquement, sans risque d'oubli silencieux.
+ * dans `exportable-tables.ts`.
  */
 
 export const DATABASE_NAME = 'zentiq';
@@ -23,12 +22,12 @@ export const DATABASE_NAME = 'zentiq';
 /**
  * Version logique du schema applicatif, independante de la version Dexie.
  *
- * v1 -> v2 : ajout de `lastReviewedAt` sur les habitudes. Le champ servira a
- * proposer un bilan periodique sans jamais l'imposer. La migration pose `null`
- * sur les enregistrements existants : aucune donnee n'est perdue, et aucun
- * comportement ne change tant que l'interface ne lit pas ce champ.
+ * v1 -> v2 : ajout de `lastReviewedAt` sur les habitudes.
+ * v2 -> v3 : ajout du rythme, des jalons et des reports sur les challenges.
+ *            L'index `reminderAt` est ajoute a `challenges` pour les rappels
+ *            a heure fixe, et `lastReviewedAt` reste en place.
  */
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 export interface ZentiqSchema {
   profile: Table<UserProfile, string>;
@@ -58,7 +57,7 @@ export interface MetaRecord {
 }
 
 /**
- * Definition des tables pour la version COURANTE (v2).
+ * Definition des tables pour la version COURANTE (v3).
  * Regroupee par domaine pour rester lisible.
  */
 export const TABLES = {
@@ -68,7 +67,7 @@ export const TABLES = {
   goals: 'id, status, targetDate, isPriority, createdAt',
   habits: 'id, archived, goalId, createdAt, lastReviewedAt',
   habitCompletions: 'id, habitId, date, [habitId+date]',
-  challenges: 'id, status, startDate, habitId',
+  challenges: 'id, status, startDate, habitId, rhythm',
   journal: 'id, date, pinned, createdAt',
   quotes: 'id, category, favorite, author',
   affirmations: 'id, category, favorite',

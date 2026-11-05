@@ -31,18 +31,23 @@ export interface Migration {
  *
  * v2 — ajout de `lastReviewedAt` sur les habitudes.
  *
- *   POURQUOI CE CHAMP, ET POURQUOI CETTE MIGRATION EXISTE
- *   ----------------------------------------------------
- *   Le mecanisme de migration n'avait jamais tourne : le registre etait vide,
- *   donc la montee de version n'avait jamais ete exercee. Une migration qui ne
- *   s'execute jamais est une migration dont on ne sait rien.
+ * v3 — rythmes, jalons et reports sur les challenges.
  *
- *   `lastReviewedAt` permet de savoir quand une habitude a ete relue pour la
- *   derniere fois. L'interface ne l'utilise pas encore : c'est un champ prepare,
- *   pas un comportement ajoute. La migration se contente de le poser a `null`
- *   sur les enregistrements existants, sans rien perdre ni rien changer.
+ *   POURQUOI
+ *   -------
+ *   Les challenges avances ajoutent trois notions : un rythme (suivi lineaire,
+ *   recurrent par periode, ou par etapes), des jalons intermediaires, et la
+ *   possibilite de REPORT un jour manque sans jamais remettre a zero.
  *
- *   L'index est declare dans `TABLES` (schema.ts) et repris ici.
+ *   CE QU'ECRIT LA MIGRATION, ET RIEN DE PLUS
+n *   ---------------------------------------
+ *   Elle pose les valeurs qui decrivent EXACTEMENT ce qu'etaient les challenges
+ *   existants : `rhythm: 'once'`, pas de jalon, aucun report. Aucun challenge
+ *   ne change de sens, aucune progression n'est recalculee, et rien n'est
+ *   invente. Un challenge de 7 jours d'avant reste un challenge de 7 jours.
+ *
+ *   L'index `rhythm` est ajoute a la table : il servira a filtrer par rythme
+ *   sans parcourir toute la table.
  */
 export const migrations: Migration[] = [
   {
@@ -67,7 +72,21 @@ export const migrations: Migration[] = [
   {
     version: 2,
     description: 'Ajout de lastReviewedAt sur les habitudes',
-    stores: { ...TABLES },
+    stores: {
+      profile: 'id',
+      settings: 'id',
+      moods: 'id, date, mood, createdAt',
+      goals: 'id, status, targetDate, isPriority, createdAt',
+      habits: 'id, archived, goalId, createdAt, lastReviewedAt',
+      habitCompletions: 'id, habitId, date, [habitId+date]',
+      challenges: 'id, status, startDate, habitId',
+      journal: 'id, date, pinned, createdAt',
+      quotes: 'id, category, favorite, author',
+      affirmations: 'id, category, favorite',
+      music: 'id, category, favorite, artist',
+      favorites: 'id, refType, refId, [refType+refId]',
+      meta: 'key',
+    },
     upgrade: async (tx: Transaction) => {
       // `modify` parcourt la table : chaque habitude existante recoit le champ
       // a `null`. On n'ecrit pas une date invente : une habitude jamais relue
@@ -77,6 +96,23 @@ export const migrations: Migration[] = [
         .toCollection()
         .modify((habit: Record<string, unknown>) => {
           habit.lastReviewedAt = null;
+        });
+    },
+  },
+  {
+    version: 3,
+    description: 'Challenges avances : rythme, jalons et reports',
+    stores: { ...TABLES },
+    upgrade: async (tx: Transaction) => {
+      await tx
+        .table('challenges')
+        .toCollection()
+        .modify((challenge: Record<string, unknown>) => {
+          // Les challenges existants ETAIENT lineaires : on l'ecrit, on ne
+          // l'invente pas. Aucun jalon, aucun report : c'est leur etat reel.
+          challenge.rhythm = 'once';
+          challenge.milestones = [];
+          challenge.postponedDays = 0;
         });
     },
   },
