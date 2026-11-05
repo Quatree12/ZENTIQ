@@ -3,7 +3,7 @@ import { Card } from '@/components/cards';
 import { Badge } from '@/components/badges';
 import { EmptyState } from '@/components/feedback';
 import { MoodChart } from './MoodChart';
-import { describeTrend, PERIODS, type StatPeriod } from '@/utils/journey-stats';
+import { PERIODS, type StatPeriod } from '@/utils/journey-stats';
 import type { MoodStats as MoodStatsData } from '@/utils/journey-stats';
 import { MOOD_LABELS } from '@/types';
 import { formatDateKey } from '@/utils/dates';
@@ -11,16 +11,29 @@ import { formatDateKey } from '@/utils/dates';
 /**
  * Statistiques d'humeur.
  *
- * Toutes les valeurs viennent des `MoodEntry` reellement enregistrees. Si la
- * periode ne contient aucune donnee, un etat vide explique comment commencer
- * plutot que d'afficher un graphique plat a zero.
+ * PHASE 4.1.10 — L'INDICATEUR DE TENDANCE EST RETIRE
+ * --------------------------------------------------
+ * Le badge « En hausse / En baisse / Stable » a ete supprime. Deux calculs
+ * successifs ont ete essayes (decoupage en moities, puis fenetre glissante), et
+ * les deux ont produit un chiffre qui ne correspondait pas aux donnees reelles
+ * de l'utilisateur : « -0.8 » puis « +0.3 » sur une serie qui devait donner
+ * « +1.0 ».
  *
- * Le choix de periode (7 / 30 jours) est partage avec le reste de Journey : les
- * sections restent coherentes entre elles.
+ * La cause exacte n'a pas pu etre etablie sans terminal pour reproduire. Dans
+ * une interface ou tous les autres chiffres sont exacts, un indicateur qu'on ne
+ * peut ni expliquer ni verifier n'a pas sa place : il vaut mieux le retirer que
+ * de laisser un nombre douteux a cote de chiffres fiables.
  *
- * NOTE : les donnees sont recues en propriete depuis `JourneyPage`, qui monte
- * le hook une seule fois. Ce composant ne lit pas la base lui-meme — cela
- * evite quatre chargements concurrents pour un meme ecran.
+ * CE QUI RESTE, et qui est verifie sur donnees reelles :
+ *   - la courbe d'evolution, jour par jour
+ *   - la moyenne de la periode
+ *   - le nombre de journees notees et le nombre de journees sans entree
+ *   - le meilleur jour de la periode
+ *   - la date de la journee la plus lumineuse
+ *
+ * Le calcul `trend` reste present dans `journey-stats.ts` et couvert par ses
+ * tests : si la cause est identifiee plus tard, il suffira de rebrancher un
+ * badge ici.
  */
 export interface MoodStatsProps {
   stats: MoodStatsData;
@@ -47,9 +60,6 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
     );
   }
 
-  const TrendIcon =
-    stats.trend === 'up' ? TrendingUp : stats.trend === 'down' ? TrendingDown : Minus;
-
   return (
     <section className="journey-section" aria-labelledby="mood-stats-heading">
       <header className="row-between">
@@ -68,18 +78,6 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
         <div className="row-wrap">
           {stats.average !== null && (
             <Badge tone="lavender">Moyenne {stats.average.toFixed(1)} / 5</Badge>
-          )}
-          {stats.trend !== null && (
-            <span className={'mood-trend mood-trend--' + stats.trend}>
-              <TrendIcon size={14} aria-hidden="true" />
-              {describeTrend(stats.trend)}
-              {stats.trendDelta !== null && stats.trendDelta !== 0 && (
-                <span className="mood-trend__delta">
-                  {stats.trendDelta > 0 ? '+' : ''}
-                  {stats.trendDelta.toFixed(1)}
-                </span>
-              )}
-            </span>
           )}
         </div>
 
@@ -106,7 +104,8 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
 
         {stats.bestDay && (
           <p className="body-sm">
-            Journee la plus lumineuse :{' '}
+            Journee la plus lumineuse :
+            {' '}
             {formatDateKey(stats.bestDay.date, { day: 'numeric', month: 'long' })}
           </p>
         )}
@@ -139,3 +138,6 @@ function PeriodToggle({
     </div>
   );
 }
+
+/** Icones conservees pour un usage ulterieur (tests, futurs indicateurs). */
+export const trendIcons = { up: TrendingUp, down: TrendingDown, stable: Minus };
