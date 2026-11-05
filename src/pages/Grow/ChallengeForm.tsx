@@ -1,25 +1,30 @@
 /**
- * Formulaire de creation d'un challenge.
+ * Formulaire de création d'un challenge.
  *
- * Les cinq durees proposees sont celles du brief (3, 7, 14, 21, 30).
+ * Les cinq durées proposées sont celles du brief (3, 7, 14, 21, 30).
  *
- * JALONS — trois propositions, jamais imposees
+ * JALONS — trois propositions, jamais imposées
  * --------------------------------------------
- * Les jalons proposes sont CALCULES sur la duree choisie : un jalon « la
- * moitie du chemin » sur un 7 jours couvre le jour 4, sur un 30 jours couvre le
- * jour 15. L'utilisateur peut decocher ceux qu'il ne veut pas ; un challenge
+ * Les jalons proposés sont CALCULÉS sur la durée choisie : un jalon « la
+ * moitié du chemin » sur un 7 jours couvre le jour 4, sur un 30 jours couvre le
+ * jour 15. L'utilisateur peut décocher ceux qu'il ne veut pas ; un challenge
  * sans jalon reste parfaitement valide.
  *
- * CHAMP « SEANCES VISEES » — CORRECTIF DE SAISIE
- * ----------------------------------------------
- * Le champ etait pilote par un nombre, et borner a chaque frappe rendait la
- * saisie impossible : vider le champ produit la chaine vide, `Number('')` vaut
- * 0, et le `Math.max(1, 0)` du onChange reposait aussitot « 1 ». On ne pouvait
- * donc jamais effacer pour retaper, ni composer un nombre chiffre par chiffre.
+ * LES TITRES PROPOSÉS SONT EN FRANÇAIS CORRECT. Ils partent tels quels en base :
+ * un accent oublié ici resterait dans les jalons de l'utilisateur pour toujours,
+ * et aucun correctif d'affichage ne pourrait le rattraper. C'est exactement ce
+ * qui s'est produit avec « Moitie du chemin » — la faute était dans la source,
+ * pas dans le rendu.
  *
- * Le champ est desormais en TEXTE LIBRE pendant la frappe — seul le chiffre a
- * une signification, tout autre caractere est ignore — et les bornes (1 a 7)
- * sont appliquees a la SORTIE du champ, pas a chaque touche.
+ * CHAMP « SÉANCES VISÉES » — CORRECTIF DE SAISIE
+ * ----------------------------------------------
+ * Le champ était piloté par un nombre, et borner à chaque frappe rendait la
+ * saisie impossible : vider le champ produit la chaîne vide, `Number('')` vaut
+ * 0, et le `Math.max(1, 0)` du onChange reposait aussitôt « 1 ».
+ *
+ * Le champ est désormais en TEXTE LIBRE pendant la frappe — seul le chiffre a
+ * une signification — et les bornes (1 à 7) sont appliquées à la SORTIE du
+ * champ, pas à chaque touche.
  */
 import { useId, useMemo, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
@@ -31,43 +36,43 @@ import { CHALLENGE_DURATIONS, CHALLENGE_RHYTHM_LABELS, type ChallengeRhythm } fr
 import { firstError, maxLength } from '@/utils/validators';
 import { todayKey } from '@/utils/dates';
 
-/** Suggestions d'etapes, pour ne pas laisser l'utilisateur devant une page blanche. */
+/** Suggestions d'étapes, pour ne pas laisser l'utilisateur devant une page blanche. */
 const STEP_SUGGESTIONS: Record<number, string[]> = {
   3: ["Observer ce qui m'entoure", 'Faire une chose utile', "Nommer ce que j'ai appris"],
   7: [
-    'Definir mon intention',
+    'Définir mon intention',
     'Faire un premier pas',
-    'Tenir un deuxieme jour',
+    'Tenir un deuxième jour',
     'Remarquer ce qui change',
     'Ajuster si besoin',
     'Faire un pas de plus',
     'Relire la semaine',
   ],
-  14: Array.from({ length: 14 }, (_, index) => 'Etape ' + (index + 1)),
-  21: Array.from({ length: 21 }, (_, index) => 'Etape ' + (index + 1)),
-  30: Array.from({ length: 30 }, (_, index) => 'Etape ' + (index + 1)),
+  14: Array.from({ length: 14 }, (_, index) => 'Étape ' + (index + 1)),
+  21: Array.from({ length: 21 }, (_, index) => 'Étape ' + (index + 1)),
+  30: Array.from({ length: 30 }, (_, index) => 'Étape ' + (index + 1)),
 };
 
-/** Rythmes proposes, dans l'ordre du plus simple au plus souple. */
+/** Rythmes proposés, dans l'ordre du plus simple au plus souple. */
 const RHYTHMS: ChallengeRhythm[] = ['once', 'recurring', 'milestones'];
 
-/** Bornes du nombre de seances visees par semaine. */
+/** Bornes du nombre de séances visées par semaine. */
 const MIN_PER_WEEK = 1;
 const MAX_PER_WEEK = 7;
 
 /**
- * Jalons suggeres pour une duree donnee.
+ * Jalons suggérés pour une durée donnée.
  *
- * Trois jalons : un premier tiers, la moitie du chemin, et la derniere ligne
- * droite. Les numeros sont calcules, arrondis a l'entier, et bornes a la duree.
+ * Trois jalons : un premier tiers, la moitié du chemin, et la dernière ligne
+ * droite. Les numéros sont calculés, arrondis à l'entier, et bornés à la durée.
  */
 function suggestMilestones(duration: number): Array<{ title: string; throughDay: number }> {
   if (duration < 3) return [];
   const clamp = (value: number) => Math.min(Math.max(1, value), duration);
   return [
     { title: 'Premier tiers', throughDay: clamp(Math.round(duration / 3)) },
-    { title: 'Moitie du chemin', throughDay: clamp(Math.round(duration / 2)) },
-    { title: 'Derniere ligne droite', throughDay: clamp(duration - 1) },
+    { title: 'Moitié du chemin', throughDay: clamp(Math.round(duration / 2)) },
+    { title: 'Dernière ligne droite', throughDay: clamp(duration - 1) },
   ];
 }
 
@@ -88,9 +93,9 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
   const [startDate, setStartDate] = useState(todayKey());
   const [rhythm, setRhythm] = useState<ChallengeRhythm>('once');
   /**
-   * Saisie BRUTE du nombre de seances, gardee en texte.
-   * Le champ peut donc etre vide pendant la frappe : c'est ce qui rend la
-   * saisie possible. La conversion et les bornes se font a la sortie du champ.
+   * Saisie BRUTE du nombre de séances, gardée en texte.
+   * Le champ peut donc être vide pendant la frappe : c'est ce qui rend la
+   * saisie possible. La conversion et les bornes se font à la sortie du champ.
    */
   const [perWeekInput, setPerWeekInput] = useState('3');
   const [saving, setSaving] = useState(false);
@@ -100,17 +105,17 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
   const [keptMilestones, setKeptMilestones] = useState<number[]>([0, 1, 2]);
 
   const titleError = firstError(
-    title.trim().length === 0 ? 'Donne un nom a ton challenge.' : null,
+    title.trim().length === 0 ? 'Donne un nom à ton challenge.' : null,
     maxLength(title, 80, 'Le nom'),
   );
 
-  /** Nombre de seances effectif, borne. Utilise a la soumission. */
+  /** Nombre de séances effectif, borné. Utilisé à la soumission. */
   const perWeek = clampPerWeek(perWeekInput);
 
   /**
    * Applique les bornes quand l'utilisateur quitte le champ.
-   * On reecrit la valeur affichee pour qu'elle corresponde a ce qui sera
-   * reellement enregistre — sinon le champ pourrait montrer « 12 » alors que
+   * On réécrit la valeur affichée pour qu'elle corresponde à ce qui sera
+   * réellement enregistré — sinon le champ pourrait montrer « 12 » alors que
    * c'est 7 qui part en base.
    */
   const commitPerWeek = () => {
@@ -152,9 +157,9 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
     setSaving(false);
 
     if (ok) {
-      notify('Challenge cree.', { tone: 'success', detail: title + ' — ' + duration + ' jours' });
+      notify('Challenge créé.', { tone: 'success', detail: title + ' — ' + duration + ' jours' });
     } else {
-      notify("Le challenge n'a pas pu etre cree.", { tone: 'error' });
+      notify("Le challenge n'a pas pu être créé.", { tone: 'error' });
     }
   };
 
@@ -171,7 +176,7 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         onBlur={() => setTouched(true)}
-        placeholder="Ex. 7 jours sans ecran le matin"
+        placeholder="Ex. 7 jours sans écran le matin"
         error={touched ? titleError : null}
         maxLength={80}
         required
@@ -194,7 +199,7 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       />
 
       <fieldset className="challenge-form__durations" ref={durationsRef}>
-        <legend className="field__label">Duree</legend>
+        <legend className="field__label">Durée</legend>
         <div className="challenge-form__chips">
           {CHALLENGE_DURATIONS.map((value) => {
             const isActive = duration === value;
@@ -253,25 +258,25 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         </div>
         <p className="body-sm">
           {rhythm === 'once'
-            ? 'Un parcours suivi : tu avances jour apres jour.'
+            ? 'Un parcours suivi : tu avances jour après jour.'
             : rhythm === 'recurring'
-              ? 'Un nombre de fois vise par semaine. Manquer un jour ne remet rien a zero.'
-              : 'Tu avances par etapes franchies, sans contrainte de calendrier.'}
+              ? 'Un nombre de fois visé par semaine. Manquer un jour ne remet rien à zéro.'
+              : 'Tu avances par étapes franchies, sans contrainte de calendrier.'}
         </p>
 
         {rhythm === 'recurring' && (
           <Input
-            label="Seances visees par semaine"
-            /* `text` et non `number` : un champ numerique vide est difficile a
+            label="Séances visées par semaine"
+            /* `text` et non `number` : un champ numérique vide est difficile à
                saisir sur mobile, et le navigateur y impose ses propres bornes.
-               On filtre nous-memes les caracteres non numeriques. */
+               On filtre nous-mêmes les caractères non numériques. */
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             autoComplete="off"
             value={perWeekInput}
             onChange={(event) => {
-              // On ne garde que les chiffres : ni signe, ni separateur, ni
+              // On ne garde que les chiffres : ni signe, ni séparateur, ni
               // lettre. Le champ peut rester vide pendant la frappe.
               const digits = event.target.value.replace(/[^0-9]/g, '').slice(0, 2);
               setPerWeekInput(digits);
@@ -280,7 +285,7 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
             hint={
               'De ' +
               MIN_PER_WEEK +
-              ' a ' +
+              ' à ' +
               MAX_PER_WEEK +
               ' par semaine. Un objectif souple : c\'est un cap, pas un quota.'
             }
@@ -292,8 +297,8 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         <fieldset className="challenge-form__milestones">
           <legend className="field__label">Jalons</legend>
           <p className="body-sm">
-            Trois reperes sur le chemin. Chacun se franchit quand les etapes qu'il couvre sont
-            faites. Decoche ceux dont tu ne veux pas.
+            Trois repères sur le chemin. Chacun se franchit quand les étapes qu'il couvre sont
+            faites. Décoche ceux dont tu ne veux pas.
           </p>
           <ul className="milestone-picker">
             {suggested.map((milestone, index) => {
@@ -342,8 +347,8 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
       />
 
       <p className="body-sm challenge-form__note">
-        <Sparkles size={14} aria-hidden="true" /> Les etapes sont pre-remplies : tu pourras les
-        suivre une par une, et rattraper une journee manquee quand tu veux.
+        <Sparkles size={14} aria-hidden="true" /> Les étapes sont pré-remplies : tu pourras les
+        suivre une par une, et rattraper une journée manquée quand tu veux.
       </p>
 
       <div className="row-wrap">
@@ -351,7 +356,7 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
           Annuler
         </Button>
         <Button variant="primary" type="submit" loading={saving} disabled={Boolean(titleError)}>
-          Creer le challenge
+          Créer le challenge
         </Button>
       </div>
     </form>
@@ -359,11 +364,11 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
 }
 
 /**
- * Convertit la saisie en nombre de seances borne.
+ * Convertit la saisie en nombre de séances borné.
  *
- * Un champ vide retombe sur la valeur par defaut (3) plutot que sur 0 : un
+ * Un champ vide retombe sur la valeur par défaut (3) plutôt que sur 0 : un
  * utilisateur qui efface sans retaper ne doit pas se retrouver avec un objectif
- * nul enregistre a son insu.
+ * nul enregistré à son insu.
  */
 function clampPerWeek(input: string): number {
   const parsed = Number.parseInt(input, 10);
