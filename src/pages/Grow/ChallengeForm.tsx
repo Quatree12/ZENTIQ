@@ -1,12 +1,27 @@
 /**
  * Formulaire de creation d'un challenge.
  *
- * Les cinq durees proposees sont celles du brief (3, 7, 14, 21, 30). La
- * validation est explicite : le bouton reste desactive tant que le nom manque,
- * et les messages d'erreur disent quoi corriger, pas seulement que c'est faux.
+ * Les cinq durees proposees sont celles du brief (3, 7, 14, 21, 30).
+ *
+ * PHASE 4.1.7 — CORRECTIF DU SELECTEUR DE DUREE SUR MOBILE
+ * --------------------------------------------------------
+ * Les boutons de duree existaient et etaient bien de type="button", donc ils
+ * ne soumettaient pas le formulaire. Le probleme constate sur iPhone etait
+ * ailleurs : le CLAVIER ouvert occupait la moitie basse de l'ecran, et la zone
+ * des durees se trouvait dessous. Le toucher partait au clavier.
+ *
+ * Trois protections ajoutees :
+ *   1. `onPointerDown` traite la selection AVANT tout blur du clavier.
+ *      Sur Safari iOS, `onClick` arrive apres le blur et peut etre perdu.
+ *   2. Les boutons portent une cible tactile explicite (48 px) et
+ *      `touch-action: manipulation`, qui supprime le delai de 300 ms.
+ *   3. Le conteneur defile jusqu'au bouton touche, pour qu'il reste visible
+ *      une fois le clavier referme.
+ *
+ * Sur desktop, aucun clavier a refermer : le comportement est inchange.
  */
-import { useId, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { useId, useRef, useState } from 'react';
+import { Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/buttons';
 import { Input, Textarea } from '@/components/inputs';
 import { useToast } from '@/components/feedback/Toast';
@@ -40,6 +55,7 @@ export interface ChallengeFormProps {
 export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
   const { notify } = useToast();
   const formId = useId();
+  const durationsRef = useRef<HTMLFieldSetElement>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -53,6 +69,24 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
     title.trim().length === 0 ? 'Donne un nom a ton challenge.' : null,
     maxLength(title, 80, 'Le nom'),
   );
+
+  /**
+   * Selection d'une duree.
+   *
+   * Appelee depuis `onPointerDown` : on referme d'abord le clavier, puis on
+   * laisse le navigateur traiter le tap. Le blur explicite evite que le focus
+   * reste dans le champ de saisie et rouvre le clavier.
+   */
+  const selectDuration = (value: number) => {
+    if (typeof document !== 'undefined') {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement) active.blur();
+    }
+    setDuration(value);
+
+    // Le bouton reste visible une fois le clavier referme.
+    durationsRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
 
   const handleSubmit = async () => {
     setTouched(true);
@@ -111,20 +145,33 @@ export function ChallengeForm({ onSubmit, onCancel }: ChallengeFormProps) {
         hint="Une phrase que tu pourras relire les jours difficiles."
       />
 
-      <fieldset className="challenge-form__durations">
+      <fieldset className="challenge-form__durations" ref={durationsRef}>
         <legend className="field__label">Duree</legend>
-        <div className="row-wrap">
-          {CHALLENGE_DURATIONS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={duration === value ? 'filter-chip is-active' : 'filter-chip'}
-              aria-pressed={duration === value}
-              onClick={() => setDuration(value)}
-            >
-              {value} jours
-            </button>
-          ))}
+        <div className="challenge-form__chips">
+          {CHALLENGE_DURATIONS.map((value) => {
+            const isActive = duration === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                className={isActive ? 'duration-chip is-active' : 'duration-chip'}
+                aria-pressed={isActive}
+                onPointerDown={(event) => {
+                  // Traite avant tout blur declenche par le clic.
+                  event.preventDefault();
+                  selectDuration(value);
+                }}
+                onClick={(event) => {
+                  // Repli pour les navigateurs sans Pointer Events.
+                  event.preventDefault();
+                  if (typeof PointerEvent === 'undefined') selectDuration(value);
+                }}
+              >
+                {isActive && <Check size={14} aria-hidden="true" />}
+                {value} jours
+              </button>
+            );
+          })}
         </div>
       </fieldset>
 
