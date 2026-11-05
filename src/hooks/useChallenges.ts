@@ -1,9 +1,9 @@
 /**
- * Hook metier des challenges.
+ * Hook métier des challenges.
  */
 import { useCallback } from 'react';
 import { useChallengesStore } from '@/stores/challenges.store';
-import type { CreateChallengeInput } from '@/database/repositories';
+import type { CreateChallengeInput, UpdateChallengeInput } from '@/database/repositories';
 import type { Challenge } from '@/types';
 import { summarizeChallenges, type ChallengeSummary } from '@/utils/challenge-stats';
 
@@ -14,6 +14,7 @@ export interface UseChallengesResult {
   error: string | null;
   busyIds: string[];
   createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
+  updateChallenge: (id: string, input: UpdateChallengeInput) => Promise<Challenge | null>;
   completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
   uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
   postpone: (id: string, days?: number) => Promise<Challenge | null>;
@@ -24,11 +25,11 @@ export interface UseChallengesResult {
 }
 
 /**
- * Acces aux challenges.
+ * Accès aux challenges.
  *
- * `refresh` est memorisee : sans cela, tout `useEffect(…, [refresh])` se
- * relancerait a chaque rendu — le defaut qui a bloque les premieres versions
- * des ecrans.
+ * `refresh` est mémorisée : sans cela, tout `useEffect(…, [refresh])` se
+ * relancerait à chaque rendu — le défaut qui a bloqué les premières versions
+ * des écrans.
  */
 export function useChallenges(): UseChallengesResult {
   const challenges = useChallengesStore((state) => state.challenges);
@@ -37,6 +38,7 @@ export function useChallenges(): UseChallengesResult {
   const busyIds = useChallengesStore((state) => state.busyIds);
   const load = useChallengesStore((state) => state.load);
   const createChallenge = useChallengesStore((state) => state.createChallenge);
+  const updateChallenge = useChallengesStore((state) => state.updateChallenge);
   const completeDay = useChallengesStore((state) => state.completeDay);
   const uncompleteDay = useChallengesStore((state) => state.uncompleteDay);
   const postpone = useChallengesStore((state) => state.postpone);
@@ -55,6 +57,7 @@ export function useChallenges(): UseChallengesResult {
     error,
     busyIds,
     createChallenge,
+    updateChallenge,
     completeDay,
     uncompleteDay,
     postpone,

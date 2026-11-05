@@ -2,31 +2,33 @@ import { create } from 'zustand';
 import {
   challengesRepository,
   type CreateChallengeInput,
+  type UpdateChallengeInput,
 } from '@/database/repositories';
 import type { Challenge } from '@/types';
 
 /**
  * Store des challenges.
  *
- * `busyIds` suit les ecritures en cours : l'interface peut afficher un etat
- * d'attente sur la carte concernee sans bloquer le reste de la liste. C'est le
- * meme motif que le store des habitudes.
+ * `busyIds` suit les écritures en cours : l'interface peut afficher un état
+ * d'attente sur la carte concernée sans bloquer le reste de la liste. C'est le
+ * même motif que le store des habitudes.
  */
 
 interface ChallengesState {
   challenges: Challenge[];
   loading: boolean;
   error: string | null;
-  /** Identifiants dont une ecriture est en cours. */
+  /** Identifiants dont une écriture est en cours. */
   busyIds: string[];
 
   load: () => Promise<void>;
   createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
+  updateChallenge: (id: string, input: UpdateChallengeInput) => Promise<Challenge | null>;
   completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
   uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
   /**
    * Reporte un challenge de quelques jours.
-   * Aucune etape n'est decochee : c'est tout l'interet du report.
+   * Aucune étape n'est décochée : c'est tout l'intérêt du report.
    */
   postpone: (id: string, days?: number) => Promise<Challenge | null>;
   setAside: (id: string) => Promise<void>;
@@ -40,7 +42,7 @@ function messageOf(error: unknown, fallback: string): string {
   return fallback;
 }
 
-/** Relit la liste : le statut, la progression et les jalons sont derives. */
+/** Relit la liste : le statut, la progression et les jalons sont dérivés. */
 async function reload(): Promise<Challenge[]> {
   return challengesRepository.listAll();
 }
@@ -58,7 +60,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
     } catch (error) {
       set({
         loading: false,
-        error: messageOf(error, "Les challenges n'ont pas pu etre charges."),
+        error: messageOf(error, "Les challenges n'ont pas pu être chargés."),
       });
     }
   },
@@ -69,8 +71,22 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       set({ challenges: await reload(), error: null });
       return challenge;
     } catch (error) {
-      set({ error: messageOf(error, "Le challenge n'a pas pu etre cree.") });
+      set({ error: messageOf(error, "Le challenge n'a pas pu être créé.") });
       return null;
+    }
+  },
+
+  updateChallenge: async (id, input) => {
+    set({ busyIds: [...get().busyIds, id] });
+    try {
+      const updated = await challengesRepository.update(id, input);
+      set({ challenges: await reload(), error: null });
+      return updated;
+    } catch (error) {
+      set({ error: messageOf(error, "La modification n'a pas pu être enregistrée.") });
+      return null;
+    } finally {
+      set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
     }
   },
 
@@ -81,7 +97,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       set({ challenges: await reload(), error: null });
       return updated;
     } catch (error) {
-      set({ error: messageOf(error, "La coche n'a pas pu etre enregistree.") });
+      set({ error: messageOf(error, "La coche n'a pas pu être enregistrée.") });
       return null;
     } finally {
       set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
@@ -94,7 +110,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       await challengesRepository.uncompleteDay(id, dayNumber);
       set({ challenges: await reload(), error: null });
     } catch (error) {
-      set({ error: messageOf(error, "La coche n'a pas pu etre retiree.") });
+      set({ error: messageOf(error, "La coche n'a pas pu être retirée.") });
     } finally {
       set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
     }
@@ -107,7 +123,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       set({ challenges: await reload(), error: null });
       return updated;
     } catch (error) {
-      set({ error: messageOf(error, "Le challenge n'a pas pu etre decale.") });
+      set({ error: messageOf(error, "Le challenge n'a pas pu être décalé.") });
       return null;
     } finally {
       set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
@@ -119,7 +135,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       await challengesRepository.setAside(id);
       set({ challenges: await reload(), error: null });
     } catch (error) {
-      set({ error: messageOf(error, "Le challenge n'a pas pu etre mis de cote.") });
+      set({ error: messageOf(error, "Le challenge n'a pas pu être mis de côté.") });
     }
   },
 
@@ -128,7 +144,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       await challengesRepository.resume(id);
       set({ challenges: await reload(), error: null });
     } catch (error) {
-      set({ error: messageOf(error, "Le challenge n'a pas pu etre repris.") });
+      set({ error: messageOf(error, "Le challenge n'a pas pu être repris.") });
     }
   },
 
@@ -137,7 +153,7 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       await challengesRepository.remove(id);
       set({ challenges: get().challenges.filter((item) => item.id !== id), error: null });
     } catch (error) {
-      set({ error: messageOf(error, "Le challenge n'a pas pu etre supprime.") });
+      set({ error: messageOf(error, "Le challenge n'a pas pu être supprimé.") });
     }
   },
 
