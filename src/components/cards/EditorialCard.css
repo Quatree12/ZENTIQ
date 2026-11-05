@@ -1,0 +1,8 @@
+.editorial-card__author {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  /* Suit l'accent actif : teal en Digital Aura, lavande en theme lavande. */
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-wide);
+}
