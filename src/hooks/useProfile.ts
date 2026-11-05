@@ -1,1 +1,85 @@
-/**\n * Hooks transverses : profil, réglages, favoris.\n */\nimport { useCallback } from 'react';\nimport { useFavoritesStore } from '@/stores/favorites.store';\nimport { useSettingsStore } from '@/stores/settings.store';\nimport { useUserStore } from '@/stores/user.store';\nimport type { UserProfile, UserSettings } from '@/types';\n\nexport interface UseProfileResult {\n  profile: UserProfile | null;\n  loading: boolean;\n  error: string | null;\n  saveProfile: (\n    patch: Partial<Pick<UserProfile, 'firstName' | 'intention' | 'birthDate'>>,\n  ) => Promise<void>;\n  refresh: () => Promise<void>;\n}\n\n/** Accès au profil local. `refresh` mémorisée, comme pour les autres hooks. */\nexport function useProfile(): UseProfileResult {\n  const profile = useUserStore((state) => state.profile);\n  const loading = useUserStore((state) => state.loading);\n  const error = useUserStore((state) => state.error);\n  const load = useUserStore((state) => state.load);\n  const saveProfile = useUserStore((state) => state.saveProfile);\n\n  const refresh = useCallback(async () => {\n    await load();\n  }, [load]);\n\n  return { profile, loading, error, saveProfile, refresh };\n}\n\nexport interface UseSettingsResult {\n  settings: UserSettings | null;\n  loading: boolean;\n  saving: boolean;\n  error: string | null;\n  updateSettings: (\n    patch: Partial<Omit<UserSettings, 'id' | 'createdAt' | 'updatedAt'>>,\n  ) => Promise<void>;\n  refresh: () => Promise<void>;\n}\n\n/** Accès aux préférences. */\nexport function useSettings(): UseSettingsResult {\n  const settings = useSettingsStore((state) => state.settings);\n  const loading = useSettingsStore((state) => state.loading);\n  const saving = useSettingsStore((state) => state.saving);\n  const error = useSettingsStore((state) => state.error);\n  const load = useSettingsStore((state) => state.load);\n  const updateSettings = useSettingsStore((state) => state.updateSettings);\n\n  const refresh = useCallback(async () => {\n    await load();\n  }, [load]);\n\n  return { settings, loading, saving, error, updateSettings, refresh };\n}\n\nexport interface UseFavoritesResult {\n  favoriteKeys: string[];\n  loading: boolean;\n  error: string | null;\n  isFavorite: (refType: 'quote' | 'affirmation' | 'music', refId: string) => boolean;\n  toggleFavorite: (refType: 'quote' | 'affirmation' | 'music', refId: string) => Promise<void>;\n  refresh: () => Promise<void>;\n}\n\n/** Accès aux favoris. */\nexport function useFavorites(): UseFavoritesResult {\n  const favoriteKeys = useFavoritesStore((state) => state.keys);\n  const loading = useFavoritesStore((state) => state.loading);\n  const error = useFavoritesStore((state) => state.error);\n  const load = useFavoritesStore((state) => state.load);\n  const isFavorite = useFavoritesStore((state) => state.isFavorite);\n  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);\n\n  const refresh = useCallback(async () => {\n    await load();\n  }, [load]);\n\n  return { favoriteKeys, loading, error, isFavorite, toggleFavorite, refresh };\n}\n
+/**
+ * Hooks transverses : profil, réglages, favoris.
+ */
+import { useCallback } from 'react';
+import { useFavoritesStore } from '@/stores/favorites.store';
+import { useSettingsStore } from '@/stores/settings.store';
+import { useUserStore } from '@/stores/user.store';
+import type { UserProfile, UserSettings } from '@/types';
+
+export interface UseProfileResult {
+  profile: UserProfile | null;
+  loading: boolean;
+  error: string | null;
+  saveProfile: (
+    patch: Partial<Pick<UserProfile, 'firstName' | 'intention' | 'birthDate'>>,
+  ) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/** Accès au profil local. `refresh` mémorisée, comme pour les autres hooks. */
+export function useProfile(): UseProfileResult {
+  const profile = useUserStore((state) => state.profile);
+  const loading = useUserStore((state) => state.loading);
+  const error = useUserStore((state) => state.error);
+  const load = useUserStore((state) => state.load);
+  const saveProfile = useUserStore((state) => state.saveProfile);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
+
+  return { profile, loading, error, saveProfile, refresh };
+}
+
+export interface UseSettingsResult {
+  settings: UserSettings | null;
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
+  updateSettings: (
+    patch: Partial<Omit<UserSettings, 'id' | 'createdAt' | 'updatedAt'>>,
+  ) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/** Accès aux préférences. */
+export function useSettings(): UseSettingsResult {
+  const settings = useSettingsStore((state) => state.settings);
+  const loading = useSettingsStore((state) => state.loading);
+  const saving = useSettingsStore((state) => state.saving);
+  const error = useSettingsStore((state) => state.error);
+  const load = useSettingsStore((state) => state.load);
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
+
+  return { settings, loading, saving, error, updateSettings, refresh };
+}
+
+export interface UseFavoritesResult {
+  favoriteKeys: string[];
+  loading: boolean;
+  error: string | null;
+  isFavorite: (refType: 'quote' | 'affirmation' | 'music', refId: string) => boolean;
+  toggleFavorite: (refType: 'quote' | 'affirmation' | 'music', refId: string) => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/** Accès aux favoris. */
+export function useFavorites(): UseFavoritesResult {
+  const favoriteKeys = useFavoritesStore((state) => state.keys);
+  const loading = useFavoritesStore((state) => state.loading);
+  const error = useFavoritesStore((state) => state.error);
+  const load = useFavoritesStore((state) => state.load);
+  const isFavorite = useFavoritesStore((state) => state.isFavorite);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
+
+  return { favoriteKeys, loading, error, isFavorite, toggleFavorite, refresh };
+}
