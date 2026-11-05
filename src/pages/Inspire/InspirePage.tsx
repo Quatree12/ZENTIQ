@@ -13,19 +13,16 @@ import './Inspire.css';
  *
  * LA BARRE D'ONGLETS EST COLLANTE, ET C'EST UN CORRECTIF
  * ------------------------------------------------------
- * Avec le regroupement par categorie, les citations occupent beaucoup plus de
- * hauteur. La barre d'onglets se retrouvait donc poussee hors de l'ecran des
+ * Avec le regroupement par catégorie, les citations occupent beaucoup plus de
+ * hauteur. La barre d'onglets se retrouvait donc poussée hors de l'écran dès
  * qu'on descendait dans les groupes, et FAVORIS devenait introuvable : la
- * bibliotheque personnelle existait, mais on ne pouvait plus y acceder.
+ * bibliothèque personnelle existait, mais on ne pouvait plus y accéder.
  *
- * Elle reste desormais accrochee sous l'en-tete pendant le defilement. Le
- * `top` tient compte de la hauteur du header de l'application.
+ * Elle reste désormais accrochée sous l'en-tête pendant le défilement.
  *
- * FAVORIS VIENT EN PREMIER : c'est la bibliotheque personnelle de la personne,
- * donc l'onglet qu'elle revient consulter. Les trois autres sont des sources a
+ * FAVORIS VIENT EN PREMIER : c'est la bibliothèque personnelle de la personne,
+ * donc l'onglet qu'elle revient consulter. Les trois autres sont des sources à
  * parcourir ; celui-ci est ce qu'elle a choisi d'y garder.
- *
- * L'icone de coeur rend l'onglet identifiable sans lire le libelle.
  */
 type InspireTab = 'favorites' | 'quotes' | 'affirmations' | 'music';
 
@@ -43,14 +40,14 @@ export default function InspirePage() {
     <div className="section-stack">
       <PageHeader
         eyebrow="Inspire"
-        title="De quoi nourrir ton elan"
+        title="De quoi nourrir ton élan"
         description={
           CONTENT_COUNTS.quotes +
           ' citations, ' +
           CONTENT_COUNTS.affirmations +
           ' affirmations et ' +
           CONTENT_COUNTS.music +
-          ' references musicales. Tout est consultable hors ligne, et rien ne t\'est impose.'
+          ' références musicales. Tout est consultable hors ligne, et rien ne t\'est imposé.'
         }
       />
 
