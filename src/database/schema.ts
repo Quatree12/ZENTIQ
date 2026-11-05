@@ -1,39 +1,34 @@
-import type {
-  Affirmation,
-  Challenge,
-  Favorite,
-  Goal,
-  Habit,
-  HabitCompletion,
-  JournalEntry,
-  MoodEntry,
-  MusicInspiration,
-  Quote,
-  UserProfile,
-  UserSettings,
-} from '@/types';
-import type { Table } from 'dexie';
-
 /**
- * Schéma de la base locale ZENTIQ.
+ * Schema de la base locale ZENTIQ.
  *
- * `TABLES` décrit, table par table, la clé primaire et les index Dexie.
- * La chaîne d'index suit la syntaxe Dexie :
- *   'id'             clé primaire
+ * `TABLES` decrit, table par table, la cle primaire et les index Dexie.
+ * La chaine d'index suit la syntaxe Dexie :
+ *   'id'             cle primaire
  *   'date'           index simple
- *   '[habitId+date]' index composé (unicité logique d'une coche par jour)
+ *   '[habitId+date]' index compose (unicite logique d'une coche par jour)
  *
- * RÈGLE DE MAINTENANCE
+ * REGLE DE MAINTENANCE
  * --------------------
- * Une fois une version publiée, on n'en modifie JAMAIS la définition.
- * Toute évolution incrémente `CURRENT_SCHEMA_VERSION` et ajoute une migration
+ * Une fois une version publiee, on n'en modifie JAMAIS la definition.
+ * Toute evolution incremente `CURRENT_SCHEMA_VERSION` et ajoute une migration
  * dans `migrations.ts`.
+ *
+ * La liste des tables EXPORTABLES ne vit plus ici : elle se deduit de `TABLES`
+ * dans `exportable-tables.ts`. Ajouter une table au schema la rend donc
+ * exportable automatiquement, sans risque d'oubli silencieux.
  */
 
 export const DATABASE_NAME = 'zentiq';
 
-/** Version logique du schéma applicatif, indépendante de la version Dexie. */
-export const CURRENT_SCHEMA_VERSION = 1;
+/**
+ * Version logique du schema applicatif, independante de la version Dexie.
+ *
+ * v1 -> v2 : ajout de `lastReviewedAt` sur les habitudes. Le champ servira a
+ * proposer un bilan periodique sans jamais l'imposer. La migration pose `null`
+ * sur les enregistrements existants : aucune donnee n'est perdue, et aucun
+ * comportement ne change tant que l'interface ne lit pas ce champ.
+ */
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export interface ZentiqSchema {
   profile: Table<UserProfile, string>;
@@ -52,8 +47,8 @@ export interface ZentiqSchema {
 }
 
 /**
- * Table technique : journal du schéma et métadonnées locales.
- * Jamais affichée telle quelle, mais consultable depuis l'espace ME
+ * Table technique : journal du schema et metadonnees locales.
+ * Jamais affichee telle quelle, mais consultable depuis l'espace ME
  * (diagnostic et export).
  */
 export interface MetaRecord {
@@ -63,15 +58,15 @@ export interface MetaRecord {
 }
 
 /**
- * Définition des tables pour la version courante.
- * Regroupée par domaine pour rester lisible.
+ * Definition des tables pour la version COURANTE (v2).
+ * Regroupee par domaine pour rester lisible.
  */
 export const TABLES = {
   profile: 'id',
   settings: 'id',
   moods: 'id, date, mood, createdAt',
   goals: 'id, status, targetDate, isPriority, createdAt',
-  habits: 'id, archived, goalId, createdAt',
+  habits: 'id, archived, goalId, createdAt, lastReviewedAt',
   habitCompletions: 'id, habitId, date, [habitId+date]',
   challenges: 'id, status, startDate, habitId',
   journal: 'id, date, pinned, createdAt',
@@ -82,46 +77,45 @@ export const TABLES = {
   meta: 'key',
 } as const;
 
-/** Noms de tables, typés — évite les chaînes libres un peu partout. */
+/** Noms de tables, types — evite les chaines libres un peu partout. */
 export type TableName = keyof typeof TABLES;
-
-/** Tables exportables (`meta` est technique et régénéré, donc exclu). */
-export const EXPORTABLE_TABLES = [
-  'profile',
-  'settings',
-  'moods',
-  'goals',
-  'habits',
-  'habitCompletions',
-  'challenges',
-  'journal',
-  'quotes',
-  'affirmations',
-  'music',
-  'favorites',
-] as const satisfies readonly TableName[];
-
-export type ExportableTableName = (typeof EXPORTABLE_TABLES)[number];
 
 /** Forme d'un document de sauvegarde ZENTIQ. */
 export interface BackupDocument {
   kind: 'zentiq-backup';
   /** Version applicative qui a produit le fichier. */
   appVersion: string;
-  /** Version de schéma des données contenues. */
+  /** Version de schema des donnees contenues. */
   schemaVersion: number;
   /** Horodatage ISO de l'export. */
   exportedAt: string;
   /** Nombre d'enregistrements par table, pour affichage avant import. */
   counts: Record<string, number>;
-  /** Données brutes, table par table. */
+  /** Donnees brutes, table par table. */
   data: Record<string, unknown[]>;
 }
 
-/** Clés de métadonnées utilisées par la couche base. */
+/** Cles de metadonnees utilisees par la couche base. */
 export const META_KEYS = {
   schemaLastOpened: 'schema:lastOpened',
   schemaHistory: 'schema:history',
   firstRunAt: 'app:firstRunAt',
   lastBackupAt: 'backup:lastAt',
 } as const;
+
+/* Imports de types — en fin de fichier pour ne pas melanger avec la logique. */
+import type {
+  Affirmation,
+  Challenge,
+  Favorite,
+  Goal,
+  Habit,
+  HabitCompletion,
+  JournalEntry,
+  MoodEntry,
+  MusicInspiration,
+  Quote,
+  UserProfile,
+  UserSettings,
+} from '@/types';
+import type { Table } from 'dexie';
