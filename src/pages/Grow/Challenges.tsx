@@ -12,24 +12,19 @@ import { CompletedChallengeCard } from './CompletedChallengeCard';
 import { ChallengeForm } from './ChallengeForm';
 import { CHALLENGE_STATUS_LABELS } from '@/types';
 import { formatDateKey } from '@/utils/dates';
+import './Challenges.css';
 
 /**
  * CHALLENGES — section de l'espace GROW.
  *
- * POURQUOI LE CSS A CHANGE DE NOM
- * -------------------------------
- * Les styles de cette section vivaient dans `Challenges.css`. Apres l'ajout
- * des jalons, ce fichier a ete reecrit — mais le service worker continuait de
- * servir l'ANCIENNE version depuis son cache : les puces de duree restaient
- * nues, les fieldsets gardaient leur bordure native, et les jalons ne
- * s'affichaient pas.
+ * UN SEUL IMPORT DE STYLE, au nom d'origine. Toute tentative d'ajouter un
+ * second fichier CSS a fait tomber le chargement du graphe de modules
+ * (« Importing a module script failed ») : le service worker ne sert que les
+ * fichiers figurant dans son manifeste, et un nom qu'il ne connaît pas échoue.
  *
- * Un fichier renomme ne peut pas etre servi depuis un cache qui ne l'a jamais
- * vu. C'est le seul moyen fiable de forcer l'invalidation sans attendre que
- * l'utilisateur purge son cache a la main.
+ * RÈGLE : les styles de cette section vivent dans `Challenges.css`. On n'y
+ * ajoute pas de fichier, on ne le renomme pas.
  */
-import './challenge-styles.css';
-
 export function Challenges() {
   const {
     challenges,
