@@ -1,32 +1,30 @@
 /* ==========================================================================
    ZENTIQ — TYPOGRAPHIE
-   Nunito        : interface, donnees, navigation
-   Fuzzy Bubbles : citations (TEST 4.1.3)
-   Montserrat    : titres editoriaux
+   Nunito     : interface, donnees, navigation
+   Montserrat : citations et titres editoriaux
 
-   TEST FUZZY BUBBLES
-   ------------------
-   Seules les CITATIONS changent de police. Le corps de texte, les titres
-   d'interface, les chiffres et la navigation restent en Nunito.
+   PHASE 4.1.4 — RETOUR A MONTSERRAT, HIERARCHIE REVUE
+   ---------------------------------------------------
+   Fuzzy Bubbles est abandonnee : le rendu etait identique a Montserrat aux
+   yeux de l'utilisateur, et le test a coincide avec une erreur de chargement
+   de module. On ne garde pas une police qui n'apporte rien.
 
-   L'ITALIQUE EST RETIRE sur les citations : Fuzzy Bubbles n'en propose pas,
-   et un italique simule par le navigateur donne un rendu penche irregulier
-   qui abime le trait.
-
-   POUR REVENIR A MONTSERRAT : dans tokens.css,
-     --font-citation: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
-   et remettre `font-style: italic;` ci-dessous et dans Inspire.css.
+   L'utilisateur signale aussi que le corps de texte est trop grand par
+   rapport aux titres. Chaque role a donc sa taille ajustee dans tokens.css :
+     corps de texte  16 px (au lieu de 17)
+     titres sections 26 px (au lieu de 24)
+     citations       20-24 px
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   CITATIONS — Fuzzy Bubbles
+   CITATIONS ET TITRES EDITORIAUX — Montserrat
    -------------------------------------------------------------------------- */
 
 .editorial-quote {
   font-family: var(--font-citation);
   font-size: var(--text-editorial);
   font-weight: var(--weight-regular);
-  font-style: normal;
+  font-style: italic;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
@@ -34,7 +32,6 @@
   overflow-wrap: break-word;
 }
 
-/* Titre d'ecran editorial — reste en Montserrat, il porte la hierarchie */
 .editorial-title {
   font-family: var(--font-editorial);
   font-size: var(--text-3xl);
@@ -58,6 +55,8 @@
   color: var(--color-text-primary);
 }
 
+/* Titre de section — 26 px, nettement au-dessus du corps de texte.
+   C'est ce role qui manquait de presence. */
 .heading-lg {
   font-family: var(--font-ui);
   font-size: var(--text-2xl);
@@ -94,7 +93,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   CORPS DE TEXTE — Nunito 500, jamais plus fin
+   CORPS DE TEXTE — Nunito 500
    -------------------------------------------------------------------------- */
 .body-lg {
   font-family: var(--font-ui);
@@ -159,7 +158,7 @@
    -------------------------------------------------------------------------- */
 .prose {
   font-family: var(--font-ui);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   font-weight: var(--weight-medium);
   line-height: var(--leading-relaxed);
   color: var(--color-text-secondary);
@@ -181,8 +180,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   CHARGEMENT DES POLICES
+   CHARGEMENT DES POLICES — Fuzzy Bubbles retiree
    -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;1,400&display=swap');

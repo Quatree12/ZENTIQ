@@ -87,13 +87,13 @@
   gap: var(--space-3);
 }
 
-/* Citation — Fuzzy Bubbles, sans italique (TEST 4.1.3). */
+/* Citation — Montserrat italique. */
 .inspire-item__text {
   margin: 0;
   font-family: var(--font-citation);
   font-size: var(--text-editorial);
   font-weight: var(--weight-regular);
-  font-style: normal;
+  font-style: italic;
   line-height: var(--leading-snug);
   letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
@@ -107,8 +107,7 @@
   color: var(--color-accent);
 }
 
-/* Affirmation — reste en Montserrat : une manuscrite sur un texte lu en serie
-   serait eprouvante, et les affirmations se lisent en liste. */
+/* Affirmation — Montserrat, sans italique. */
 .inspire-item__affirmation {
   margin: 0;
   font-family: var(--font-editorial);
