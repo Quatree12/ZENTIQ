@@ -1,5 +1,5 @@
 import { db } from '@/database/db';
-import type { Challenge, Habit, HabitCompletion, MoodEntry } from '@/types';
+import type { Challenge, Goal, Habit, HabitCompletion, MoodEntry } from '@/types';
 import { lastNDays, todayKey } from '@/utils/dates';
 import {
   alignByDate,
@@ -15,9 +15,9 @@ import {
 /**
  * Analytique de tendances.
  *
- * Ce service LIT la base et calcule. Il n'ecrit rien, ne met rien en cache, et
- * ne fabrique aucune valeur : chaque chiffre expose ici vient d'un
- * enregistrement reel, et chaque champ qui ne peut pas etre calcule est `null`
+ * Ce service LIT la base et calcule. Il n'écrit rien, ne met rien en cache, et
+ * ne fabrique aucune valeur : chaque chiffre exposé ici vient d'un
+ * enregistrement réel, et chaque champ qui ne peut pas être calculé est `null`
  * avec une raison lisible par l'interface.
  */
 
@@ -25,13 +25,13 @@ export interface MoodAnalytics {
   average: number | null;
   entries: number;
   trend: TrendResult | null;
-  /** Methode de la tendance, pour l'assumer a l'ecran. */
+  /** Méthode de la tendance, pour l'assumer à l'écran. */
   trendMethod: string;
-  /** Moyenne des 7 derniers jours, `null` si aucune donnee. */
+  /** Moyenne des 7 derniers jours, `null` si aucune donnée. */
   last7Average: number | null;
-  /** Comparaison avec les 7 jours precedents, `null` si rien a comparer. */
+  /** Comparaison avec les 7 jours précédents, `null` si rien à comparer. */
   weekOverWeek: { delta: number; percent: number | null } | null;
-  /** Serie de jours consecutifs documentes. */
+  /** Série de jours consécutifs documentés. */
   presenceStreak: number;
 }
 
@@ -39,11 +39,11 @@ export interface HabitAnalytics {
   habitId: string;
   name: string;
   accent: Habit['accent'];
-  /** Jours coches dans la fenetre. */
+  /** Jours cochés dans la fenêtre. */
   completed: number;
-  /** Jours ou l'habitude etait attendue. */
+  /** Jours où l'habitude était attendue. */
   expected: number;
-  /** Regularite, `null` si aucun jour attendu dans la fenetre. */
+  /** Régularité, `null` si aucun jour attendu dans la fenêtre. */
   regularity: number | null;
   trend: TrendResult | null;
 }
@@ -53,8 +53,41 @@ export interface CorrelationInsight {
   habitName: string;
   coefficient: number;
   sampleSize: number;
-  /** Sens de la relation, formule sans causalite. */
+  /** Sens de la relation, formulé sans causalité. */
   reading: string;
+}
+
+/**
+ * Objectif suivi dans l'analyse de corrélation.
+ *
+ * On ne croise PAS tous les objectifs : un objectif au repos, archivé ou déjà
+ * atteint n'a pas de progression vivante à mettre en regard de l'humeur. Seuls
+ * les objectifs actifs ou en pause sont retenus, parce que ce sont les seuls
+ * dont la progression bouge encore.
+ */
+export interface GoalPaceInsight {
+  goalId: string;
+  title: string;
+  /** Progression actuelle, 0..100. */
+  progress: number;
+  /** Jours écoulés depuis la création, dans la fenêtre analysée. */
+  daysTracked: number;
+  /**
+   * Humeur moyenne des jours où la progression a été mise à jour.
+   *
+   * C'est le cœur de la corrélation : on compare l'humeur des jours
+   * d'AVANCEMENT à l'humeur générale de la même période. `null` si aucun
+   * mouvement n'a été enregistré.
+   */
+  moodOnUpdateDays: number | null;
+  /** Humeur moyenne de toute la période. `null` si aucune humeur notée. */
+  moodOverall: number | null;
+  /** Écart entre les deux, `null` si l'un des deux manque. */
+  delta: number | null;
+  /** Nombre de jours communs exploités. */
+  sampleSize: number;
+  /** Phrase affichée, quand l'écart est assez net pour être dit. */
+  reading: string | null;
 }
 
 export interface ChallengeAnalytics {
@@ -65,7 +98,7 @@ export interface ChallengeAnalytics {
   averageProgress: number | null;
   /** Nombre de jalons franchis, sur tous les challenges. */
   milestonesReached: number;
-  /** Nombre total de reports accordes — affiche comme une souplesse. */
+  /** Nombre total de reports accordés — affiché comme une souplesse. */
   postponedDays: number;
 }
 
@@ -74,17 +107,28 @@ export interface TrendsReport {
   mood: MoodAnalytics;
   habits: HabitAnalytics[];
   correlations: CorrelationInsight[];
+  /** Le croisement objectifs ↔ humeur. */
+  goalPace: GoalPaceInsight[];
   challenges: ChallengeAnalytics;
-  /** Renseigne quand il n'y a pas assez de donnees pour une analyse honnete. */
+  /** Renseigné quand il n'y a pas assez de données pour une analyse honnête. */
   insufficientData: string | null;
 }
 
 /**
- * Analyse complete sur une fenetre de jours.
+ * Écart minimal d'humeur pour parler d'un lien avec un objectif.
  *
- * Le seuil de fiabilite est porte par les fonctions de calcul : quand une
+ * En dessous d'un demi-point sur une échelle de 1 à 5, la différence n'est pas
+ * distinguable d'un tressaillement ordinaire : l'écran ne doit pas la présenter
+ * comme un résultat.
+ */
+const GOAL_MOOD_DELTA_THRESHOLD = 0.5;
+
+/**
+ * Analyse complète sur une fenêtre de jours.
+ *
+ * Le seuil de fiabilité est porté par les fonctions de calcul : quand une
  * tendance n'a pas assez de points, elle revient avec `reliable: false` et
- * l'interface sait qu'elle ne doit pas la presenter comme une mesure.
+ * l'interface sait qu'elle ne doit pas la présenter comme une mesure.
  */
 export async function buildTrendsReport(windowDays = 30): Promise<TrendsReport> {
   const today = todayKey();
@@ -92,16 +136,18 @@ export async function buildTrendsReport(windowDays = 30): Promise<TrendsReport> 
   const windowSet = new Set(window);
   const start = window[0] ?? today;
 
-  const [moodRows, habitRows, completionRows, challengeRows] = await Promise.all([
+  const [moodRows, habitRows, completionRows, challengeRows, goalRows] = await Promise.all([
     db.moods.toArray(),
     db.habits.toArray(),
     db.habitCompletions.toArray(),
     db.challenges.toArray(),
+    db.goals.toArray(),
   ]);
 
   const mood = buildMoodAnalytics(moodRows, window, windowSet, today);
   const habits = buildHabitAnalytics(habitRows, completionRows, window);
   const correlations = buildCorrelations(habitRows, completionRows, moodRows, window);
+  const goalPace = buildGoalPace(goalRows, moodRows, window);
   const challenges = buildChallengeAnalytics(challengeRows, today);
 
   return {
@@ -109,6 +155,7 @@ export async function buildTrendsReport(windowDays = 30): Promise<TrendsReport> 
     mood,
     habits,
     correlations,
+    goalPace,
     challenges,
     insufficientData: describeShortfall(mood, habits, start),
   };
@@ -124,8 +171,8 @@ function buildMoodAnalytics(
   windowSet: Set<string>,
   today: string,
 ): MoodAnalytics {
-  // Une seule entree par jour : si plusieurs existent, on garde la plus
-  // recente, conformement a l'index logique `date`.
+  // Une seule entrée par jour : si plusieurs existent, on garde la plus
+  // récente, conformément à l'index logique `date`.
   const byDate = new Map<string, MoodEntry>();
   for (const row of rows) {
     if (!windowSet.has(row.date)) continue;
@@ -170,7 +217,7 @@ function buildMoodAnalytics(
     entries: values.length,
     trend: computeTrend(values, 0.3),
     trendMethod:
-      'Comparaison de la premiere et de la seconde moitie de la periode. Un ecart inferieur a 0,3 point est declare stable.',
+      'Comparaison de la première et de la seconde moitié de la période. Un écart inférieur à 0,3 point est déclaré stable.',
     last7Average,
     weekOverWeek,
     presenceStreak,
@@ -221,16 +268,16 @@ function buildHabitAnalytics(
 }
 
 /* --------------------------------------------------------------------------
-   Correlations
+   Corrélations habitudes ↔ humeur
    -------------------------------------------------------------------------- */
 
 /**
  * Cherche un lien entre l'humeur et chaque habitude.
  *
  * Garde-fou de lecture : on ne parle JAMAIS de cause. Le coefficient dit que
- * deux mesures bougent ensemble dans cet echantillon, rien de plus. La
- * formulation le dit explicitement, pour qu'aucune capture d'ecran ne laisse
- * croire a une causalite.
+ * deux mesures bougent ensemble dans cet échantillon, rien de plus. La
+ * formulation le dit explicitement, pour qu'aucune capture d'écran ne laisse
+ * croire à une causalité.
  */
 function buildCorrelations(
   habits: Habit[],
@@ -264,12 +311,98 @@ function buildCorrelations(
       coefficient: result.coefficient,
       sampleSize: result.sampleSize,
       reading: positive
-        ? `Les jours ou tu coches « ${habit.name} », ton humeur est plutot plus haute. ${result.sampleSize} jours observes.`
-        : `Les jours ou tu coches « ${habit.name} », ton humeur est plutot plus basse. ${result.sampleSize} jours observes.`,
+        ? `Les jours où tu coches « ${habit.name} », ton humeur est plutôt plus haute. ${result.sampleSize} jours observés.`
+        : `Les jours où tu coches « ${habit.name} », ton humeur est plutôt plus basse. ${result.sampleSize} jours observés.`,
     });
   }
 
   return insights.sort((a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient));
+}
+
+/* --------------------------------------------------------------------------
+   Objectifs ↔ humeur
+   -------------------------------------------------------------------------- */
+
+/**
+ * Croise la mise à jour d'un objectif avec l'humeur du même jour.
+ *
+ * COMMENT ON MESURE, ET POURQUOI AINSI
+ * ------------------------------------
+ * On ne peut pas corréler « la progression » à l'humeur : la progression est un
+ * cumul qui ne redescend pas, l'humeur un état journalier. Les mettre en regard
+ * produirait un coefficient qui monte mécaniquement avec le temps.
+ *
+ * On compare donc l'HUMEUR DES JOURS DE MOUVEMENT — les jours où `updatedAt` de
+ * l'objectif tombe dans la fenêtre, c'est-à-dire les jours où quelque chose a
+ * bougé — à l'HUMEUR GÉNÉRALE de la même période.
+ *
+ * Ce que ça dit : « les jours où tu as fait avancer cet objectif, ton humeur
+ * était plutôt plus haute ». Ce que ça ne dit pas : que l'objectif en est la
+ * cause. La formulation à l'écran l'assume explicitement.
+ */
+function buildGoalPace(goals: Goal[], moods: MoodEntry[], window: string[]): GoalPaceInsight[] {
+  const windowSet = new Set(window);
+
+  // Humeur par jour, la plus récente gagnant.
+  const moodByDate = new Map<string, number>();
+  for (const row of moods) {
+    if (!windowSet.has(row.date)) continue;
+    moodByDate.set(row.date, row.mood);
+  }
+
+  if (moodByDate.size === 0) return [];
+
+  const overallValues = [...moodByDate.values()];
+  const moodOverall =
+    Math.round((overallValues.reduce((sum, v) => sum + v, 0) / overallValues.length) * 10) / 10;
+
+  const insights: GoalPaceInsight[] = [];
+
+  for (const goal of goals) {
+    // Un objectif archivé ou atteint n'a plus de progression vivante : le croiser
+    // avec l'humeur ne dirait rien d'utile.
+    if (goal.status === 'archived' || goal.status === 'completed') continue;
+
+    const updateDate = goal.updatedAt.slice(0, 10);
+
+    // Le mouvement du jour ne compte que s'il tombe DANS la fenêtre analysée :
+    // hors fenêtre, la journée correspondante n'a pas d'humeur à comparer.
+    if (!windowSet.has(updateDate)) continue;
+
+    const trackedDates = window.filter((date) => date >= goal.createdAt.slice(0, 10));
+
+    const updateMoods = trackedDates
+      .filter((date) => date === updateDate)
+      .map((date) => moodByDate.get(date))
+      .filter((value): value is number => value !== undefined);
+
+    if (updateMoods.length === 0) continue;
+
+    const moodOnUpdateDays =
+      Math.round((updateMoods.reduce((sum, v) => sum + v, 0) / updateMoods.length) * 10) / 10;
+    const delta = Math.round((moodOnUpdateDays - moodOverall) * 10) / 10;
+
+    const readable = Math.abs(delta) >= GOAL_MOOD_DELTA_THRESHOLD;
+    const positive = delta > 0;
+
+    insights.push({
+      goalId: goal.id,
+      title: goal.title,
+      progress: goal.progress,
+      daysTracked: trackedDates.length,
+      moodOnUpdateDays,
+      moodOverall,
+      delta,
+      sampleSize: updateMoods.length,
+      reading: readable
+        ? positive
+          ? `Les jours où « ${goal.title} » a avancé, ton humeur était plutôt plus haute (${moodOnUpdateDays} contre ${moodOverall} en moyenne).`
+          : `Les jours où « ${goal.title} » a avancé, ton humeur était plutôt plus basse (${moodOnUpdateDays} contre ${moodOverall} en moyenne).`
+        : null,
+    });
+  }
+
+  return insights.sort((a, b) => Math.abs(b.delta ?? 0) - Math.abs(a.delta ?? 0));
 }
 
 /* --------------------------------------------------------------------------
@@ -303,14 +436,14 @@ function buildChallengeAnalytics(rows: Challenge[], today: string): ChallengeAna
   };
 }
 
-/** Avancement d'un challenge, 0..100. Zero si la duree est invalide. */
+/** Avancement d'un challenge, 0..100. Zéro si la durée est invalide. */
 function progressOf(challenge: Challenge): number {
   if (challenge.durationDays <= 0) return 0;
   const done = challenge.days.filter((day) => day.completedAt !== undefined).length;
   return (done / challenge.durationDays) * 100;
 }
 
-/** Un challenge est termine quand toutes ses etapes sont faites. */
+/** Un challenge est terminé quand toutes ses étapes sont faites. */
 function isDone(challenge: Challenge): boolean {
   return (
     challenge.status === 'completed' ||
@@ -320,15 +453,15 @@ function isDone(challenge: Challenge): boolean {
 }
 
 /* --------------------------------------------------------------------------
-   Donnees insuffisantes
+   Données insuffisantes
    -------------------------------------------------------------------------- */
 
 /**
- * Message affiche quand l'analyse ne peut pas conclure.
+ * Message affiché quand l'analyse ne peut pas conclure.
  *
- * On prefere dire pourquoi plutot que d'afficher une courbe plate : une courbe
- * sur deux points ne decrit rien, et laisser croire le contraire serait le seul
- * vrai mensonge de cet ecran.
+ * On préfère dire pourquoi plutôt que d'afficher une courbe plate : une courbe
+ * sur deux points ne décrit rien, et laisser croire le contraire serait le seul
+ * vrai mensonge de cet écran.
  */
 function describeShortfall(
   mood: MoodAnalytics,
@@ -336,15 +469,15 @@ function describeShortfall(
   start: string,
 ): string | null {
   if (mood.entries === 0 && habits.length === 0) {
-    return `Rien a analyser pour l'instant : la periode commence le ${start}. Note ton humeur ou coche une habitude, et la tendance apparaitra ici.`;
+    return `Rien à analyser pour l'instant : la période commence le ${start}. Note ton humeur ou coche une habitude, et la tendance apparaîtra ici.`;
   }
   if (mood.entries > 0 && mood.entries < 4) {
-    return `Avec ${mood.entries} jour${mood.entries > 1 ? 's' : ''} note${mood.entries > 1 ? 's' : ''}, il est trop tot pour parler d'une tendance d'humeur. A partir de 4 jours, la comparaison devient lisible.`;
+    return `Avec ${mood.entries} jour${mood.entries > 1 ? 's' : ''} noté${mood.entries > 1 ? 's' : ''}, il est trop tôt pour parler d'une tendance d'humeur. À partir de 4 jours, la comparaison devient lisible.`;
   }
   return null;
 }
 
-/** Numero du jour de semaine pour une cle `YYYY-MM-DD` (0 = dimanche). */
+/** Numéro du jour de semaine pour une clé `YYYY-MM-DD` (0 = dimanche). */
 function weekdayOfDate(key: string): number {
   const [year, month, day] = key.split('-').map(Number);
   return new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1).getDay();
