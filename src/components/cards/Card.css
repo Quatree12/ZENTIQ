@@ -16,7 +16,6 @@
   padding: var(--space-5);
 }
 
-/* Carte interactive : affordance claire, sans surcharge */
 .card--interactive {
   text-align: left;
   cursor: pointer;
@@ -46,9 +45,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   Carte editoriale.
-   PHASE 4.1 : padding vertical augmente. La citation est plus grande, elle a
-   besoin d'air au-dessus et en dessous pour rester respirante.
+   Carte editoriale
    -------------------------------------------------------------------------- */
 .editorial-card {
   display: flex;
@@ -77,13 +74,8 @@
 }
 
 /* Auteur de citation — suit l'ACCENT ACTIF.
-   Auparavant fige sur --color-inspiration (lavande), ce qui laissait « ZENTIQ »
-   en lila sous une citation alors que le badge et le reste de la page etaient
-   passes au teal en accent Digital Teal.
-
-   ATTENTION : cette regle doit vivre ICI, dans Card.css, et non dans un
-   EditorialCard.css separe. C'est ce fichier que `Card.tsx` importe — une regle
-   placee ailleurs ne serait jamais chargee. */
+   Cette regle doit vivre ICI, dans Card.css : c'est ce fichier que
+   `Card.tsx` importe. Placee ailleurs, elle ne serait jamais chargee. */
 .editorial-card__author {
   font-family: var(--font-data);
   font-size: var(--text-sm);

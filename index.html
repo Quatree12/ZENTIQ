@@ -8,22 +8,14 @@
     <meta name="description" content="ZENTIQ t'accompagne pour retrouver ta motivation et avancer à ton rythme." />
 
     <!--
-      POLICES — phase 4.1
-      Nunito est la police principale de l'interface ; Cormorant Garamond reste
-      reservee aux citations et aux titres editoriaux.
+      POLICES — phase 4.1.1
+      Nunito     : interface
+      Montserrat : citations et titres editoriaux
 
-      `preconnect` ouvre la connexion avant que le CSS ne soit lu : sans lui, la
-      premiere requete de police attend la resolution DNS et le texte bascule
-      visiblement d'une police a l'autre.
+      Cormorant Garamond est retiree de l'application.
 
-      `display=swap` evite tout texte invisible pendant le chargement : le texte
-      s'affiche immediatement dans la pile systeme, puis Nunito prend le relais.
-      Aucun ecran blanc, meme sur une connexion lente.
-
-      HORS LIGNE : ces deux feuilles sont mises en cache par le service worker
-      (cf. `runtimeCaching` dans vite.config.ts), et les fichiers de police eux-
-      memes sont conserves en cache-first. Une fois l'application ouverte, la
-      typographie reste disponible sans reseau.
+      `preconnect` ouvre la connexion avant que le CSS ne soit lu.
+      `display=swap` evite tout texte invisible pendant le chargement.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,7 +25,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
     />
 
     <!-- PWA -->
@@ -44,10 +36,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ZENTIQ" />
 
-    <!--
-      Splash / first paint : Deep Space, pour qu'aucun ecran blanc n'apparaisse
-      avant le montage de React.
-    -->
     <style>
       html,
       body {

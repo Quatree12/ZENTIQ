@@ -15,7 +15,6 @@
   display: none;
 }
 
-/* Compteur affiche dans un onglet. */
 .tab-count {
   margin-left: var(--space-2);
   font-family: var(--font-data);
@@ -28,7 +27,6 @@
   color: var(--color-accent);
 }
 
-/* Puce de filtre — partagee par les onglets et les categories */
 .filter-chip {
   display: inline-flex;
   align-items: center;
@@ -59,9 +57,6 @@
   color: var(--color-text-primary);
 }
 
-/* --------------------------------------------------------------------------
-   Sections de contenu
-   -------------------------------------------------------------------------- */
 .content-library {
   display: flex;
   flex-direction: column;
@@ -92,19 +87,21 @@
   gap: var(--space-3);
 }
 
+/* Citation — Montserrat 600, italique.
+   L'interlettrage reste a 0 : Montserrat est large, la resserrer la rendrait
+   pateuse. Le 600 lui donne la presence qui manquait a Cormorant. */
 .inspire-item__text {
   margin: 0;
   font-family: var(--font-editorial);
-  font-size: var(--text-lg);
+  font-size: var(--text-editorial);
+  font-weight: var(--weight-semibold);
   font-style: italic;
   line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
 }
 
-/* Auteur de citation — suit desormais l'ACCENT ACTIF.
-   Auparavant fige sur --color-inspiration (lavande) : en accent teal, « ZENTIQ »
-   restait lavande sous une citation dont le badge etait lui aussi lavande, en
-   contradiction avec le reste de l'interface. */
+/* Auteur de citation — suit l'ACCENT ACTIF. */
 .inspire-item__author {
   font-family: var(--font-data);
   font-size: var(--text-sm);
@@ -117,6 +114,7 @@
   margin: 0;
   font-family: var(--font-editorial);
   font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
   line-height: var(--leading-snug);
   color: var(--color-text-primary);
 }

@@ -1,38 +1,39 @@
 /* ==========================================================================
    ZENTIQ — TYPOGRAPHIE
-   Nunito             : interface, donnees, navigation (police principale)
-   Cormorant Garamond : citations et titres editoriaux
+   Nunito     : interface, donnees, navigation (police principale)
+   Montserrat : citations et titres editoriaux
 
-   PHASE 4.1 — CE QUI CHANGE
-   -------------------------
-   1. Nunito remplace Manrope et Inter partout dans l'interface.
-   2. Une graisse dediee par role : 800 pour les titres et les chiffres, 700
-      pour les libelles, les boutons et la navigation, 500 pour le texte
-      courant. Aucune graisse fine sur un texte porteur d'information.
-   3. Les tailles viennent toutes des tokens : ce fichier ne fixe plus aucune
-      valeur en dur, ce qui evite qu'une taille echappe a la refonte.
+   PHASE 4.1.1 — MONTSERRAT POUR LES CITATIONS
+   --------------------------------------------
+   Cormorant Garamond est retiree de l'application. Le rendu serif classique,
+   tres fin en petit corps sur fond sombre, manquait de presence sur un ecran
+   de telephone.
 
-   NOTE SUR LES GRAISSES : les anciennes valeurs etaient 600 pour les titres.
-   Elles passent a 700 et 800, comme demande — mais uniquement sur les roles
-   qui portent un titre ou un chiffre, jamais sur le corps de texte.
+   Montserrat la remplace : formes geometriques ouvertes, qui tiennent mieux a
+   petite taille, et contraste net avec Nunito — l'oeil distingue immediatement
+   une citation d'un paragraphe.
+
+   GRAISSE : 600 et non 500. Montserrat en 500 serait trop legere en petit
+   corps sur Deep Space. Le 600 garde la chaleur sans perdre la fermete.
+
+   L'ITALIQUE EST CONSERVE : c'est lui qui signale le registre editorial.
+   Pour le retirer, une seule ligne a supprimer dans `.editorial-quote`.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   ROLES EDITORIAUX — Cormorant Garamond conserve
+   ROLES EDITORIAUX — Montserrat 600 / 700
    -------------------------------------------------------------------------- */
 
-/* Citation / affirmation : serif, genereuse, caractere editorial affirme */
+/* Citation / affirmation */
 .editorial-quote {
   font-family: var(--font-editorial);
   font-size: var(--text-editorial);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
   font-style: italic;
   line-height: var(--leading-snug);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-normal);
   color: var(--color-text-primary);
   text-wrap: balance;
-  /* Une citation peu longue peut se lire en deux lignes : on l'autorise
-     plutot que de reduire la taille pour tenir sur une seule. */
   overflow-wrap: break-word;
 }
 
@@ -40,7 +41,7 @@
 .editorial-title {
   font-family: var(--font-editorial);
   font-size: var(--text-3xl);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--color-text-primary);
@@ -51,7 +52,6 @@
    HIERARCHIE D'INTERFACE — Nunito 800 / 700
    -------------------------------------------------------------------------- */
 
-/* Titre principal d'ecran — 30 px, graisse 800 */
 .heading-xl {
   font-family: var(--font-ui);
   font-size: var(--text-3xl);
@@ -61,7 +61,6 @@
   color: var(--color-text-primary);
 }
 
-/* Titre de section — 24 px, graisse 800 */
 .heading-lg {
   font-family: var(--font-ui);
   font-size: var(--text-2xl);
@@ -71,7 +70,6 @@
   color: var(--color-text-primary);
 }
 
-/* Sous-titre — 22 px, graisse 800 */
 .heading-md {
   font-family: var(--font-ui);
   font-size: var(--text-xl);
@@ -80,7 +78,6 @@
   color: var(--color-text-primary);
 }
 
-/* Titre de carte — 19 px, graisse 700 */
 .heading-sm {
   font-family: var(--font-ui);
   font-size: var(--text-lg);
@@ -89,7 +86,6 @@
   color: var(--color-text-primary);
 }
 
-/* Libelle de section — 13 px plancher, graisse 700 */
 .overline {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
@@ -101,7 +97,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   CORPS DE TEXTE — graisse 500, jamais plus fin
+   CORPS DE TEXTE — Nunito 500, jamais plus fin
    -------------------------------------------------------------------------- */
 .body-lg {
   font-family: var(--font-ui);
@@ -132,9 +128,6 @@
 
 /* --------------------------------------------------------------------------
    DONNEES — Nunito, chiffres tabulaires, graisse 800
-   --------------------------------------------------------------------------
-   `tabular-nums` fige la largeur des chiffres : sans cela, un compteur qui
-   passe de 0 a 100 fait sauter toute la ligne a chaque mise a jour.
    -------------------------------------------------------------------------- */
 .data-value {
   font-family: var(--font-data);
@@ -154,9 +147,7 @@
   color: var(--color-text-tertiary);
 }
 
-/* Statistique mise en avant — 28 a 34 px.
-   Role dedie, pour que les grands chiffres de Journey ne dependent pas d'une
-   classe de titre detournee de son usage. */
+/* Statistique mise en avant — 28 a 34 px */
 .stat-value {
   font-family: var(--font-data);
   font-size: var(--text-stat);
@@ -168,7 +159,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   TEXTE LIBRE (journal, notes) — rythme de lecture long
+   TEXTE LIBRE (journal, notes)
    -------------------------------------------------------------------------- */
 .prose {
   font-family: var(--font-ui);
@@ -195,20 +186,6 @@
 
 /* --------------------------------------------------------------------------
    CHARGEMENT DES POLICES
-   --------------------------------------------------------------------------
-   Nunito et Cormorant Garamond sont demandees a Google Fonts avec
-   `display=swap` : le texte s'affiche immediatement dans la pile de repli
-   systeme, puis bascule sur la police chargee. Aucun ecran blanc, aucun texte
-   invisible en attendant.
-
-   HORS LIGNE : les fichiers sont mis en cache par le service worker, qui
-   precache les ressources du build. Une fois l'application installee, les
-   polices restent disponibles sans reseau.
-
-   POURQUOI PAS D'AUTO-HEBERGEMENT : il faudrait commiter les fichiers .woff2
-   dans le depot, ce qui est preferable a terme mais demande de recuperer les
-   binaires depuis un poste avec acces reseau. La declaration ci-dessous
-   fonctionne des aujourd'hui et se remplace sans toucher aux composants.
    -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');

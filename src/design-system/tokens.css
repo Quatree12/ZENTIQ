@@ -4,21 +4,11 @@
    --------------------------------------------------------------------------
    SEULE source autorisee pour les couleurs, espacements, radius, ombres
    et transitions. Aucun composant ne doit ecrire de hexadecimal litteral.
-
-   Palette officielle (immuable) :
-     Deep Space      #0D1015   fond principal
-     Night Surface   #1C2430   cartes & panneaux
-     Slate Blue      #34445A   bordures & surfaces secondaires
-     Digital Teal    #72C8C1   actions, progression, validation, etats actifs
-     Lavender Mind   #A99ACB   inspiration, reflexion, emotions
-     Soft Mist       #E0F0ED   texte principal
    ========================================================================== */
 
 :root {
   /* ---------------------------------------------------------------------
-     1. PALETTE BRUTE — valeurs de reference de la direction artistique.
-     Jamais consommees directement par un composant ; les tokens semantiques
-     ci-dessous les referencent.
+     1. PALETTE BRUTE
      --------------------------------------------------------------------- */
   --zentiq-deep-space: #0d1015;
   --zentiq-night-surface: #1c2430;
@@ -49,11 +39,6 @@
 
   /* ---------------------------------------------------------------------
      4. TEXTE
-     Contraste attendu sur --color-surface :
-       primary     >= 13:1   AAA
-       secondary   >= 7.5:1  AAA
-       tertiary    >= 4.9:1  AA
-       placeholder ~ 4.0:1   sous AA strict — texte non essentiel, assume
      --------------------------------------------------------------------- */
   --color-text-primary: var(--zentiq-soft-mist);
   --color-text-secondary: #a9bcc4;
@@ -61,15 +46,11 @@
   --color-text-disabled: #5a6673;
   --color-text-placeholder: #66737f;
 
-  /* Texte pose sur un aplat d'accent : fonce, jamais blanc.
-     Blanc sur Digital Teal ~ 2.2:1 -> echoue AA. */
   --color-text-on-accent: #0a1518;
   --color-text-on-inspiration: #12101c;
 
   /* ---------------------------------------------------------------------
      5. ACCENTS
-     Digital Teal  -> actions, progression, validation, actif
-     Lavender Mind -> inspiration, reflexion, emotion
      --------------------------------------------------------------------- */
   --color-accent: var(--zentiq-digital-teal);
   --color-accent-hover: #8ad4cd;
@@ -86,7 +67,6 @@
 
   /* ---------------------------------------------------------------------
      6. ETATS SEMANTIQUES
-     Calibres pour rester lisibles sur Deep Space et Night Surface.
      --------------------------------------------------------------------- */
   --color-success: #6ec9a4;
   --color-success-soft: rgb(110 201 164 / 13%);
@@ -99,7 +79,7 @@
   --color-info-soft: var(--color-accent-soft);
 
   /* ---------------------------------------------------------------------
-     7. HUMEURS — 5 niveaux, utilises par le mood check-in
+     7. HUMEURS — 5 niveaux
      --------------------------------------------------------------------- */
   --color-mood-1: #e3796f;
   --color-mood-2: #e0b26a;
@@ -108,7 +88,7 @@
   --color-mood-5: #6ec9a4;
 
   /* ---------------------------------------------------------------------
-     8. DEGRADES — subtils, jamais criards
+     8. DEGRADES
      --------------------------------------------------------------------- */
   --gradient-accent: linear-gradient(135deg, rgb(114 200 193 / 10%), rgb(169 154 203 / 5%));
   --gradient-inspiration: linear-gradient(140deg, rgb(169 154 203 / 16%), rgb(114 200 193 / 6%));
@@ -146,82 +126,61 @@
   --radius-full: 999px;
 
   /* =====================================================================
-     11. TYPOGRAPHIE — REFONTE PHASE 4.1
+     11. TYPOGRAPHIE
      =====================================================================
-     NUNITO remplace Manrope et Inter pour toute l'interface.
+     Nunito     -> interface, donnees, navigation
+     Montserrat -> citations et titres editoriaux
 
-     POURQUOI NUNITO
-     ---------------
-     Ses terminaisons sont arrondies et ses courbes generreuses : c'est la
-     rondeur demandee, sans tomber dans l'ecriture enfantine. Elle reste
-     parfaitement lisible en petit corps et dispose de graisses jusqu'a 800.
+     Cormorant Garamond est retiree : le rendu serif tres fin manquait de
+     presence en petit corps sur fond sombre. Montserrat, plus large et plus
+     ouverte, tient mieux sur un ecran de telephone.
 
-     TROIS FAMILLES, TROIS USAGES
-     ----------------------------
-       Nunito             interface, donnees, navigation (defaut)
-       Cormorant Garamond citations et titres editoriaux — conserves
-       JetBrains Mono     code et valeurs techniques uniquement
-
-     `--font-data` pointe desormais vers Nunito : les chiffres restent NUNITO
-     mais avec `font-variant-numeric: tabular-nums` pour ne pas trembler quand
-     ils changent (cf. .data-value).
-
-     ECHELLE — NETTEMENT PLUS GRANDE
-     -------------------------------
-     Cibles du brief, appliquees a la lettre :
-       texte courant           17 px   -> --text-base
-       texte secondaire        15 px   -> --text-sm
-       petits libelles         13 px   -> --text-xs
-       titres de cartes        19 px   -> --text-lg
-       titres de sections      24 px   -> --text-2xl
-       titres principaux       30 px   -> --text-3xl (max)
-       statistiques            28-34 px -> --text-stat
-       boutons                 16 px   -> --text-button
-       navigation              14-15 px -> --text-nav
-
-     Les titres fluides conservent une borne basse assez haute pour rester
-     lisibles a 320 px : on ne reduit pas la taille pour faire tenir la mise
-     en page, la lisibilite prime sur la densite.
+     `--font-data` pointe vers Nunito avec `tabular-nums` : les chiffres ne
+     tremblent pas quand ils changent (cf. .data-value).
      ===================================================================== */
   --font-ui: 'Nunito', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-data: 'Nunito', 'Nunito Sans', system-ui, -apple-system, sans-serif;
-  --font-editorial: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-editorial: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Echelle de base */
-  --text-xs: 0.8125rem; /* 13 px — petits libelles, plancher du brief */
-  --text-sm: 0.9375rem; /* 15 px — texte secondaire */
-  --text-base: 1.0625rem; /* 17 px — texte courant */
-  --text-md: 1.125rem; /* 18 px — lecture longue */
-  --text-lg: 1.1875rem; /* 19 px — titres de cartes */
-  --text-xl: 1.375rem; /* 22 px — sous-titres */
-  --text-2xl: 1.5rem; /* 24 px — titres de sections */
+  --text-xs: 0.8125rem; /* 13 px */
+  --text-sm: 0.9375rem; /* 15 px */
+  --text-base: 1.0625rem; /* 17 px */
+  --text-md: 1.125rem; /* 18 px */
+  --text-lg: 1.1875rem; /* 19 px */
+  --text-xl: 1.375rem; /* 22 px */
+  --text-2xl: 1.5rem; /* 24 px */
 
-  /* Titres fluides — borne basse elevee pour rester lisibles a 320 px */
   --text-3xl: clamp(1.75rem, 1.5rem + 1.1vw, 1.875rem); /* 28 -> 30 px */
   --text-4xl: clamp(2.125rem, 1.7rem + 1.8vw, 2.5rem); /* 34 -> 40 px */
-  --text-editorial: clamp(1.625rem, 1.25rem + 1.6vw, 2rem); /* 26 -> 32 px */
+
+  /* Citation editoriale — Montserrat.
+     La borne basse redescend par rapport a Cormorant : Montserrat occupe
+     nettement plus de largeur a taille egale, et une citation de deux lignes
+     en devient trois si on garde la meme valeur. */
+  --text-editorial: clamp(1.375rem, 1.1rem + 1.3vw, 1.75rem); /* 22 -> 28 px */
 
   /* Roles dedies */
   --text-stat: clamp(1.75rem, 1.4rem + 1.4vw, 2.125rem); /* 28 -> 34 px */
   --text-button: 1rem; /* 16 px */
   --text-nav: 0.9375rem; /* 15 px */
 
-  /* Graisses — Nunito monte jusqu'a 800 */
+  /* Graisses */
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
   --weight-extrabold: 800;
 
-  /* Interlignes — accompagnent les tailles plus grandes */
+  /* Interlignes */
   --leading-tight: 1.2;
   --leading-snug: 1.35;
   --leading-normal: 1.55;
   --leading-relaxed: 1.65;
 
-  /* Interlettrage — Nunito arrondi n'a pas besoin d'etre resserre */
-  --tracking-tight: -0.005em;
+  /* Interlettrage — Montserrat est deja large, on ne l'espace pas davantage */
+  --tracking-tight: -0.01em;
   --tracking-normal: 0;
   --tracking-wide: 0.03em;
   --tracking-widest: 0.1em;
@@ -238,7 +197,7 @@
   --tap-target-min: 44px;
 
   /* ---------------------------------------------------------------------
-     13. OMBRES — discretes, jamais lourdes
+     13. OMBRES
      --------------------------------------------------------------------- */
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 28%);
   --shadow-md: 0 4px 14px rgb(0 0 0 / 32%);
@@ -248,7 +207,7 @@
   --shadow-inspiration-glow: 0 0 0 1px rgb(169 154 203 / 22%), 0 6px 22px rgb(169 154 203 / 14%);
 
   /* ---------------------------------------------------------------------
-     14. TRANSITIONS — 220 ms standard
+     14. TRANSITIONS
      --------------------------------------------------------------------- */
   --duration-instant: 90ms;
   --duration-fast: 140ms;
