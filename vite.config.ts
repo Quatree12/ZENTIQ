@@ -6,20 +6,17 @@ import { VitePWA } from 'vite-plugin-pwa';
 /**
  * Configuration Vite de ZENTIQ.
  *
- * - `base` : le site est publié sur GitHub Pages à l'adresse
- *   https://quatree12.github.io/ZENTIQ/, donc dans un sous-dossier. Sans ce
- *   réglage Vite génère des chemins absolus à la racine du domaine
- *   (/assets/...) qui renvoient une 404 et laissent la page bloquée sur le
- *   splash de démarrage.
+ * - `base` : le site est publie sur GitHub Pages dans un sous-dossier
+ *   (https://quatree12.github.io/ZENTIQ/). Sans ce reglage, Vite genere des
+ *   chemins absolus a la racine du domaine (/assets/...) qui renvoient une 404.
  * - `@/` pointe vers `src/` : les imports restent stables quand
  *   l'arborescence grandit.
- * - Le plugin PWA génère le service worker et le manifest de précache au
- *   build ; en dev le SW est désactivé pour que le rechargement à chaud reste
- *   prévisible.
+ * - Le plugin PWA genere le service worker et le manifest de precache au
+ *   build ; en dev le SW est desactive pour que le rechargement a chaud reste
+ *   previsible.
  *
- * NOTE : on utilise `node:path` et `resolve(__dirname, 'src')` plutôt que
- * `node:url` + `import.meta.url`. Le second exigeait `@types/node` et le
- * compilateur signalait `Cannot find module 'node:url'`.
+ * La configuration des TESTS vit dans `vitest.config.ts` : elle n'a pas besoin
+ * du plugin PWA, qui ralentirait chaque execution.
  */
 export default defineConfig({
   base: '/ZENTIQ/',
@@ -38,7 +35,7 @@ export default defineConfig({
       injectRegister: null,
       strategies: 'generateSW',
       filename: 'sw.js',
-      manifest: false, // on livre un public/manifest.webmanifest écrit à la main
+      manifest: false, // on livre un public/manifest.webmanifest ecrit a la main
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Le fallback de navigation doit lui aussi porter le sous-dossier,
