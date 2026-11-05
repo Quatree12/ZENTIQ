@@ -8,11 +8,11 @@ import type { HabitStat } from '@/utils/journey-stats';
 /**
  * Statistiques d'habitudes.
  *
- * Une ligne par habitude, avec sa regularite REELLE sur la periode choisie et
- * ses series. Rien n'est invente : tout vient des `HabitCompletion`.
+ * Une ligne par habitude, avec sa régularité RÉELLE sur la période choisie et
+ * ses séries. Rien n'est inventé : tout vient des `HabitCompletion`.
  *
- * Quand une habitude n'etait attendue aucun jour de la periode, la regularite
- * vaut `null` et l'interface affiche « — » au lieu de « 0 % » : un zero serait
+ * Quand une habitude n'était attendue aucun jour de la période, la régularité
+ * vaut `null` et l'interface affiche « — » au lieu de « 0 % » : un zéro serait
  * un reproche immérité.
  */
 export function HabitStats({ stats, period }: { stats: HabitStat[]; period: number }) {
@@ -27,8 +27,8 @@ export function HabitStats({ stats, period }: { stats: HabitStat[]; period: numb
         </header>
         <EmptyState
           icon={Repeat}
-          title="Rien a mesurer pour l'instant"
-          description="Cree une habitude dans Grow, puis coche-la au fil des jours. Sa regularite apparaitra ici."
+          title="Rien à mesurer pour l'instant"
+          description="Crée une habitude dans Grow, puis coche-la au fil des jours. Sa régularité apparaîtra ici."
         />
       </section>
     );
@@ -40,8 +40,8 @@ export function HabitStats({ stats, period }: { stats: HabitStat[]; period: numb
         <p className="overline">Habitudes</p>
         <h2 className="heading-sm" id="habit-stats-heading">
           {stats.length === 1
-            ? '1 habitude analysee sur ' + period + ' jours'
-            : stats.length + ' habitudes analysees sur ' + period + ' jours'}
+            ? '1 habitude analysée sur ' + period + ' jours'
+            : stats.length + ' habitudes analysées sur ' + period + ' jours'}
         </h2>
       </header>
 
@@ -57,7 +57,7 @@ export function HabitStats({ stats, period }: { stats: HabitStat[]; period: numb
               <div className="habit-stat__progress">
                 <ProgressBar
                   value={stat.consistency ?? 0}
-                  label={'Regularite de ' + stat.habit.name}
+                  label={'Régularité de ' + stat.habit.name}
                   tone={stat.habit.accent === 'lavender' ? 'lavender' : 'teal'}
                 />
                 <span className="data-value">
@@ -67,19 +67,19 @@ export function HabitStats({ stats, period }: { stats: HabitStat[]; period: numb
 
               <dl className="habit-stat__grid">
                 <div>
-                  <dt className="data-label">Jours coches</dt>
+                  <dt className="data-label">Jours cochés</dt>
                   <dd className="data-value">
                     {stat.completedDays} / {stat.expectedDays}
                   </dd>
                 </div>
                 <div>
-                  <dt className="data-label">Serie actuelle</dt>
+                  <dt className="data-label">Série actuelle</dt>
                   <dd className="data-value">
                     {stat.currentStreak === 1 ? '1 jour' : stat.currentStreak + ' jours'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="data-label">Meilleure serie</dt>
+                  <dt className="data-label">Meilleure série</dt>
                   <dd className="data-value">
                     {stat.bestStreak === 1 ? '1 jour' : stat.bestStreak + ' jours'}
                   </dd>
@@ -101,7 +101,7 @@ export function HabitStats({ stats, period }: { stats: HabitStat[]; period: numb
   );
 }
 
-/** Badge d'evolution recente — compare les 7 derniers jours aux 7 precedents. */
+/** Badge d'évolution récente — compare les 7 derniers jours aux 7 précédents. */
 function TrendBadge({ trend }: { trend: HabitStat['recentTrend'] }) {
   if (trend === 'up') {
     return (

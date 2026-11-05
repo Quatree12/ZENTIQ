@@ -11,29 +11,23 @@ import { formatDateKey } from '@/utils/dates';
 /**
  * Statistiques d'humeur.
  *
- * PHASE 4.1.10 — L'INDICATEUR DE TENDANCE EST RETIRE
- * --------------------------------------------------
- * Le badge « En hausse / En baisse / Stable » a ete supprime. Deux calculs
- * successifs ont ete essayes (decoupage en moities, puis fenetre glissante), et
- * les deux ont produit un chiffre qui ne correspondait pas aux donnees reelles
- * de l'utilisateur : « -0.8 » puis « +0.3 » sur une serie qui devait donner
- * « +1.0 ».
+ * L'INDICATEUR DE TENDANCE EST RETIRÉ
+ * -----------------------------------
+ * Le badge « En hausse / En baisse / Stable » a été supprimé. Deux calculs
+ * successifs ont été essayés (découpage en moitiés, puis fenêtre glissante),
+ * et les deux ont produit un chiffre qui ne correspondait pas aux données
+ * réelles : « -0.8 » puis « +0.3 » sur une série qui devait donner « +1.0 ».
  *
- * La cause exacte n'a pas pu etre etablie sans terminal pour reproduire. Dans
- * une interface ou tous les autres chiffres sont exacts, un indicateur qu'on ne
- * peut ni expliquer ni verifier n'a pas sa place : il vaut mieux le retirer que
- * de laisser un nombre douteux a cote de chiffres fiables.
+ * Dans une interface où tous les autres chiffres sont exacts, un indicateur
+ * qu'on ne peut ni expliquer ni vérifier n'a pas sa place. Le calcul `trend`
+ * reste présent dans `journey-stats.ts` et couvert par ses tests : si la cause
+ * est identifiée plus tard, il suffira de rebrancher un badge ici.
  *
- * CE QUI RESTE, et qui est verifie sur donnees reelles :
- *   - la courbe d'evolution, jour par jour
- *   - la moyenne de la periode
- *   - le nombre de journees notees et le nombre de journees sans entree
- *   - le meilleur jour de la periode
- *   - la date de la journee la plus lumineuse
- *
- * Le calcul `trend` reste present dans `journey-stats.ts` et couvert par ses
- * tests : si la cause est identifiee plus tard, il suffira de rebrancher un
- * badge ici.
+ * CE QUI RESTE, et qui est vérifié sur données réelles :
+ *   - la courbe d'évolution, jour par jour
+ *   - la moyenne de la période
+ *   - le nombre de journées notées et sans entrée
+ *   - le meilleur jour de la période
  */
 export interface MoodStatsProps {
   stats: MoodStatsData;
@@ -48,13 +42,13 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
         <header>
           <p className="overline">Humeur</p>
           <h2 className="heading-sm" id="mood-stats-heading">
-            Aucune donnee sur la periode
+            Aucune donnée sur la période
           </h2>
         </header>
         <EmptyState
           icon={Activity}
           title="Pas encore de check-in"
-          description="Note ton humeur depuis l'ecran Today, en quelques secondes. Apres quelques jours, une tendance apparaitra ici."
+          description="Note ton humeur depuis l'écran Today, en quelques secondes. Après quelques jours, une tendance apparaîtra ici."
         />
       </section>
     );
@@ -67,8 +61,8 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
           <p className="overline">Humeur</p>
           <h2 className="heading-sm" id="mood-stats-heading">
             {stats.entriesCount > 1
-              ? stats.entriesCount + ' journees notees'
-              : '1 journee notee'}
+              ? stats.entriesCount + ' journées notées'
+              : '1 journée notée'}
           </h2>
         </div>
         <PeriodToggle period={period} onChange={onPeriodChange} />
@@ -85,11 +79,11 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
 
         <dl className="mood-stats__grid">
           <div className="mood-stat">
-            <dt className="data-label">Notees</dt>
+            <dt className="data-label">Notées</dt>
             <dd className="data-value">{stats.entriesCount}</dd>
           </div>
           <div className="mood-stat">
-            <dt className="data-label">Sans entree</dt>
+            <dt className="data-label">Sans entrée</dt>
             <dd className="data-value">{stats.missingCount}</dd>
           </div>
           <div className="mood-stat">
@@ -104,8 +98,7 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
 
         {stats.bestDay && (
           <p className="body-sm">
-            Journee la plus lumineuse :
-            {' '}
+            Journée la plus lumineuse :{' '}
             {formatDateKey(stats.bestDay.date, { day: 'numeric', month: 'long' })}
           </p>
         )}
@@ -114,7 +107,7 @@ export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
   );
 }
 
-/** Selecteur de periode — 7 ou 30 jours. */
+/** Sélecteur de période — 7 ou 30 jours. */
 function PeriodToggle({
   period,
   onChange,
@@ -123,7 +116,7 @@ function PeriodToggle({
   onChange: (p: StatPeriod) => void;
 }) {
   return (
-    <div className="row-wrap" role="group" aria-label="Periode analysee">
+    <div className="row-wrap" role="group" aria-label="Période analysée">
       {PERIODS.map((value) => (
         <button
           key={value}
@@ -139,5 +132,5 @@ function PeriodToggle({
   );
 }
 
-/** Icones conservees pour un usage ulterieur (tests, futurs indicateurs). */
+/** Icônes conservées pour un usage ultérieur (tests, futurs indicateurs). */
 export const trendIcons = { up: TrendingUp, down: TrendingDown, stable: Minus };
