@@ -3,28 +3,31 @@ import { Profile } from './Profile';
 import { Preferences } from './Preferences';
 import { Notifications } from './Notifications';
 import { Privacy } from './Privacy';
+import { DevKitPanel } from './MeKit';
 import './Me.css';
+import './UIKit.css';
+import './DevKit.css';
 
 /**
  * ME — l'espace personnel.
  *
- * Quatre sections : profil, préférences, notifications et confidentialité. Tout
- * y est réellement actionnable — chaque réglage est persisté, chaque bouton a un
- * effet observable.
+ * Cinq sections : profil, preferences, notifications, confidentialite, et la
+ * bibliotheque de composants (repliee, outil de developpement).
  */
 export default function MePage() {
   return (
     <div className="section-stack">
       <PageHeader
         eyebrow="Me"
-        title="Ton espace, tes règles"
-        description="Profil, préférences et gestion de tes données locales. Tu peux tout ajuster, et tout emporter."
+        title="Ton espace, tes reglages"
+        description="Profil, preferences et gestion de tes donnees locales. Tu peux tout ajuster, et tout emporter."
       />
 
       <Profile />
       <Preferences />
       <Notifications />
       <Privacy />
+      <DevKitPanel />
     </div>
   );
 }

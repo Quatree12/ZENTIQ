@@ -1,0 +1,56 @@
+/* ==========================================================================
+   Ecran de demonstration du design system
+   ========================================================================== */
+
+.uikit-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.uikit-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.uikit-swatch__chip {
+  display: block;
+  height: 44px;
+  border-radius: var(--radius-field);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.uikit-swatch__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.uikit-swatch__hex {
+  font-size: var(--text-xs);
+}
+
+.uikit-type-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.uikit-type-row:last-child {
+  border-bottom: none;
+}
+
+.uikit-type-row__meta {
+  color: var(--color-text-tertiary);
+}
+
+/* Un long libelle ne doit pas deborder, meme en 320 px. */
+.uikit-type-row > span:last-child {
+  overflow-wrap: break-word;
+  min-width: 0;
+}
