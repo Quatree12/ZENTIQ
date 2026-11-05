@@ -17,13 +17,17 @@ import './Challenges.css';
 /**
  * CHALLENGES — section de l'espace GROW.
  *
- * UN SEUL IMPORT DE STYLE, au nom d'origine. Toute tentative d'ajouter un
- * second fichier CSS a fait tomber le chargement du graphe de modules
- * (« Importing a module script failed ») : le service worker ne sert que les
- * fichiers figurant dans son manifeste, et un nom qu'il ne connaît pas échoue.
+ * Quatre groupes, dans l'ordre d'usage : ce qui est en cours, ce qui va
+ * commencer, ce qui est terminé, puis ce qui a été mis de côté. Un challenge
+ * mis de côté n'est pas caché : il est rangé, et peut être repris.
  *
- * RÈGLE : les styles de cette section vivent dans `Challenges.css`. On n'y
- * ajoute pas de fichier, on ne le renomme pas.
+ * Toutes les progressions viennent des étapes réellement cochées. Aucun
+ * compteur n'est stocké à la main : le repository les dérive, et le module de
+ * calcul les lit.
+ *
+ * LES JALONS SONT MODIFIABLES ICI. `onUpdateMilestones` traverse cette section
+ * pour atteindre la carte, qui ouvre l'éditeur. Sans ce passage, le composant
+ * `ChallengeCard` refusait de compiler — propriété requise manquante.
  */
 export function Challenges() {
   const {
@@ -33,6 +37,7 @@ export function Challenges() {
     error,
     busyIds,
     createChallenge,
+    updateChallenge,
     completeDay,
     uncompleteDay,
     postpone,
@@ -65,7 +70,7 @@ export function Challenges() {
     if (!pendingDelete) return;
     await removeChallenge(pendingDelete);
     setPendingDelete(null);
-    notify('Challenge supprime.', { tone: 'info' });
+    notify('Challenge supprimé.', { tone: 'info' });
   };
 
   if (loading && challenges.length === 0) {
@@ -95,7 +100,7 @@ export function Challenges() {
           leadingIcon={<Plus size={16} />}
           onClick={() => setCreateOpen(true)}
         >
-          Creer
+          Créer
         </Button>
       </header>
 
@@ -103,17 +108,17 @@ export function Challenges() {
         <EmptyState
           icon={Sparkles}
           title="Aucun challenge pour l'instant"
-          description="Un challenge te donne un cadre de quelques jours : 3, 7, 14, 21 ou 30. Tu peux le terminer ou le mettre de cote, jamais le « rater »."
-          action={{ label: 'Creer un challenge', onClick: () => setCreateOpen(true) }}
+          description="Un challenge te donne un cadre de quelques jours : 3, 7, 14, 21 ou 30. Tu peux le terminer ou le mettre de côté, jamais le « rater »."
+          action={{ label: 'Créer un challenge', onClick: () => setCreateOpen(true) }}
         />
       ) : (
         <>
           <Card compact className="challenge-summary">
             <div className="row-wrap">
               <Badge tone="teal">{summary.active} en cours</Badge>
-              {summary.upcoming > 0 && <Badge>{summary.upcoming} a venir</Badge>}
-              {summary.completed > 0 && <Badge tone="success">{summary.completed} termine</Badge>}
-              {summary.setAside > 0 && <Badge>{summary.setAside} mis de cote</Badge>}
+              {summary.upcoming > 0 && <Badge>{summary.upcoming} à venir</Badge>}
+              {summary.completed > 0 && <Badge tone="success">{summary.completed} terminé</Badge>}
+              {summary.setAside > 0 && <Badge>{summary.setAside} mis de côté</Badge>}
               {summary.averageProgress !== null && (
                 <Badge tone="lavender">Progression moyenne {summary.averageProgress} %</Badge>
               )}
@@ -130,6 +135,10 @@ export function Challenges() {
                     onCompleteDay={(dayNumber) => void completeDay(challenge.id, dayNumber)}
                     onUncompleteDay={(dayNumber) => void uncompleteDay(challenge.id, dayNumber)}
                     onPostpone={(days) => void postpone(challenge.id, days)}
+                    onUpdateMilestones={async (milestones) => {
+                      const updated = await updateChallenge(challenge.id, { milestones });
+                      return updated !== null;
+                    }}
                     onSetAside={() => void setAside(challenge.id)}
                     onDelete={() => setPendingDelete(challenge.id)}
                   />
@@ -140,7 +149,7 @@ export function Challenges() {
 
           {upcoming.length > 0 && (
             <div className="challenge-group">
-              <p className="overline">A venir</p>
+              <p className="overline">À venir</p>
               <ul className="challenge-list">
                 {upcoming.map((challenge) => (
                   <li key={challenge.id}>
@@ -171,7 +180,7 @@ export function Challenges() {
 
           {completed.length > 0 && (
             <div className="challenge-group">
-              <p className="overline">Termines</p>
+              <p className="overline">Terminés</p>
               <ul className="challenge-list">
                 {completed.map((challenge) => (
                   <li key={challenge.id}>
@@ -187,7 +196,7 @@ export function Challenges() {
 
           {setAsideList.length > 0 && (
             <div className="challenge-group">
-              <p className="overline">Mis de cote</p>
+              <p className="overline">Mis de côté</p>
               <ul className="challenge-list">
                 {setAsideList.map((challenge) => (
                   <li key={challenge.id}>
@@ -197,8 +206,8 @@ export function Challenges() {
                         <Badge>{CHALLENGE_STATUS_LABELS[challenge.status]}</Badge>
                       </div>
                       <p className="body-sm">
-                        {challenge.daysCompleted} journee
-                        {challenge.daysCompleted > 1 ? 's' : ''} validee
+                        {challenge.daysCompleted} journée
+                        {challenge.daysCompleted > 1 ? 's' : ''} validée
                         {challenge.daysCompleted > 1 ? 's' : ''} sur {challenge.durationDays}.
                       </p>
                       <div className="row-wrap">
@@ -230,7 +239,7 @@ export function Challenges() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="Nouveau challenge"
-        description="Un cadre court, quelques jours. Tu peux le mettre de cote a tout moment, sans rien perdre."
+        description="Un cadre court, quelques jours. Tu peux le mettre de côté à tout moment, sans rien perdre."
         size="lg"
       >
         <ChallengeForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)} />
@@ -239,7 +248,7 @@ export function Challenges() {
       <ConfirmDialog
         open={pendingDelete !== null}
         title="Supprimer ce challenge ?"
-        message="Ses journees validees seront egalement supprimees. Pour le mettre simplement en pause, utilise « Mettre de cote »."
+        message="Ses journées validées seront également supprimées. Pour le mettre simplement en pause, utilise « Mettre de côté »."
         confirmLabel="Supprimer"
         tone="danger"
         onConfirm={() => void handleDelete()}
