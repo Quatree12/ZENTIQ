@@ -1,11 +1,10 @@
-import { useMemo, useState } from 'react';
-import { Activity, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { Activity, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/cards';
 import { Badge } from '@/components/badges';
-import { EmptyState, LoadingState } from '@/components/feedback';
+import { EmptyState } from '@/components/feedback';
 import { MoodChart } from './MoodChart';
-import { useJourneyStats } from '@/hooks/useJourneyStats';
 import { describeTrend, PERIODS, type StatPeriod } from '@/utils/journey-stats';
+import type { MoodStats as MoodStatsData } from '@/utils/journey-stats';
 import { MOOD_LABELS } from '@/types';
 import { formatDateKey } from '@/utils/dates';
 
@@ -16,15 +15,21 @@ import { formatDateKey } from '@/utils/dates';
  * periode ne contient aucune donnee, un etat vide explique comment commencer
  * plutot que d'afficher un graphique plat a zero.
  *
- * Le choix de periode (7 / 30 jours) est partage avec le reste de Journey via
- * le hook : les sections restent coherentes entre elles.
+ * Le choix de periode (7 / 30 jours) est partage avec le reste de Journey : les
+ * sections restent coherentes entre elles.
+ *
+ * NOTE : les donnees sont recues en propriete depuis `JourneyPage`, qui monte
+ * le hook une seule fois. Ce composant ne lit pas la base lui-meme — cela
+ * evite quatre chargements concurrents pour un meme ecran.
  */
-export function MoodStats({ period, onPeriodChange }: { period: StatPeriod; onPeriodChange: (p: StatPeriod) => void }) {
-  const { moods, loading, error } = useJourneyStats();
-  void loading;
-  void error;
+export interface MoodStatsProps {
+  stats: MoodStatsData;
+  period: StatPeriod;
+  onPeriodChange: (period: StatPeriod) => void;
+}
 
-  if (moods.points.length > 0 && moods.entriesCount === 0) {
+export function MoodStats({ stats, period, onPeriodChange }: MoodStatsProps) {
+  if (stats.entriesCount === 0) {
     return (
       <section className="journey-section" aria-labelledby="mood-stats-heading">
         <header>
@@ -42,9 +47,8 @@ export function MoodStats({ period, onPeriodChange }: { period: StatPeriod; onPe
     );
   }
 
-  const trendIcon =
-    moods.trend === 'up' ? TrendingUp : moods.trend === 'down' ? TrendingDown : Minus;
-  const TrendIcon = trendIcon;
+  const TrendIcon =
+    stats.trend === 'up' ? TrendingUp : stats.trend === 'down' ? TrendingDown : Minus;
 
   return (
     <section className="journey-section" aria-labelledby="mood-stats-heading">
@@ -52,9 +56,9 @@ export function MoodStats({ period, onPeriodChange }: { period: StatPeriod; onPe
         <div>
           <p className="overline">Humeur</p>
           <h2 className="heading-sm" id="mood-stats-heading">
-            {moods.entriesCount === 0
-              ? 'Aucune donnee'
-              : moods.entriesCount + (moods.entriesCount > 1 ? ' journees notees' : ' journee notee')}
+            {stats.entriesCount > 1
+              ? stats.entriesCount + ' journees notees'
+              : '1 journee notee'}
           </h2>
         </div>
         <PeriodToggle period={period} onChange={onPeriodChange} />
@@ -62,45 +66,48 @@ export function MoodStats({ period, onPeriodChange }: { period: StatPeriod; onPe
 
       <Card compact className="mood-stats__card">
         <div className="row-wrap">
-          {moods.average !== null && (
-            <Badge tone="lavender">Moyenne {moods.average.toFixed(1)} / 5</Badge>
+          {stats.average !== null && (
+            <Badge tone="lavender">Moyenne {stats.average.toFixed(1)} / 5</Badge>
           )}
-          {moods.trend !== null && (
-            <span className={'mood-trend mood-trend--' + moods.trend}>
+          {stats.trend !== null && (
+            <span className={'mood-trend mood-trend--' + stats.trend}>
               <TrendIcon size={14} aria-hidden="true" />
-              {describeTrend(moods.trend)}
-              {moods.trendDelta !== null && moods.trendDelta !== 0 && (
+              {describeTrend(stats.trend)}
+              {stats.trendDelta !== null && stats.trendDelta !== 0 && (
                 <span className="mood-trend__delta">
-                  {moods.trendDelta > 0 ? '+' : ''}
-                  {moods.trendDelta.toFixed(1)}
+                  {stats.trendDelta > 0 ? '+' : ''}
+                  {stats.trendDelta.toFixed(1)}
                 </span>
               )}
             </span>
           )}
         </div>
 
-        <MoodChart points={moods.points} />
+        <MoodChart points={stats.points} />
 
         <dl className="mood-stats__grid">
           <div className="mood-stat">
-            <dt className="data-label">Notées</dt>
-            <dd className="data-value">{moods.entriesCount}</dd>
+            <dt className="data-label">Notees</dt>
+            <dd className="data-value">{stats.entriesCount}</dd>
           </div>
           <div className="mood-stat">
             <dt className="data-label">Sans entree</dt>
-            <dd className="data-value">{moods.missingCount}</dd>
+            <dd className="data-value">{stats.missingCount}</dd>
           </div>
           <div className="mood-stat">
             <dt className="data-label">Meilleur jour</dt>
             <dd className="data-value">
-              {moods.bestDay ? MOOD_LABELS[moods.bestDay.mood ?? 3] : '—'}
+              {stats.bestDay && stats.bestDay.mood !== null
+                ? MOOD_LABELS[stats.bestDay.mood]
+                : '—'}
             </dd>
           </div>
         </dl>
 
-        {moods.bestDay && (
+        {stats.bestDay && (
           <p className="body-sm">
-            Journee la plus lumineuse : {formatDateKey(moods.bestDay.date, { day: 'numeric', month: 'long' })}
+            Journee la plus lumineuse :{' '}
+            {formatDateKey(stats.bestDay.date, { day: 'numeric', month: 'long' })}
           </p>
         )}
       </Card>
@@ -109,7 +116,13 @@ export function MoodStats({ period, onPeriodChange }: { period: StatPeriod; onPe
 }
 
 /** Selecteur de periode — 7 ou 30 jours. */
-function PeriodToggle({ period, onChange }: { period: StatPeriod; onChange: (p: StatPeriod) => void }) {
+function PeriodToggle({
+  period,
+  onChange,
+}: {
+  period: StatPeriod;
+  onChange: (p: StatPeriod) => void;
+}) {
   return (
     <div className="row-wrap" role="group" aria-label="Periode analysee">
       {PERIODS.map((value) => (
