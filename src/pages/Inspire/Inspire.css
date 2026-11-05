@@ -8,9 +8,18 @@
 /* --------------------------------------------------------------------------
    Barre d'onglets
 
-   ELLE RESTE ACCROCHEE PENDANT LE DEFILEMENT.
-   Sans cela, le regroupement par categorie repousse la barre hors de l'ecran
-   des qu'on descend, et l'onglet Favoris devient introuvable.
+   ELLE RESTE ACCROCHEE PENDANT LE DEFILEMENT, ET TIENT SUR UNE SEULE LIGNE.
+
+   Deux corrections successives :
+     1. `position: sticky` — sans cela, les groupes de categories repoussaient
+        la barre hors de l'ecran et l'onglet Favoris devenait introuvable.
+     2. Defilement horizontal sur tres petits ecrans — a 320 px, quatre puces
+        (Favoris, Citations 48, Affirmations 24, Musique 24) ne tenaient pas
+        sur une ligne avec leurs compteurs, et la barre se cassait en deux.
+
+   Le defilement horizontal est prefere au retour a la ligne : la barre garde
+   une hauteur constante, donc une position d'accroche stable. Une barre qui
+   change de hauteur en cours de defilement ferait sauter le contenu.
    -------------------------------------------------------------------------- */
 .inspire-tabs {
   position: sticky;
@@ -18,16 +27,33 @@
   top: var(--header-height);
   z-index: var(--z-header);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--space-2);
   padding-block: var(--space-3);
   /* Un fond opaque : le contenu qui defile dessous ne doit pas apparaitre
-     entre les puces. Un degradé vers le transparent serait joli mais illisible. */
+     entre les puces. */
   background-color: var(--color-bg);
+  /* Defilement horizontal : la barre reste sur une ligne, quelle que soit la
+     largeur. `-webkit-overflow-scrolling` garde l'inertie iOS. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Masque la barre de defilement : elle n'apporte rien ici. */
+  scrollbar-width: none;
 }
 
-/* Sur mobile, l'en-tete est lui-meme dans le flux : la barre se colle en haut
-   de la zone de contenu plutot que sous un header qui n'est pas fixe. */
+.inspire-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Les puces ne se compriment pas : sinon « Affirmations 24 » se reduirait a
+   « Affi... » plutot que de laisser le defilement faire son travail. */
+.inspire-tabs > .filter-chip {
+  flex: 0 0 auto;
+}
+
+/* Sur mobile, l'en-tete est dans le flux : la barre se colle en haut de la
+   zone de contenu. Les marges negatives la font deborder jusqu'aux bords, pour
+   que le defilement paraisse naturel. */
 @media (max-width: 767px) {
   .inspire-tabs {
     top: 0;
@@ -92,8 +118,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
   /* L'auteur suit l'accent actif : teal sous accent teal, lavande sous
-     accent lavande. C'est la regle qui vivait un temps dans un fichier jamais
-     importe. */
+     accent lavande. */
   color: var(--color-accent);
 }
 

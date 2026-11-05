@@ -1,6 +1,7 @@
 import { PageHeader } from '@/layouts/PageHeader';
 import { Profile } from './Profile';
 import { Preferences } from './Preferences';
+import { BackupReminder } from './BackupReminder';
 import { Notifications } from './Notifications';
 import { Privacy } from './Privacy';
 import { DevKitPanel } from './MeKit';
@@ -13,6 +14,10 @@ import './DevKit.css';
  *
  * Cinq sections : profil, preferences, notifications, confidentialite, et la
  * bibliotheque de composants (repliee, outil de developpement).
+ *
+ * `BackupReminder` s'insere entre les preferences et les notifications : il ne
+ * s'affiche que lorsque la derniere sauvegarde date, donc sa place n'est pas
+ * fixe dans la lecture — quand il est la, il se voit.
  */
 export default function MePage() {
   return (
@@ -25,6 +30,7 @@ export default function MePage() {
 
       <Profile />
       <Preferences />
+      <BackupReminder />
       <Notifications />
       <Privacy />
       <DevKitPanel />
