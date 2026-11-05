@@ -2,10 +2,11 @@
    ZENTIQ — THEMES
    L'application est DARK-ONLY par decision produit.
 
-   Ce fichier porte trois choses :
+   Ce fichier porte quatre choses :
      1. La declaration explicite de l'absence de theme clair.
      2. Les themes d'accent (teal / lavande).
-     3. La preference d'accessibilite « Texte plus large ».
+     3. La densite d'affichage (confortable / compact).
+     4. La preference d'accessibilite « Texte plus large ».
    ========================================================================== */
 
 /* Theme par defaut — explicite, pour que `data-theme` reste toujours resolu. */
@@ -35,6 +36,53 @@
 }
 
 /* ==========================================================================
+   DENSITE D'AFFICHAGE
+   ==========================================================================
+   POURQUOI CE BLOC EXISTE
+   -----------------------
+   La preference « Affichage compact » etait persistee en base, mise en cache
+   de rendu, et appliquee comme attribut `data-density` sur <html> — mais AUCUN
+   fichier CSS ne lisait cet attribut. Le reglage n'avait donc aucun effet :
+   on pouvait le basculer indefiniment sans rien voir changer. C'est le meme
+   defaut qu'a eu « Texte plus large » avant d'etre corrige.
+
+   CE QUI SE RESSERRE, ET CE QUI NE BOUGE PAS
+   ------------------------------------------
+   Uniquement les espacements VERTICAUX d'empilement (1 a 8), et la hauteur des
+   lignes de liste. On ne touche ni aux grands espacements de mise en page
+   (10 a 24), qui portent la respiration entre sections, ni au radius, ni aux
+   tailles de police : « compact » range le contenu, il ne le retrecit pas.
+
+   Le gain est d'environ un quart sur chaque espacement, ce qui fait tenir
+   sensiblement plus de contenu a l'ecran sans jamais rendre le texte dur a
+   lire.
+   ========================================================================== */
+[data-density='compact'] {
+  --space-1: 3px;
+  --space-2: 6px;
+  --space-3: 9px;
+  --space-4: 12px;
+  --space-5: 15px;
+  --space-6: 18px;
+  --space-7: 21px;
+  --space-8: 24px;
+
+  /* Les cartes gardent leur radius : c'est l'identite visuelle, elle ne se
+     compresse pas avec la densite. */
+  --density-line-height: 44px;
+}
+
+/* En compact, les listes serrent leurs lignes. On cible les conteneurs qui
+   empilent de nombreuses entrees, ou le gain se voit vraiment. */
+[data-density='compact'] .challenge-list,
+[data-density='compact'] .journal-list,
+[data-density='compact'] .habit-list,
+[data-density='compact'] .goal-list,
+[data-density='compact'] .timeline {
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
    TEXTE PLUS LARGE — ACCESSIBILITE (PHASE 4.1)
    ==========================================================================
    Le mode Standard sert la nouvelle base Nunito (17 px de texte courant).
@@ -57,8 +105,14 @@
 
    Les espacements, eux, suivent : une ligne plus haute dans un conteneur a
    hauteur fixe deborderait. Seuls les espacements VERTICAUX de base (1 a 8)
-   sont ajustes, pas les grands espacements de mise en page (10 a 24), qui
-   servent surtout de respiration entre sections.
+   sont ajustes, pas les grands espacements de mise en page (10 a 24).
+
+   NOTE : « Texte plus large » est declare APRES « compact » dans ce fichier.
+   Les deux regles ont la meme specificite (un attribut sur <html>), donc
+   l'ordre fait foi — et le texte plus large doit l'emporter, puisque ses
+   espacements sont calcules pour une police agrandie. Un utilisateur qui
+   cumule les deux preferences obtient ainsi des espacements lisibles, pas des
+   espacements ecrases.
    -------------------------------------------------------------------------- */
 [data-large-text='true'] {
   /* --- Echelle Standard + 20 % ----------------------------------------- */
