@@ -76,11 +76,19 @@
   margin: 0;
 }
 
+/* Auteur de citation — suit l'ACCENT ACTIF.
+   Auparavant fige sur --color-inspiration (lavande), ce qui laissait « ZENTIQ »
+   en lila sous une citation alors que le badge et le reste de la page etaient
+   passes au teal en accent Digital Teal.
+
+   ATTENTION : cette regle doit vivre ICI, dans Card.css, et non dans un
+   EditorialCard.css separe. C'est ce fichier que `Card.tsx` importe — une regle
+   placee ailleurs ne serait jamais chargee. */
 .editorial-card__author {
   font-family: var(--font-data);
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
-  color: var(--color-inspiration);
+  color: var(--color-accent);
   letter-spacing: var(--tracking-wide);
 }
 
