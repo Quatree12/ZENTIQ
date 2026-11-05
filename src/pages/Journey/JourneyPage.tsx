@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { PageHeader } from '@/layouts/PageHeader';
 import { ErrorState, LoadingState } from '@/components/feedback';
 import { useJourneyStats } from '@/hooks/useJourneyStats';
@@ -19,9 +18,10 @@ import './JourneyStats.css';
  * domaine (humeur, habitudes, objectifs), puis l'historique brut (humeurs
  * passees, timeline, journal).
  *
- * Le hook `useJourneyStats` est monte UNE fois ici, et sa periode est partagee
- * avec les trois sections analytiques : changer la periode met tout a jour de
- * facon coherente, sans que chaque section recharge la base.
+ * Le hook `useJourneyStats` est monte UNE fois ici, et ses donnees sont passees
+ * en proprietes aux sections analytiques : changer la periode met tout a jour
+ * de facon coherente, sans que chaque section recharge la base. C'est ce qui
+ * evite quatre lectures IndexedDB concurrentes pour un meme ecran.
  *
  * Toutes les mesures viennent des donnees locales reelles. Aucune statistique
  * n'est generee pour remplir l'interface.
@@ -29,14 +29,6 @@ import './JourneyStats.css';
 export default function JourneyPage() {
   const { loading, error, hasAnyData, period, setPeriod, moods, habitStats, goals, summary, refresh } =
     useJourneyStats();
-
-  // Etat local uniquement pour forcer le remontage des sections quand la periode
-  // change — le hook est deja monte au-dessus, ce n'est pas un second chargement.
-  const [sectionKey, setSectionKey] = useState(0);
-  const handlePeriodChange = (next: typeof period) => {
-    setPeriod(next);
-    setSectionKey((key) => key + 1);
-  };
 
   return (
     <div className="section-stack">
@@ -53,7 +45,7 @@ export default function JourneyPage() {
       ) : (
         <>
           <JourneySummaryCard summary={summary} />
-          <MoodStats key={'mood-' + sectionKey} period={period} onPeriodChange={handlePeriodChange} />
+          <MoodStats stats={moods} period={period} onPeriodChange={setPeriod} />
           <HabitStats stats={habitStats} period={period} />
           <GoalStats stats={goals} />
           <MoodHistory />
