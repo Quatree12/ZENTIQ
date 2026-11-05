@@ -4,22 +4,21 @@ import { ProgressRing } from '@/components/progress';
 import { summarizeJourney, type JourneySummary } from '@/utils/journey-stats';
 
 /**
- * Synthese personnelle de Journey.
+ * Synthèse personnelle de Journey.
  *
- * Six mesures, toutes lues dans la base locale. Aucune n'est completee par une
- * valeur de remplissage : une mesure sans donnee affiche « — » et la phrase de
- * synthese reste encourageante, jamais evaluative.
+ * Six mesures, toutes lues dans la base locale. Aucune n'est complétée par une
+ * valeur de remplissage : une mesure sans donnée affiche « — » et la phrase de
+ * synthèse reste encourageante, jamais évaluative.
  *
- * DEUX CHIFFRES DIFFERENTS, DEUX LIBELLES DIFFERENTS
+ * DEUX CHIFFRES DIFFÉRENTS, DEUX LIBELLÉS DIFFÉRENTS
  * --------------------------------------------------
- * L'anneau affiche la REGULARITE des habitudes (un pourcentage) ; la mesure
- * « Habitudes » affiche leur NOMBRE. Ces deux valeurs etaient cote a cote avec
- * des libelles trop proches, ce qui les rendait confondables : lire « HABITUDES
- * 2 » juste sous un anneau a « 0 % » laissait croire a une incoherence.
+ * L'anneau affiche la RÉGULARITÉ des habitudes (un pourcentage) ; la mesure
+ * « Habitudes » affiche leur NOMBRE. Ces deux valeurs étaient côte à côte avec
+ * des libellés trop proches, ce qui les rendait confondables : lire « HABITUDES
+ * 2 » juste sous un anneau à « 0 % » laissait croire à une incohérence.
  *
- * Le libelle porte desormais l'unite — « 2 suivies » — et la precision
- * « regularite 0 % » est rappelee sous la valeur. Les deux chiffres ne peuvent
- * plus etre lus comme un seul.
+ * Le libellé porte désormais l'unité — « 2 suivies » — et la précision
+ * « régularité 0 % » est rappelée sous la valeur.
  */
 export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
   const hasAnything =
@@ -32,9 +31,9 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
   return (
     <section className="journey-section" aria-labelledby="summary-heading">
       <header>
-        <p className="overline">Synthese</p>
+        <p className="overline">Synthèse</p>
         <h2 className="heading-sm" id="summary-heading">
-          Ton resume
+          Ton résumé
         </h2>
       </header>
 
@@ -43,7 +42,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
           <ProgressRing
             value={summary.consistency ?? 0}
             tone="teal"
-            label="Regularite des habitudes"
+            label="Régularité des habitudes"
           >
             <span className="data-value journey-summary__ring">
               {summary.consistency === null ? '—' : summary.consistency + '%'}
@@ -51,7 +50,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
           </ProgressRing>
 
           <div className="journey-summary__text">
-            <p className="data-label">Regularite des habitudes</p>
+            <p className="data-label">Régularité des habitudes</p>
             <p className="body-base">{summarizeJourney(summary)}</p>
           </div>
         </div>
@@ -63,7 +62,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
             value={summary.moodAverage === null ? '—' : summary.moodAverage.toFixed(1) + ' / 5'}
           />
 
-          {/* Nombre d'habitudes suivies — et non leur regularite. */}
+          {/* Nombre d'habitudes suivies — et non leur régularité. */}
           <Metric
             icon={<Repeat size={16} />}
             label="Habitudes"
@@ -72,7 +71,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
             }
             detail={
               summary.habitsTracked > 0 && summary.consistency !== null
-                ? 'regularite ' + summary.consistency + ' %'
+                ? 'régularité ' + summary.consistency + ' %'
                 : undefined
             }
           />
@@ -99,7 +98,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
               summary.journalEntries === 0
                 ? '—'
                 : String(summary.journalEntries) +
-                  (summary.journalEntries > 1 ? ' entrees' : ' entree')
+                  (summary.journalEntries > 1 ? ' entrées' : ' entrée')
             }
           />
 
@@ -109,8 +108,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
             value={
               summary.challengesActive === 0
                 ? '—'
-                : String(summary.challengesActive) +
-                  (summary.challengesActive > 1 ? ' en cours' : ' en cours')
+                : String(summary.challengesActive) + ' en cours'
             }
           />
 
@@ -124,8 +122,8 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
 
         {!hasAnything && (
           <p className="body-sm journey-summary__empty">
-            Rien a resumer pour l'instant. Un check-in d'humeur, une habitude cochee ou une ligne de
-            journal suffisent a faire vivre cette page.
+            Rien à résumer pour l'instant. Un check-in d'humeur, une habitude cochée ou une ligne
+            de journal suffisent à faire vivre cette page.
           </p>
         )}
       </Card>
@@ -133,7 +131,7 @@ export function JourneySummaryCard({ summary }: { summary: JourneySummary }) {
   );
 }
 
-/** Une mesure du resume : icone, libelle, valeur, precision facultative. */
+/** Une mesure du résumé : icône, libellé, valeur, précision facultative. */
 function Metric({
   icon,
   label,
@@ -157,5 +155,5 @@ function Metric({
   );
 }
 
-/** Icone de secours exportee pour les tests d'integration. */
+/** Icône de secours exportée pour les tests d'intégration. */
 export const summaryIcon = Sprout;
