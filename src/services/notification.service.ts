@@ -8,17 +8,25 @@ import { fromDateKey, nextAllowedDay, todayKey } from '@/utils/dates';
  * pas d'envoi a distance. Ce service prepare et programme des rappels locaux
  * via l'API Notification.
  *
- * DEUX CHEMINS, ET UNE LIMITE ASSUMEE
- * -----------------------------------
- * 1. Notification periodique (API `showTrigger`), quand le navigateur la
- *    propose : Android/Chrome continuent de declencher le rappel meme app fermee.
+ * TROIS SITUATIONS, ET POURQUOI LES DISTINGUER
+ * --------------------------------------------
+ * 1. `Notification` absent de `window`. Sur iOS, ce cas couvre DEUX realites
+ *    tres differentes que le mot « non pris en charge » confondait :
+ *      - un onglet Safari ordinaire, ou l'API n'est jamais exposee ;
+ *      - une fenetre de navigation privee, ou elle est coupee.
+ *    Dans les deux cas, l'API reste accessible SI l'application est ajoutee a
+ *    l'ecran d'accueil : Safari ne l'expose qu'aux web apps installees.
  *
- * 2. Repli par minuteur en page : sur iOS et les navigateurs sans notification
- *    planifiee, le rappel ne peut se declencher que lorsque ZENTIQ est ouvert.
+ * 2. `Notification.permission === 'denied'` : l'utilisateur a refuse, ou le
+ *    reglage du systeme bloque. Il doit agir dans les reglages, pas ici.
  *
- * Le service ne MAQUILLE PAS cette limite : `describeReminderStatus` dit
- * exactement ce qui se passera selon la plateforme. Un rappel annonce et jamais
- * recu serait pire que pas de rappel du tout.
+ * 3. Autorisation accordee : le rappel peut etre planifie, mais iOS ne sait
+ *    pas le declencher application fermee. L'ecran le dit.
+ *
+ * Le message affiche decrit donc la SITUATION, et surtout l'ACTION a faire.
+ * Dire « ce navigateur ne prend pas en charge les notifications » etait exact
+ * au sens technique, mais n'aidait personne : le navigateur les prend en
+ * charge, c'est le mode d'acces qui n'y donne pas droit.
  */
 
 export type PermissionState = 'default' | 'granted' | 'denied' | 'unsupported';
@@ -53,6 +61,17 @@ export function canNotify(): boolean {
 export function supportsScheduledNotifications(): boolean {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
   return 'showTrigger' in (window as unknown as Record<string, unknown>);
+}
+
+/**
+ * Vrai si une web app installee est detectee (mode standalone).
+ * Sert a formuler le bon conseil : installer d'abord, ou autoriser ensuite.
+ */
+export function isInstalled(): boolean {
+  if (typeof window === 'undefined') return false;
+  const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches;
+  const iosStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone;
+  return Boolean(standalone || iosStandalone);
 }
 
 /** Message de rappel — encourageant, jamais culpabilisant. */
@@ -180,17 +199,22 @@ function shiftKey(key: string, delta: number): string {
 }
 
 /**
- * Message d'etat affiche dans les preferences : explique ce qui se passera
- * reellement selon la plateforme, sans promettre plus que ce qui est implemente.
+ * Message d'etat affiche dans les preferences.
+ *
+ * Il decrit la SITUATION REELLE et l'ACTION a faire — jamais « non pris en
+ * charge », qui laissait croire a une limite du navigateur alors qu'il s'agit
+ * d'un mode d'acces.
  */
 export function describeReminderStatus(settings: UserSettings): string {
   const permission = getPermissionState();
 
   if (permission === 'unsupported') {
-    return "Ce navigateur ne prend pas en charge les notifications. Le reste de l'application fonctionne normalement.";
+    return isInstalled()
+      ? "Les notifications sont indisponibles sur cet appareil. Le reste de l'application fonctionne normalement."
+      : "Pour recevoir un rappel, ajoute d'abord ZENTIQ a ton ecran d'accueil : Safari ne donne acces aux notifications qu'aux applications installees. Le reste fonctionne sans cela.";
   }
   if (permission === 'denied') {
-    return 'Les notifications sont bloquees dans ton navigateur. Autorise-les dans les reglages du site pour recevoir le rappel.';
+    return 'Les notifications sont bloquees pour ZENTIQ. Autorise-les dans les reglages du navigateur ou du systeme, puis reviens ici.';
   }
   if (!settings.dailyReminderEnabled) {
     return 'Rappel quotidien desactive. Active-le pour recevoir un message aux jours choisis.';
