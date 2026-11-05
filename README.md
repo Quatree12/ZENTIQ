@@ -2,24 +2,39 @@
 
 > **Your mind. Your momentum.**
 
-Application PWA **local-first** de motivation et de développement personnel.
-Citations, affirmations, inspirations musicales, suivi d'humeur, objectifs, habitudes,
-challenges, journal personnel et progression — le tout fonctionnant **hors ligne**.
+Application PWA **local-first** de motivation et de developpement personnel.
+Citations, affirmations, inspirations musicales, suivi d'humeur, objectifs,
+habitudes, challenges, journal personnel et progression — le tout fonctionnant
+**hors ligne**.
 
 ---
 
-## Statut de cette phase
+## Etat actuel
 
-**Phase 01 — Fondations, architecture & design system.**
+Le projet est **fonctionnel et deploye** sur
+[quatree12.github.io/ZENTIQ](https://quatree12.github.io/ZENTIQ/).
 
-Cette phase livre la **base technique et visuelle** du produit : configuration, design system,
-composants UI, navigation, structure de pages, IndexedDB, PWA.
+Les sept phases de construction sont achevees : fondations, UI kit, cinq
+ecrans, base locale, fonctionnalites, PWA, et QA.
 
-**Les cinq espaces (`Today`, `Inspire`, `Grow`, `Journey`, `Me`) sont des squelettes
-fonctionnels** : leur structure, leur routing et leurs états sont en place et branchés sur la
-base locale, mais leurs fonctionnalités métier complètes arrivent dans les phases suivantes.
-Le fichier [`ARCHITECTURE.md`](./ARCHITECTURE.md) liste précisément ce qui est fait et ce qui
-ne l'est pas.
+**Ce qui fonctionne, verifie sur donnees reelles :**
+
+- les cinq espaces (Today, Inspire, Grow, Journey, Me)
+- 96 contenus editoriaux (48 citations, 24 affirmations, 24 musiques)
+- recherche locale, filtres, favoris
+- humeur quotidienne, objectifs, habitudes, journal
+- statistiques de Journey (moyenne, courbe, regularite, progres des objectifs)
+- challenges avec leur cycle complet (creation, validation, rattrapage, fin)
+- persistance IndexedDB, export et import JSON
+- PWA installable, fonctionnant hors ligne
+- 60 tests automatises en integration continue
+
+**Ce qui reste a faire :**
+
+- `package-lock.json` — necessite un `npm install` depuis un terminal
+- les avertissements de depreciation du workflow (actions GitHub sous Node 20)
+- les fonctionnalites produit avancees : challenges personnalises, analytique de
+tendances, notifications a heure fixe
 
 ---
 
@@ -34,20 +49,18 @@ ne l'est pas.
 | Stockage local | IndexedDB via Dexie 4 |
 | Styles | CSS natif + variables CSS |
 | Icones | Lucide |
+| Tests | Vitest + Testing Library |
 | Offline / install | Service Worker + Web App Manifest |
-
-Aucune dépendance superflue. Pas de framework CSS, pas de librairie de composants :
-le design system est interne et centralisé.
 
 ---
 
-## Démarrage
+## Demarrage
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + build de production
-npm run preview    # sert le build (nécessaire pour tester le service worker)
+npm run preview    # sert le build (necessaire pour tester le service worker)
 npm run typecheck  # tsc --noEmit
 npm run test       # tests Vitest
 ```
@@ -63,55 +76,58 @@ ZENTIQ/
 ├── public/                 assets statiques, manifest, offline.html
 ├── src/
 │   ├── app/                bootstrap, router, providers, config
-│   ├── design-system/      tokens, typographie, spacing, reset, index
+│   ├── design-system/      tokens, typographie, spacing, reset, themes
 │   ├── components/         design system de composants (buttons, cards, ...)
+│   ├── content/            banque editoriale (citations, affirmations, musique)
 │   ├── layouts/            AppLayout, Sidebar, MobileDrawer, PageHeader
 │   ├── pages/              Today / Inspire / Grow / Journey / Me
-│   ├── database/           Dexie + schéma + migrations + repositories
+│   ├── database/           Dexie + schema + migrations + repositories
 │   ├── stores/             Zustand
 │   ├── services/           storage, export, import, notifications, offline
-│   ├── hooks/              hooks métier
-│   ├── types/              modèles typés
-│   └── utils/              dates, formatters, validators
-├── tests/                  components / database / integration
+│   ├── hooks/              hooks metier
+│   ├── types/              modeles types
+│   └── utils/              dates, formatters, validators, calculs statistiques
+├── tests/                  composants / statistiques / challenges / typographie
 ├── index.html
 ├── vite.config.ts
 └── tsconfig.json
 ```
 
-Détail de l'architecture, du modèle de données et des décisions techniques :
+Detail de l'architecture, du modele de donnees et des decisions techniques :
 **[`ARCHITECTURE.md`](./ARCHITECTURE.md)**.
 
 ---
 
-## Identité visuelle
+## Identite visuelle
 
-Direction artistique **DIGITAL AURA × LAVENDER MIND** — dark-only, premium digital wellness.
+Direction artistique **DIGITAL AURA x LAVENDER MIND** — dark-only, premium
+digital wellness.
 
-| Token | Hex | Rôle |
+| Token | Hex | Role |
 | --- | --- | --- |
 | Deep Space | `#0D1015` | Fond principal |
 | Night Surface | `#1C2430` | Cartes & panneaux |
 | Slate Blue | `#34445A` | Bordures & surfaces secondaires |
 | Digital Teal | `#72C8C1` | Actions, progression, validation |
-| Lavender Mind | `#A99ACB` | Inspiration, réflexion, émotions |
+| Lavender Mind | `#A99ACB` | Inspiration, reflexion, emotions |
 | Soft Mist | `#E0F0ED` | Texte principal |
 
 Toutes les couleurs vivent dans `src/design-system/tokens.css`.
-**Aucun hexadécimal arbitraire dans un composant** — tout passe par une variable du design system.
+**Aucun hexadecimal arbitraire dans un composant.**
 
-Typographie : **Manrope** (interface) · **Inter** (données) · **Cormorant Garamond** (titres éditoriaux).
+Typographie : **Nunito** (interface) · **Montserrat** (citations et titres editoriaux).
 
 ---
 
-## Vie privée
+## Vie privee
 
-Les données personnelles sont stockées **localement, sur l'appareil de l'utilisateur**
-(IndexedDB). Aucune synchronisation cloud n'est implémentée dans cette phase, et aucune donnée
-n'est transmise à un serveur. Export / import JSON disponibles depuis l'espace `ME`.
+Les donnees personnelles sont stockees **localement, sur l'appareil de
+l'utilisateur** (IndexedDB). Aucune synchronisation cloud n'est implementee, et
+aucune donnee n'est transmise a un serveur. Export et import JSON disponibles
+depuis l'espace ME.
 
 ---
 
 ## Licence
 
-Propriétaire — tous droits réservés.
+Proprietaire — tous droits reserves. Voir [`LICENSE`](./LICENSE).
