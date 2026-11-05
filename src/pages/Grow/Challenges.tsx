@@ -16,19 +16,20 @@ import { formatDateKey } from '@/utils/dates';
 /**
  * CHALLENGES — section de l'espace GROW.
  *
- * UN SEUL FICHIER DE STYLE : `Challenges.css`.
+ * POURQUOI LE CSS A CHANGE DE NOM
+ * -------------------------------
+ * Les styles de cette section vivaient dans `Challenges.css`. Apres l'ajout
+ * des jalons, ce fichier a ete reecrit — mais le service worker continuait de
+ * servir l'ANCIENNE version depuis son cache : les puces de duree restaient
+ * nues, les fieldsets gardaient leur bordure native, et les jalons ne
+ * s'affichaient pas.
  *
- * Les regles des jalons et des rythmes y ont ete rapatriees. Elles vivaient
- * dans un `ChallengeMilestones.css` separe, ajoute au depot APRES la derniere
- * publication reussie. Le service worker servait alors un manifeste de
- * prechargement qui ne connaissait pas ce fichier : son import echouait, et
- * avec lui le chargement du graphe de modules — l'application entiere tombait
- * sur « Importing a module script failed ». .
- *
- * Lecon retenue : un nouveau fichier de style doit voyager avec le fichier qui
- * l'importe dans le MEME commit que la mise en cache, ou mieux, rester dans un
- * fichier deja connu du service worker. C'est ce second choix qui est applique.
+ * Un fichier renomme ne peut pas etre servi depuis un cache qui ne l'a jamais
+ * vu. C'est le seul moyen fiable de forcer l'invalidation sans attendre que
+ * l'utilisateur purge son cache a la main.
  */
+import './challenge-styles.css';
+
 export function Challenges() {
   const {
     challenges,
