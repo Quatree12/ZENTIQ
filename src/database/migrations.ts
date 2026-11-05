@@ -1,5 +1,5 @@
-import type { Transaction } from 'dexie';
-import { TABLES, type ZentiqSchema } from './schema';
+import type { Transaction, Dexie } from 'dexie';
+import { TABLES } from './schema';
 
 /**
  * Migrations Dexie.
@@ -85,11 +85,16 @@ export const migrations: Migration[] = [
 /**
  * Applique les migrations declarees sur une instance Dexie.
  *
+ * Le parametre est type `Dexie` et non `ZentiqSchema` : `.version()` appartient
+ * a la classe Dexie, alors que `ZentiqSchema` ne decrit que la forme des tables
+ * et n'a aucune methode. La classe `ZentiqDatabase` etend `Dexie`, elle satisfait
+ * donc les deux — c'est ce qui rend l'appel valide depuis `db.ts`.
+ *
  * `db.version(n).stores(...)` est appele pour chaque entree ; Dexie se charge
  * de n'executer que celles qui manquent, puis d'appeler les `upgrade`
  * necessaires dans l'ordre.
  */
-export function applyMigrations(db: ZentiqSchema): void {
+export function applyMigrations(db: Dexie): void {
   for (const migration of migrations) {
     let version = db.version(migration.version).stores(migration.stores);
     if (migration.upgrade) {
