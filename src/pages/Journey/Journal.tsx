@@ -11,6 +11,7 @@ import { useJournal } from '@/hooks/useJournal';
 import { appConfig } from '@/app/app-config';
 import { MOOD_LABELS, MOOD_LEVELS, type JournalEntry, type MoodLevel } from '@/types';
 import { formatRelativeDateKey } from '@/utils/dates';
+import './JournalSearch.css';
 
 /**
  * Journal personnel.
@@ -23,8 +24,14 @@ import { formatRelativeDateKey } from '@/utils/dates';
  * doit trouver « Énergie ».
  *
  * Le filtre par humeur et le filtre « epinglees » se combinent avec la
- * recherche : un filtre qui ne s'applique qu'a moitie donnerait des resultats
- * incomprehensibles.
+ * recherche : un filtre qui ne s'appliquerait qu'a moitie donnerait des
+ * resultats incomprehensibles.
+
+ * L'etat vide a DEUX formes distinctes, et c'est volontaire :
+ *   - journal vide       -> on invite a ecrire une premiere entree
+ *   - filtres sans resultat -> on propose de retirer les filtres
+ * Les confondre laisserait croire que le journal est vide alors qu'il est
+ * seulement filtre.
  */
 
 /** Normalise une chaine pour la recherche : minuscules, sans accents. */
@@ -43,7 +50,6 @@ function matchesQuery(entry: JournalEntry, needle: string): boolean {
 }
 
 type MoodFilter = 'all' | 'none' | MoodLevel;
-t
 type PinFilter = 'all' | 'pinned';
 
 export function Journal() {
