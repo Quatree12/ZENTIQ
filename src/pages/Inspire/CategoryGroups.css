@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Insprire — groupes de categorie
+
+   ATTENTION : ce fichier est importe dans le MEME commit que sa creation.
+   Ne jamais le renommer ni le detacher de son composant : le service worker ne
+   sert que les fichiers de son manifeste. (Lecon apprise a la duree.)
+   ========================================================================== */
+
+.category-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* --- Menu deroulant de categorie ------------------------------------------ */
+.category-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.category-select__label {
+  color: var(--color-text-tertiary);
+}
+
+.category-select__control {
+  width: 100%;
+  /* Cible tactile : le selecteur se touche au pouce. */
+  min-height: var(--tap-target-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  cursor: pointer;
+  touch-action: manipulation;
+  /* La fleche native est conservee : la remplacer demanderait une image de
+     fond, donc un fichier de plus a faire voyager. */
+  appearance: auto;
+}
+
+.category-select__control:hover {
+  border-color: var(--color-border-strong);
+}
+
+.category-select__control:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* --- Groupe repliable ----------------------------------------------------- */
+.category-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+  overflow: hidden;
+}
+
+.category-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--tap-target-min);
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--transition-standard);
+}
+
+.category-group__head:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+}
+
+/* Quand une categorie precise est choisie, le groupe est forcement ouvert :
+   sa tete n'est plus un bouton, elle devient un simple en-tete. */
+.category-group__head:disabled {
+  cursor: default;
+}
+
+.category-group__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-standard);
+}
+
+.category-group__head.is-open .category-group__chevron {
+  transform: rotate(90deg);
+}
+
+.category-group__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.category-group__count {
+  flex-shrink: 0;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+/* La liste interne n'a plus besoin de sa propre bordure : le groupe en porte
+   deja une, deux cadres imbriques seraient lourds. */
+.category-group .inspire-list {
+  padding: 0 var(--space-3) var(--space-3);
+}
