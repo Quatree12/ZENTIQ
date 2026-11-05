@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Graphique d'humeur — styles locaux
+   ========================================================================== */
+
+.mood-chart {
+  margin: 0;
+  width: 100%;
+}
+
+.mood-chart__svg {
+  display: block;
+  width: 100%;
+  /* La hauteur suit le viewBox : le trace reste lisible de 320 px a 1100 px. */
+  height: auto;
+  overflow: visible;
+}
+
+/* Grille horizontale — cinq niveaux, discret */
+.mood-chart__grid {
+  stroke: var(--color-border-subtle);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Ligne d'evolution */
+.mood-chart__line {
+  fill: none;
+  stroke: var(--color-inspiration);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mood-chart__dot {
+  stroke: var(--color-bg);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Repere d'une journee sans entree : discret, jamais alarmant */
+.mood-chart__gap {
+  fill: var(--color-border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   Legende du graphique
+   -------------------------------------------------------------------------- */
+.mood-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.mood-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.mood-chart__legend-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
