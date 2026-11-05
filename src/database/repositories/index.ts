@@ -1,8 +1,8 @@
 /**
- * Point d'entrée unique de la couche d'accès aux données.
+ * Point d'entree unique de la couche d'acces aux donnees.
  *
  * Les stores importent depuis '@/database/repositories' et jamais depuis un
- * fichier profond : l'organisation interne peut évoluer sans casser leurs
+ * fichier profond : l'organisation interne peut evoluer sans casser leurs
  * imports.
  */
 
@@ -17,3 +17,9 @@ export { journalRepository } from './journal.repository';
 export type { CreateJournalEntryInput } from './journal.repository';
 export { favoritesRepository } from './favorites.repository';
 export type { FavoriteRefType } from './favorites.repository';
+export {
+  challengesRepository,
+  computeEndDate,
+  resolveStatus,
+} from './challenges.repository';
+export type { CreateChallengeInput } from './challenges.repository';
