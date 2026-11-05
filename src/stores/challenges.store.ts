@@ -24,6 +24,11 @@ interface ChallengesState {
   createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
   completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
   uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
+  /**
+   * Reporte un challenge de quelques jours.
+   * Aucune etape n'est decochee : c'est tout l'interet du report.
+   */
+  postpone: (id: string, days?: number) => Promise<Challenge | null>;
   setAside: (id: string) => Promise<void>;
   resume: (id: string) => Promise<void>;
   removeChallenge: (id: string) => Promise<void>;
@@ -35,7 +40,7 @@ function messageOf(error: unknown, fallback: string): string {
   return fallback;
 }
 
-/** Relit la liste : le statut et la progression sont derives du repository. */
+/** Relit la liste : le statut, la progression et les jalons sont derives. */
 async function reload(): Promise<Challenge[]> {
   return challengesRepository.listAll();
 }
@@ -90,6 +95,20 @@ export const useChallengesStore = create<ChallengesState>((set, get) => ({
       set({ challenges: await reload(), error: null });
     } catch (error) {
       set({ error: messageOf(error, "La coche n'a pas pu etre retiree.") });
+    } finally {
+      set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
+    }
+  },
+
+  postpone: async (id, days = 1) => {
+    set({ busyIds: [...get().busyIds, id] });
+    try {
+      const updated = await challengesRepository.postpone(id, days);
+      set({ challenges: await reload(), error: null });
+      return updated;
+    } catch (error) {
+      set({ error: messageOf(error, "Le challenge n'a pas pu etre decale.") });
+      return null;
     } finally {
       set({ busyIds: get().busyIds.filter((busyId) => busyId !== id) });
     }

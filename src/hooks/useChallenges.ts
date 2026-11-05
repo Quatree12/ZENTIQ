@@ -16,6 +16,7 @@ export interface UseChallengesResult {
   createChallenge: (input: CreateChallengeInput) => Promise<Challenge | null>;
   completeDay: (id: string, dayNumber: number, date?: string) => Promise<Challenge | null>;
   uncompleteDay: (id: string, dayNumber: number) => Promise<void>;
+  postpone: (id: string, days?: number) => Promise<Challenge | null>;
   setAside: (id: string) => Promise<void>;
   resume: (id: string) => Promise<void>;
   removeChallenge: (id: string) => Promise<void>;
@@ -38,6 +39,7 @@ export function useChallenges(): UseChallengesResult {
   const createChallenge = useChallengesStore((state) => state.createChallenge);
   const completeDay = useChallengesStore((state) => state.completeDay);
   const uncompleteDay = useChallengesStore((state) => state.uncompleteDay);
+  const postpone = useChallengesStore((state) => state.postpone);
   const setAside = useChallengesStore((state) => state.setAside);
   const resume = useChallengesStore((state) => state.resume);
   const removeChallenge = useChallengesStore((state) => state.removeChallenge);
@@ -55,6 +57,7 @@ export function useChallenges(): UseChallengesResult {
     createChallenge,
     completeDay,
     uncompleteDay,
+    postpone,
     setAside,
     resume,
     removeChallenge,
